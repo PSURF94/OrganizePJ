@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server'
 
 const PUBLIC_PATHS = ['/login', '/cadastro', '/assinar']
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const res = NextResponse.next()
   const pathname = req.nextUrl.pathname
 
