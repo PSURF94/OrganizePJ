@@ -10,22 +10,26 @@ export async function proxy(req: NextRequest) {
 
   if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) return res
 
-  const supabase = createServerClient(
-    (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim(),
-    (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').replace(/\s/g, ''),
-    {
-      cookies: {
-        getAll: () => req.cookies.getAll(),
-        setAll: (toSet) =>
-          toSet.forEach(({ name, value, options }) =>
-            res.cookies.set(name, value, options)
-          ),
-      },
-    }
-  )
+  try {
+    const supabase = createServerClient(
+      (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim(),
+      (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').replace(/\s/g, ''),
+      {
+        cookies: {
+          getAll: () => req.cookies.getAll(),
+          setAll: (toSet) =>
+            toSet.forEach(({ name, value, options }) =>
+              res.cookies.set(name, value, options)
+            ),
+        },
+      }
+    )
 
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      return NextResponse.redirect(new URL('/login', req.url))
+    }
+  } catch {
     return NextResponse.redirect(new URL('/login', req.url))
   }
 
