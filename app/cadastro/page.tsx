@@ -4,6 +4,8 @@ import { getBrowserSupabase } from '@/lib/supabase-browser'
 import { TAX_REGIMES } from '@/lib/constants'
 import Link from 'next/link'
 
+const TAX_REGIME_INFO = 'https://www.gov.br/empresas-e-negocios/pt-br/empreendedor/quero-ser-empreendedor/saiba-sobre-os-tipos-de-empresa'
+
 export default function CadastroPage() {
   const [step, setStep] = useState<'account' | 'company'>('account')
   const [email, setEmail] = useState('')
@@ -29,8 +31,13 @@ export default function CadastroPage() {
     const supabase = getBrowserSupabase()
 
     const { data, error: signUpError } = await supabase.auth.signUp({ email, password })
-    if (signUpError || !data.user) {
-      setError(signUpError?.message || 'Erro ao criar conta.')
+    if (signUpError) {
+      setError(signUpError.message || 'Erro ao criar conta.')
+      setLoading(false)
+      return
+    }
+    if (!data.user || !data.session) {
+      setError('Não foi possível criar sessão. Verifique se confirmação de e-mail está desativada no Supabase.')
       setLoading(false)
       return
     }
@@ -49,7 +56,9 @@ export default function CadastroPage() {
     }])
 
     if (companyError) {
-      setError('Conta criada mas erro ao salvar empresa. Faça login e configure em Ajustes.')
+      setError(`Conta criada mas erro ao salvar empresa: ${companyError.message}`)
+      setLoading(false)
+      return
     }
 
     window.location.href = '/dashboard'
@@ -103,13 +112,23 @@ export default function CadastroPage() {
                     placeholder="00.000.000/0001-00" />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-slate-600 block mb-1">Regime tributário</label>
+                  <div className="flex items-center gap-1 mb-1">
+                    <label className="text-xs font-medium text-slate-600">Regime tributário</label>
+                    <a
+                      href={TAX_REGIME_INFO}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Entenda os regimes tributários"
+                      className="w-4 h-4 rounded-full bg-slate-200 text-slate-500 text-[10px] font-bold flex items-center justify-center hover:bg-blue-100 hover:text-blue-600 transition-colors"
+                    >?</a>
+                  </div>
                   <select value={taxRegime} onChange={(e) => setTaxRegime(e.target.value)}
                     className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                     {Object.entries(TAX_REGIMES).map(([k, v]) => (
                       <option key={k} value={k}>{v}</option>
                     ))}
                   </select>
+                  <p className="text-[11px] text-slate-400 mt-1">Não sabe qual? <a href={TAX_REGIME_INFO} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">Consulte o gov.br</a></p>
                 </div>
                 <div>
                   <label className="text-xs font-medium text-slate-600 block mb-1">Alíquota média de impostos (%)</label>
@@ -117,8 +136,9 @@ export default function CadastroPage() {
                     min="0" max="100" step="0.1"
                     className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Ex: 6" />
+                  <p className="text-[11px] text-slate-400 mt-1">MEI: 5% · Simples: 6–15% · Presumido: ~11% · Pode ajustar depois</p>
                 </div>
-                {error && <p className="text-red-500 text-xs">{error}</p>}
+                {error && <p className="text-red-500 text-xs bg-red-50 p-2 rounded-lg">{error}</p>}
                 <button type="submit" disabled={loading}
                   className="w-full bg-blue-600 text-white rounded-xl py-2.5 text-sm font-semibold disabled:opacity-60">
                   {loading ? 'Criando conta...' : 'Começar teste grátis'}
