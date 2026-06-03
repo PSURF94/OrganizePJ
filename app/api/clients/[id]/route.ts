@@ -5,8 +5,9 @@ import { getServerSupabase } from '@/lib/supabase-server'
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   const supabase = await getServerSupabase()
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -15,7 +16,7 @@ export async function DELETE(
   if (!company) return NextResponse.json({ error: 'Company not found' }, { status: 404 })
 
   const { error } = await supabase.from('clients').delete()
-    .eq('id', params.id).eq('company_id', company.id)
+    .eq('id', id).eq('company_id', company.id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ success: true })
@@ -23,8 +24,9 @@ export async function DELETE(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   const supabase = await getServerSupabase()
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -38,7 +40,7 @@ export async function PUT(
     cpf_cnpj: body.cpf_cnpj || null,
     email: body.email || null,
     phone: body.phone || null,
-  }).eq('id', params.id).eq('company_id', company.id).select().single()
+  }).eq('id', id).eq('company_id', company.id).select().single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)
