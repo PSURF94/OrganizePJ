@@ -4,7 +4,7 @@ import { getBrowserSupabase } from '@/lib/supabase-browser'
 import { TAX_REGIMES } from '@/lib/constants'
 import Link from 'next/link'
 
-const TAX_REGIME_INFO = 'https://www.gov.br/empresas-e-negocios/pt-br/empreendedor/quero-ser-empreendedor/saiba-sobre-os-tipos-de-empresa'
+const TAX_REGIME_INFO = 'https://go.agenciasebrae.com.br/cultura-empreendedora/o-que-voce-precisa-saber-sobre-tipos-de-empresa-e-tributacao-no-brasil/'
 
 export default function CadastroPage() {
   const [step, setStep] = useState<'account' | 'company'>('account')
