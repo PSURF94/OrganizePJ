@@ -64,12 +64,17 @@ export default function LoginPage() {
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
           </form>
-          <p className="text-center text-xs text-slate-500 mt-4">
-            Não tem conta?{' '}
-            <Link href="/cadastro" className="text-blue-600 font-medium">
-              Experimente grátis por 7 dias
+          <div className="flex flex-col items-center gap-1 mt-4">
+            <Link href="/esqueci-senha" className="text-xs text-slate-400 hover:text-blue-600">
+              Esqueci minha senha
             </Link>
-          </p>
+            <p className="text-xs text-slate-500">
+              Não tem conta?{' '}
+              <Link href="/cadastro" className="text-blue-600 font-medium">
+                Experimente grátis por 7 dias
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
