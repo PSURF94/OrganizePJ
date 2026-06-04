@@ -9,46 +9,22 @@ type Status = 'loading' | 'ready' | 'error' | 'done'
 export default function RedefinirSenhaPage() {
   const router = useRouter()
   const [status, setStatus] = useState<Status>('loading')
-  const [errorMsg, setErrorMsg] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
 
   useEffect(() => {
+    // The server callback already exchanged the code and set the session in cookies.
+    // Just verify the session exists before showing the form.
     const supabase = getBrowserSupabase()
-
-    // Implicit flow: Supabase puts tokens in the URL hash (#access_token=...&type=recovery)
-    // onAuthStateChange processes the hash automatically and fires PASSWORD_RECOVERY
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY') {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
         setStatus('ready')
-      } else if (event === 'SIGNED_IN' && session) {
-        // Some Supabase versions fire SIGNED_IN instead of PASSWORD_RECOVERY for reset links
-        setStatus('ready')
+      } else {
+        setStatus('error')
       }
     })
-
-    // Fallback: if already has a session (e.g. user refreshed the page), go ready
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setStatus('ready')
-    })
-
-    // Safety timeout: if nothing fires after 8s, show error
-    const timeout = setTimeout(() => {
-      setStatus((prev) => {
-        if (prev === 'loading') {
-          setErrorMsg('Link inválido ou expirado. Solicite um novo link de redefinição.')
-          return 'error'
-        }
-        return prev
-      })
-    }, 8000)
-
-    return () => {
-      subscription.unsubscribe()
-      clearTimeout(timeout)
-    }
   }, [])
 
   async function handleSubmit(e: React.FormEvent) {
@@ -77,14 +53,14 @@ export default function RedefinirSenhaPage() {
         <div className="bg-white rounded-2xl p-6 shadow-sm">
 
           {status === 'loading' && (
-            <div className="text-center py-6 text-slate-400 text-sm">Verificando link...</div>
+            <div className="text-center py-6 text-slate-400 text-sm">Verificando...</div>
           )}
 
           {status === 'error' && (
             <div className="text-center py-4">
               <div className="text-4xl mb-3">⚠️</div>
-              <h2 className="font-semibold text-slate-800 mb-2">Link inválido</h2>
-              <p className="text-sm text-slate-500 mb-4">{errorMsg}</p>
+              <h2 className="font-semibold text-slate-800 mb-2">Link inválido ou expirado</h2>
+              <p className="text-sm text-slate-500 mb-4">Solicite um novo link de redefinição.</p>
               <Link href="/esqueci-senha" className="text-sm text-blue-600 font-medium">
                 Solicitar novo link
               </Link>
