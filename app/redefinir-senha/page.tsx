@@ -13,11 +13,30 @@ export default function RedefinirSenhaPage() {
   const [done, setDone] = useState(false)
 
   useEffect(() => {
-    // Supabase detects the recovery token from the URL hash and sets the session
     const supabase = getBrowserSupabase()
-    supabase.auth.onAuthStateChange((event) => {
+
+    // PKCE flow: token comes as ?code= in query string
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get('code')
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (!error) setReady(true)
+        else setError('Link inválido ou expirado. Solicite um novo.')
+      })
+      return
+    }
+
+    // Implicit flow: token comes in URL hash
+    if (window.location.hash.includes('type=recovery') || window.location.hash.includes('access_token')) {
+      setReady(true)
+      return
+    }
+
+    // Fallback: listen for the event (fires when Supabase processes the hash)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') setReady(true)
     })
+    return () => subscription.unsubscribe()
   }, [])
 
   async function handleSubmit(e: React.FormEvent) {
