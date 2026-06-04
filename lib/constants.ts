@@ -64,6 +64,16 @@ export interface Company {
   license_expires_at?: string
   status: LicenseStatus
   created_at: string
+  profissao?: string
+  tem_funcionarios?: boolean
+  num_funcionarios?: number
+  faturamento_mensal?: number
+  faturamento_esperado_12m?: number
+  emite_nf?: boolean
+  tem_contador?: boolean
+  controle_atual?: string
+  diagnostico_feito?: boolean
+  saldo_inicial?: number
 }
 
 export interface Client {
