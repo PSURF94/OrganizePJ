@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     auth: { autoRefreshToken: false, persistSession: false },
   })
 
-  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  const { data: { user }, error: userError } = await supabase.auth.getUser(token)
   if (userError || !user) return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
 
   const body = await req.json()
