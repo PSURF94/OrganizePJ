@@ -15,27 +15,16 @@ export default function RedefinirSenhaPage() {
   useEffect(() => {
     const supabase = getBrowserSupabase()
 
-    // PKCE flow: token comes as ?code= in query string
-    const params = new URLSearchParams(window.location.search)
-    const code = params.get('code')
-    if (code) {
-      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-        if (!error) setReady(true)
-        else setError('Link inválido ou expirado. Solicite um novo.')
-      })
-      return
-    }
-
-    // Implicit flow: token comes in URL hash
-    if (window.location.hash.includes('type=recovery') || window.location.hash.includes('access_token')) {
-      setReady(true)
-      return
-    }
-
-    // Fallback: listen for the event (fires when Supabase processes the hash)
+    // Listen for both PASSWORD_RECOVERY and SIGNED_IN (PKCE flow fires SIGNED_IN)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') setReady(true)
+      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') setReady(true)
     })
+
+    // Supabase may have already processed the token before this component mounted
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setReady(true)
+    })
+
     return () => subscription.unsubscribe()
   }, [])
 
