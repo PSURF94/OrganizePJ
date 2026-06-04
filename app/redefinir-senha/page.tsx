@@ -15,16 +15,19 @@ export default function RedefinirSenhaPage() {
   useEffect(() => {
     const supabase = getBrowserSupabase()
 
-    // Listen for both PASSWORD_RECOVERY and SIGNED_IN (PKCE flow fires SIGNED_IN)
+    const code = new URLSearchParams(window.location.search).get('code')
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (error) setError('Link inválido ou expirado. Solicite um novo.')
+        else setReady(true)
+      })
+      return
+    }
+
+    // Implicit flow fallback (hash token)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') setReady(true)
     })
-
-    // Supabase may have already processed the token before this component mounted
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setReady(true)
-    })
-
     return () => subscription.unsubscribe()
   }, [])
 
