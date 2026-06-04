@@ -32,6 +32,8 @@ export async function PUT(req: NextRequest) {
       tax_regime: body.tax_regime,
       simples_rate: Number(body.simples_rate),
       saldo_inicial: Number(body.saldo_inicial) || 0,
+      service_category: body.service_category || null,
+      folha_mensal: body.folha_mensal ? Number(body.folha_mensal) : null,
     })
     .eq('owner_id', session.user.id)
     .select()

@@ -60,6 +60,9 @@ export interface Company {
   cnpj?: string
   tax_regime: TaxRegime
   simples_rate: number
+  das_fixo_mensal?: number | null
+  service_category?: string | null
+  folha_mensal?: number | null
   trial_ends_at: string
   license_expires_at?: string
   status: LicenseStatus

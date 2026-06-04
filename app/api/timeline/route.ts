@@ -10,7 +10,7 @@ export async function GET() {
 
   const { data: company } = await supabase
     .from('companies')
-    .select('id, simples_rate, saldo_inicial')
+    .select('id, simples_rate, saldo_inicial, tax_regime, das_fixo_mensal')
     .eq('owner_id', session.user.id).single()
   if (!company) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
@@ -20,7 +20,9 @@ export async function GET() {
   endDate.setDate(endDate.getDate() + 90)
   const endStr = endDate.toISOString().split('T')[0]
 
-  const taxRate = Number(company.simples_rate || 0) / 100
+  const isMei = company.tax_regime === 'mei'
+  const taxRate = isMei ? 0 : Number(company.simples_rate || 0) / 100
+  const dasFixo = isMei ? Number(company.das_fixo_mensal || 80.90) : 0
 
   // Current disponível (cumulative all-time)
   const [
@@ -84,42 +86,59 @@ export async function GET() {
     })
   }
 
-  // Tax events: DAS on 20th of next month for current month's revenue
-  const currentMonthPrefix = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
-  const currentMonthPending = (pendingReceivables || [])
-    .filter((r) => r.due_date.startsWith(currentMonthPrefix))
-    .reduce((s, r) => s + Number(r.amount), 0)
-  const currentMonthReceivedAmt = (thisMonthReceived || []).reduce((s, r) => s + Number(r.amount), 0)
-  const currentMonthTax = (currentMonthReceivedAmt + currentMonthPending) * taxRate
+  // Tax events: DAS on 20th of next month
+  if (isMei) {
+    // MEI: DAS fixo mensal — um evento por mês no dia 20 do mês seguinte
+    for (let offset = 0; offset <= 2; offset++) {
+      const refMonth = new Date(today.getFullYear(), today.getMonth() + offset, 1)
+      const dasDate = new Date(refMonth.getFullYear(), refMonth.getMonth() + 1, 20)
+      if (dasDate.toISOString().split('T')[0] >= todayStr && dasDate.toISOString().split('T')[0] <= endStr) {
+        events.push({
+          date: dasDate.toISOString().split('T')[0],
+          type: 'imposto',
+          description: 'Pagamento DAS (MEI)',
+          subtitle: `DAS fixo de ${refMonth.toLocaleDateString('pt-BR', { month: 'long' })}`,
+          amount: -Math.round(dasFixo * 100) / 100,
+        })
+      }
+    }
+  } else {
+    // Simples / Presumido: DAS proporcional às receitas do mês
+    const currentMonthPrefix = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
+    const currentMonthPending = (pendingReceivables || [])
+      .filter((r) => r.due_date.startsWith(currentMonthPrefix))
+      .reduce((s, r) => s + Number(r.amount), 0)
+    const currentMonthReceivedAmt = (thisMonthReceived || []).reduce((s, r) => s + Number(r.amount), 0)
+    const currentMonthTax = (currentMonthReceivedAmt + currentMonthPending) * taxRate
 
-  if (currentMonthTax > 0.01) {
-    const dasDate = new Date(today.getFullYear(), today.getMonth() + 1, 20)
-    events.push({
-      date: dasDate.toISOString().split('T')[0],
-      type: 'imposto',
-      description: 'Pagamento DAS',
-      subtitle: `${company.simples_rate}% sobre receitas de ${today.toLocaleDateString('pt-BR', { month: 'long' })}`,
-      amount: -Math.round(currentMonthTax * 100) / 100,
-    })
-  }
+    if (currentMonthTax > 0.01) {
+      const dasDate = new Date(today.getFullYear(), today.getMonth() + 1, 20)
+      events.push({
+        date: dasDate.toISOString().split('T')[0],
+        type: 'imposto',
+        description: 'Pagamento DAS',
+        subtitle: `${company.simples_rate}% sobre receitas de ${today.toLocaleDateString('pt-BR', { month: 'long' })}`,
+        amount: -Math.round(currentMonthTax * 100) / 100,
+      })
+    }
 
-  // Next month pending tax (from next month's expected receitas)
-  const nextMonthDate = new Date(today.getFullYear(), today.getMonth() + 1, 1)
-  const nextMonthPrefix = `${nextMonthDate.getFullYear()}-${String(nextMonthDate.getMonth() + 1).padStart(2, '0')}`
-  const nextMonthPending = (pendingReceivables || [])
-    .filter((r) => r.due_date.startsWith(nextMonthPrefix))
-    .reduce((s, r) => s + Number(r.amount), 0)
-  const nextMonthTax = nextMonthPending * taxRate
+    const nextMonthDate = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+    const nextMonthPrefix = `${nextMonthDate.getFullYear()}-${String(nextMonthDate.getMonth() + 1).padStart(2, '0')}`
+    const nextMonthPending = (pendingReceivables || [])
+      .filter((r) => r.due_date.startsWith(nextMonthPrefix))
+      .reduce((s, r) => s + Number(r.amount), 0)
+    const nextMonthTax = nextMonthPending * taxRate
 
-  if (nextMonthTax > 0.01) {
-    const dasDate = new Date(today.getFullYear(), today.getMonth() + 2, 20)
-    events.push({
-      date: dasDate.toISOString().split('T')[0],
-      type: 'imposto',
-      description: 'Pagamento DAS',
-      subtitle: `${company.simples_rate}% sobre receitas de ${nextMonthDate.toLocaleDateString('pt-BR', { month: 'long' })}`,
-      amount: -Math.round(nextMonthTax * 100) / 100,
-    })
+    if (nextMonthTax > 0.01) {
+      const dasDate = new Date(today.getFullYear(), today.getMonth() + 2, 20)
+      events.push({
+        date: dasDate.toISOString().split('T')[0],
+        type: 'imposto',
+        description: 'Pagamento DAS',
+        subtitle: `${company.simples_rate}% sobre receitas de ${nextMonthDate.toLocaleDateString('pt-BR', { month: 'long' })}`,
+        amount: -Math.round(nextMonthTax * 100) / 100,
+      })
+    }
   }
 
   events.sort((a, b) => a.date.localeCompare(b.date))

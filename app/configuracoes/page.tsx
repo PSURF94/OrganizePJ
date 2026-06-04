@@ -3,10 +3,11 @@ import { useEffect, useState } from 'react'
 import AppShell from '@/components/AppShell'
 import type { Company, TaxRegime } from '@/lib/constants'
 import { TAX_REGIMES } from '@/lib/constants'
+import { SERVICE_CATEGORIES } from '@/lib/tax-engine'
 
 export default function ConfiguracoesPage() {
   const [company, setCompany] = useState<Company | null>(null)
-  const [form, setForm] = useState({ name: '', cnpj: '', tax_regime: 'simples' as TaxRegime, simples_rate: '', saldo_inicial: '' })
+  const [form, setForm] = useState({ name: '', cnpj: '', tax_regime: 'simples' as TaxRegime, simples_rate: '', saldo_inicial: '', service_category: '', folha_mensal: '' })
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
@@ -15,7 +16,7 @@ export default function ConfiguracoesPage() {
       .then((r) => r.json())
       .then((d) => {
         setCompany(d)
-        setForm({ name: d.name, cnpj: d.cnpj || '', tax_regime: d.tax_regime, simples_rate: String(d.simples_rate), saldo_inicial: d.saldo_inicial ? String(d.saldo_inicial) : '' })
+        setForm({ name: d.name, cnpj: d.cnpj || '', tax_regime: d.tax_regime, simples_rate: String(d.simples_rate), saldo_inicial: d.saldo_inicial ? String(d.saldo_inicial) : '', service_category: d.service_category || '', folha_mensal: d.folha_mensal ? String(d.folha_mensal) : '' })
       })
   }, [])
 
@@ -65,12 +66,29 @@ export default function ConfiguracoesPage() {
             </select>
           </div>
           <div>
+            <label className="block text-xs font-medium text-slate-500 mb-1">Tipo de serviço</label>
+            <select value={form.service_category} onChange={(e) => set('service_category', e.target.value)}
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">— Não informado —</option>
+              {SERVICE_CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+            </select>
+            <p className="text-xs text-slate-400 mt-1">Define se você usa Anexo III ou V no Simples Nacional.</p>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-500 mb-1">Folha de pagamento mensal (R$)</label>
+            <input type="number" min="0" step="0.01" value={form.folha_mensal}
+              onChange={(e) => set('folha_mensal', e.target.value)}
+              placeholder="0.00"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <p className="text-xs text-slate-400 mt-1">Salários pagos. Usado no cálculo do Fator R (Simples Nacional).</p>
+          </div>
+          <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">Alíquota de imposto (%)</label>
             <input type="number" min="0" max="100" step="0.01" value={form.simples_rate}
               onChange={(e) => set('simples_rate', e.target.value)}
               placeholder="6.00"
               className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <p className="text-xs text-slate-400 mt-1">Usada para calcular a reserva de imposto no dashboard e na timeline.</p>
+            <p className="text-xs text-slate-400 mt-1">Calculada automaticamente pelo diagnóstico. Ajuste aqui se seu contador confirmar valor diferente.</p>
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">

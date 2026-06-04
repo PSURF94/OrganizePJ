@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
-import { calcTaxRecommendation } from '@/lib/tax-engine'
+import { calcTaxRecommendation, SERVICE_CATEGORIES } from '@/lib/tax-engine'
 import Link from 'next/link'
 
 type Step = 'conta' | 'perfil' | 'empresa' | 'situacao'
@@ -48,6 +48,8 @@ export default function CadastroPage() {
 
   const [sozinho, setSozinho] = useState<boolean | null>(null)
   const [numFuncionarios, setNumFuncionarios] = useState('')
+  const [folhaMensal, setFolhaMensal] = useState('')
+  const [serviceCategory, setServiceCategory] = useState('')
   const [faturamentoMensal, setFaturamentoMensal] = useState('')
   const [faturamentoEsperado, setFaturamentoEsperado] = useState('')
   const [saldoInicial, setSaldoInicial] = useState('')
@@ -108,7 +110,8 @@ export default function CadastroPage() {
       const mensal = parseCurrencyInput(faturamentoMensal)
       const esperado = parseCurrencyInput(faturamentoEsperado) || mensal * 12
       const nFuncionarios = sozinho ? 0 : (Number(numFuncionarios) || 1)
-      const rec = calcTaxRecommendation(mensal, nFuncionarios)
+      const folha = sozinho ? 0 : parseCurrencyInput(folhaMensal)
+      const rec = calcTaxRecommendation(mensal, nFuncionarios, serviceCategory || null, folha)
 
       const trialEnds = new Date()
       trialEnds.setDate(trialEnds.getDate() + 7)
@@ -123,6 +126,9 @@ export default function CadastroPage() {
           name: companyName.trim(),
           tax_regime: rec.regime,
           simples_rate: rec.rate,
+          das_fixo_mensal: rec.das_fixo_mensal ?? null,
+          service_category: serviceCategory || null,
+          folha_mensal: folha || null,
           trial_ends_at: trialEnds.toISOString(),
           status: 'trial',
           profissao: profissao.trim() || null,
@@ -261,18 +267,49 @@ export default function CadastroPage() {
               <p className="text-sm text-slate-500 mb-5">Isso define seu diagnóstico tributário</p>
               <form onSubmit={handleEmpresa} className="space-y-5">
                 <div>
+                  <label className="text-xs font-medium text-slate-600 block mb-1">Qual é o seu tipo de serviço?</label>
+                  <select
+                    value={serviceCategory}
+                    onChange={(e) => setServiceCategory(e.target.value)}
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  >
+                    <option value="">Selecione...</option>
+                    {SERVICE_CATEGORIES.map((c) => (
+                      <option key={c.value} value={c.value}>{c.label}</option>
+                    ))}
+                  </select>
+                  <p className="text-[11px] text-slate-400 mt-1">Usado para calcular sua alíquota corretamente</p>
+                </div>
+
+                <div>
                   <label className="text-xs font-medium text-slate-600 block mb-2">Você trabalha sozinho?</label>
-                  <YesNoToggle value={sozinho} onChange={(v) => { setSozinho(v); if (v) setNumFuncionarios('') }} />
+                  <YesNoToggle value={sozinho} onChange={(v) => { setSozinho(v); if (v) { setNumFuncionarios(''); setFolhaMensal('') } }} />
                   {sozinho === false && (
-                    <div className="mt-3">
-                      <label className="text-xs font-medium text-slate-600 block mb-1">Quantos funcionários?</label>
-                      <input
-                        type="number" min="1" max="999"
-                        value={numFuncionarios}
-                        onChange={(e) => setNumFuncionarios(e.target.value)}
-                        className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Ex: 2"
-                      />
+                    <div className="mt-3 space-y-3">
+                      <div>
+                        <label className="text-xs font-medium text-slate-600 block mb-1">Quantos funcionários?</label>
+                        <input
+                          type="number" min="1" max="999"
+                          value={numFuncionarios}
+                          onChange={(e) => setNumFuncionarios(e.target.value)}
+                          className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Ex: 2"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-600 block mb-1">Gasto mensal com salários (folha)</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">R$</span>
+                          <input
+                            type="text" inputMode="numeric"
+                            value={folhaMensal}
+                            onChange={(e) => setFolhaMensal(formatCurrencyInput(e.target.value))}
+                            className="w-full border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="0,00"
+                          />
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-1">Influencia no cálculo do Fator R (Simples Nacional)</p>
+                      </div>
                     </div>
                   )}
                 </div>

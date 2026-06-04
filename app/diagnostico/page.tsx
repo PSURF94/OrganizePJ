@@ -25,7 +25,9 @@ export default async function DiagnosticoPage() {
 
   const rec = calcTaxRecommendation(
     Number(company.faturamento_mensal) || 0,
-    Number(company.num_funcionarios) || 0
+    Number(company.num_funcionarios) || 0,
+    company.service_category ?? null,
+    Number(company.folha_mensal) || 0
   )
 
   const semContador = company.tem_contador === false
@@ -57,12 +59,19 @@ export default async function DiagnosticoPage() {
         {/* Números */}
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div className="bg-white rounded-2xl p-4 shadow-sm">
-            <p className="text-xs text-slate-400 mb-1">Alíquota estimada</p>
-            <p className="text-2xl font-bold text-slate-800">{rec.rate}%</p>
+            <p className="text-xs text-slate-400 mb-1">{rec.is_fixed_das ? 'DAS mensal fixo' : 'Alíquota efetiva'}</p>
+            {rec.is_fixed_das
+              ? <p className="text-xl font-bold text-slate-800">{formatCurrency(rec.monthly_tax)}</p>
+              : <p className="text-2xl font-bold text-slate-800">{rec.rate}%</p>
+            }
+            {rec.anexo && (
+              <p className="text-[11px] text-slate-400 mt-0.5">Anexo {rec.anexo}{rec.fator_r !== null && rec.fator_r >= 0.28 ? ' (Fator R)' : ''}</p>
+            )}
           </div>
           <div className="bg-white rounded-2xl p-4 shadow-sm">
             <p className="text-xs text-slate-400 mb-1">Imposto mensal estimado</p>
             <p className="text-lg font-bold text-amber-500">{formatCurrency(rec.monthly_tax)}</p>
+            {rec.is_fixed_das && <p className="text-[11px] text-slate-400 mt-0.5">Fixo, independe do faturamento</p>}
           </div>
         </div>
 

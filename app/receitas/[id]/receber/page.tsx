@@ -6,7 +6,7 @@ import { formatCurrency, todayISO } from '@/lib/utils'
 type GoalRow = { id: string; name: string; percentage_allocation: number; target_amount: number; accumulated_amount: number }
 type Receivable = { id: string; description: string; amount: number; due_date: string; client?: { name: string } | null }
 type Contribution = { goal_id: string; name: string; amount: string }
-type Company = { simples_rate: number; tax_regime: string }
+type Company = { simples_rate: number; tax_regime: string; das_fixo_mensal?: number | null }
 
 function parseCurrency(v: string) {
   const digits = v.replace(/\D/g, '')
@@ -60,8 +60,10 @@ export default function ReceberPage() {
 
   const totalGoals = contributions.reduce((s, c) => s + parseCurrency(c.amount), 0)
   const amount = Number(receivable?.amount || 0)
-  const taxRate = Number(company?.simples_rate || 0)
-  const imposto = Math.round(amount * taxRate) / 100
+  const isMei = company?.tax_regime === 'mei'
+  const taxRate = isMei ? 0 : Number(company?.simples_rate || 0)
+  const imposto = isMei ? 0 : Math.round(amount * taxRate) / 100
+  const dasFixo = isMei ? Number(company?.das_fixo_mensal || 80.90) : 0
   const disponivel = amount - totalGoals - imposto
 
   async function handleConfirm() {
@@ -138,10 +140,17 @@ export default function ReceberPage() {
                 <span className="text-slate-500">🎯 Metas total</span>
                 <span className="font-semibold text-blue-600">− {formatCurrency(totalGoals)}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-500">🧾 Imposto estimado ({taxRate}%)</span>
-                <span className="font-semibold text-amber-600">− {formatCurrency(imposto)}</span>
-              </div>
+              {isMei ? (
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500">🧾 DAS fixo mensal (MEI)</span>
+                  <span className="font-semibold text-amber-600">{formatCurrency(dasFixo)}/mês</span>
+                </div>
+              ) : (
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500">🧾 Imposto estimado ({taxRate}%)</span>
+                  <span className="font-semibold text-amber-600">− {formatCurrency(imposto)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-sm pt-2 border-t border-slate-100">
                 <span className="font-semibold text-slate-700">Disponível</span>
                 <span className={`font-bold ${disponivel >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
@@ -159,12 +168,22 @@ export default function ReceberPage() {
 
         {/* Resumo imposto sempre visível */}
         <div className="bg-white rounded-2xl p-4 mb-4 shadow-sm space-y-1">
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-500">🧾 Imposto estimado ({taxRate}%)</span>
-            <span className="font-semibold text-amber-600">− {formatCurrency(imposto)}</span>
-          </div>
+          {isMei ? (
+            <>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">🧾 DAS fixo mensal (MEI)</span>
+                <span className="font-semibold text-amber-600">{formatCurrency(dasFixo)}/mês</span>
+              </div>
+              <p className="text-[11px] text-slate-400">Pago todo dia 20 — não varia por nota fiscal</p>
+            </>
+          ) : (
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500">🧾 Imposto estimado ({taxRate}%)</span>
+              <span className="font-semibold text-amber-600">− {formatCurrency(imposto)}</span>
+            </div>
+          )}
           <div className="flex justify-between text-sm pt-2 border-t border-slate-100">
-            <span className="font-semibold text-slate-700">Disponível após imposto</span>
+            <span className="font-semibold text-slate-700">Disponível após metas</span>
             <span className="font-bold text-emerald-600">{formatCurrency(disponivel)}</span>
           </div>
         </div>
