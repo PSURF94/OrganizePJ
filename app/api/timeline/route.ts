@@ -8,47 +8,131 @@ export async function GET() {
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { data: company } = await supabase.from('companies').select('id, simples_rate').eq('owner_id', session.user.id).single()
-  if (!company) return NextResponse.json({ error: 'Company not found' }, { status: 404 })
+  const { data: company } = await supabase
+    .from('companies')
+    .select('id, simples_rate, saldo_inicial')
+    .eq('owner_id', session.user.id).single()
+  if (!company) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const today = new Date()
-  const months: { year: number; month: number; label: string; from: string; to: string }[] = []
-  for (let i = 0; i < 6; i++) {
-    const d = new Date(today.getFullYear(), today.getMonth() + i, 1)
-    const y = d.getFullYear()
-    const m = d.getMonth() + 1
-    const lastDay = new Date(y, m, 0).getDate()
-    months.push({
-      year: y, month: m,
-      label: d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }),
-      from: `${y}-${String(m).padStart(2, '0')}-01`,
-      to: `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`,
+  const todayStr = today.toISOString().split('T')[0]
+  const endDate = new Date(today)
+  endDate.setDate(endDate.getDate() + 90)
+  const endStr = endDate.toISOString().split('T')[0]
+
+  const taxRate = Number(company.simples_rate || 0) / 100
+
+  // Current disponível (cumulative all-time)
+  const [
+    { data: allReceived },
+    { data: allExpenses },
+    { data: allContributions },
+    { data: pendingReceivables },
+    { data: futureExpenses },
+    { data: thisMonthReceived },
+  ] = await Promise.all([
+    supabase.from('receivables').select('amount').eq('company_id', company.id).not('received_date', 'is', null),
+    supabase.from('expenses').select('amount').eq('company_id', company.id),
+    supabase.from('goal_contributions').select('amount').eq('company_id', company.id),
+    supabase.from('receivables')
+      .select('description, amount, due_date, client:clients(name)')
+      .eq('company_id', company.id)
+      .is('received_date', null)
+      .gte('due_date', todayStr)
+      .lte('due_date', endStr)
+      .order('due_date'),
+    supabase.from('expenses')
+      .select('description, amount, date, category')
+      .eq('company_id', company.id)
+      .gte('date', todayStr)
+      .lte('date', endStr)
+      .order('date'),
+    supabase.from('receivables')
+      .select('amount')
+      .eq('company_id', company.id)
+      .not('received_date', 'is', null)
+      .gte('received_date', `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-01`),
+  ])
+
+  const currentBalance =
+    Number(company.saldo_inicial || 0)
+    + (allReceived || []).reduce((s, r) => s + Number(r.amount), 0)
+    - (allExpenses || []).reduce((s, e) => s + Number(e.amount), 0)
+    - (allContributions || []).reduce((s, c) => s + Number(c.amount), 0)
+
+  // Build raw events
+  const events: { date: string; type: string; description: string; subtitle: string | null; amount: number }[] = []
+
+  for (const r of (pendingReceivables || [])) {
+    const client = r.client as { name: string } | null
+    events.push({
+      date: r.due_date,
+      type: 'receita',
+      description: r.description,
+      subtitle: client?.name ?? null,
+      amount: Number(r.amount),
     })
   }
 
-  const from = months[0].from
-  const to = months[months.length - 1].to
+  for (const e of (futureExpenses || [])) {
+    events.push({
+      date: e.date,
+      type: 'despesa',
+      description: e.description,
+      subtitle: e.category,
+      amount: -Number(e.amount),
+    })
+  }
 
-  const [{ data: receivables }, { data: expenses }] = await Promise.all([
-    supabase.from('receivables').select('amount, due_date, received_date, description, client:clients(name)')
-      .eq('company_id', company.id).gte('due_date', from).lte('due_date', to),
-    supabase.from('expenses').select('amount, date, description, category')
-      .eq('company_id', company.id).gte('date', from).lte('date', to),
-  ])
+  // Tax events: DAS on 20th of next month for current month's revenue
+  const currentMonthPrefix = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
+  const currentMonthPending = (pendingReceivables || [])
+    .filter((r) => r.due_date.startsWith(currentMonthPrefix))
+    .reduce((s, r) => s + Number(r.amount), 0)
+  const currentMonthReceivedAmt = (thisMonthReceived || []).reduce((s, r) => s + Number(r.amount), 0)
+  const currentMonthTax = (currentMonthReceivedAmt + currentMonthPending) * taxRate
 
-  const todayStr = today.toISOString().split('T')[0]
-  const result = months.map(({ year, month, label, from: mFrom, to: mTo }) => {
-    const mReceivables = (receivables || []).filter((r) => r.due_date >= mFrom && r.due_date <= mTo)
-    const mExpenses = (expenses || []).filter((e) => e.date >= mFrom && e.date <= mTo)
-    const totalReceivables = mReceivables.reduce((s, r) => s + Number(r.amount), 0)
-    const totalExpenses = mExpenses.reduce((s, e) => s + Number(e.amount), 0)
-    const tax = Math.round(
-      mReceivables.filter((r) => r.received_date).reduce((s, r) => s + Number(r.amount), 0)
-        * (company.simples_rate / 100) * 100
-    ) / 100
+  if (currentMonthTax > 0.01) {
+    const dasDate = new Date(today.getFullYear(), today.getMonth() + 1, 20)
+    events.push({
+      date: dasDate.toISOString().split('T')[0],
+      type: 'imposto',
+      description: 'Pagamento DAS',
+      subtitle: `${company.simples_rate}% sobre receitas de ${today.toLocaleDateString('pt-BR', { month: 'long' })}`,
+      amount: -Math.round(currentMonthTax * 100) / 100,
+    })
+  }
 
-    return { year, month, label, totalReceivables, totalExpenses, tax, net: totalReceivables - totalExpenses - tax }
+  // Next month pending tax (from next month's expected receitas)
+  const nextMonthDate = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+  const nextMonthPrefix = `${nextMonthDate.getFullYear()}-${String(nextMonthDate.getMonth() + 1).padStart(2, '0')}`
+  const nextMonthPending = (pendingReceivables || [])
+    .filter((r) => r.due_date.startsWith(nextMonthPrefix))
+    .reduce((s, r) => s + Number(r.amount), 0)
+  const nextMonthTax = nextMonthPending * taxRate
+
+  if (nextMonthTax > 0.01) {
+    const dasDate = new Date(today.getFullYear(), today.getMonth() + 2, 20)
+    events.push({
+      date: dasDate.toISOString().split('T')[0],
+      type: 'imposto',
+      description: 'Pagamento DAS',
+      subtitle: `${company.simples_rate}% sobre receitas de ${nextMonthDate.toLocaleDateString('pt-BR', { month: 'long' })}`,
+      amount: -Math.round(nextMonthTax * 100) / 100,
+    })
+  }
+
+  events.sort((a, b) => a.date.localeCompare(b.date))
+
+  let balance = currentBalance
+  const result = events.map((e) => {
+    balance += e.amount
+    return {
+      ...e,
+      running_balance: Math.round(balance * 100) / 100,
+      alert: balance < 0 ? 'critical' : balance < currentBalance * 0.15 ? 'warning' : 'ok',
+    }
   })
 
-  return NextResponse.json(result)
+  return NextResponse.json({ current_balance: currentBalance, events: result })
 }
