@@ -20,16 +20,15 @@ function RedefinirSenhaForm() {
     const supabase = getBrowserSupabase()
 
     async function init() {
-      // Case 1: PKCE flow — Supabase sent ?code=XXX directly to this page
-      const code = searchParams.get('code')
-      if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code)
-        if (error) { setStatus('error'); return }
+      // Primary path: server callback (/api/auth/callback) already exchanged the code
+      // and set the session in cookies — just verify it exists
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
         setStatus('ready')
         return
       }
 
-      // Case 2: implicit flow — tokens arrive in the URL hash (#access_token=...&type=recovery)
+      // Fallback: implicit flow — tokens in URL hash (#access_token=...&type=recovery)
       const hash = window.location.hash
       if (hash && hash.includes('type=recovery')) {
         const params = new URLSearchParams(hash.slice(1))
@@ -38,18 +37,10 @@ function RedefinirSenhaForm() {
         if (access_token && refresh_token) {
           const { error } = await supabase.auth.setSession({ access_token, refresh_token })
           if (error) { setStatus('error'); return }
-          // clean the hash from the URL without reload
           history.replaceState(null, '', window.location.pathname)
           setStatus('ready')
           return
         }
-      }
-
-      // Case 3: server callback already set the session (old /api/auth/callback flow)
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        setStatus('ready')
-        return
       }
 
       setStatus('error')
