@@ -113,27 +113,34 @@ export default function CadastroPage() {
       const trialEnds = new Date()
       trialEnds.setDate(trialEnds.getDate() + 7)
 
-      const { error: companyError } = await supabase.from('companies').insert([{
-        owner_id: data.user.id,
-        name: companyName.trim(),
-        tax_regime: rec.regime,
-        simples_rate: rec.rate,
-        trial_ends_at: trialEnds.toISOString(),
-        status: 'trial',
-        profissao: profissao.trim() || null,
-        tem_funcionarios: !sozinho,
-        num_funcionarios: nFuncionarios,
-        faturamento_mensal: mensal,
-        faturamento_esperado_12m: esperado,
-        emite_nf: emiteNF,
-        tem_contador: temContador,
-        controle_atual: controleAtual || null,
-        diagnostico_feito: true,
-        saldo_inicial: parseCurrencyInput(saldoInicial) || 0,
-      }])
+      const companyRes = await fetch('/api/setup-company', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${data.session.access_token}`,
+        },
+        body: JSON.stringify({
+          name: companyName.trim(),
+          tax_regime: rec.regime,
+          simples_rate: rec.rate,
+          trial_ends_at: trialEnds.toISOString(),
+          status: 'trial',
+          profissao: profissao.trim() || null,
+          tem_funcionarios: !sozinho,
+          num_funcionarios: nFuncionarios,
+          faturamento_mensal: mensal,
+          faturamento_esperado_12m: esperado,
+          emite_nf: emiteNF,
+          tem_contador: temContador,
+          controle_atual: controleAtual || null,
+          diagnostico_feito: true,
+          saldo_inicial: parseCurrencyInput(saldoInicial) || 0,
+        }),
+      })
 
-      if (companyError) {
-        setError(`Conta criada mas erro ao salvar perfil: ${companyError.message}`)
+      if (!companyRes.ok) {
+        const { error: msg } = await companyRes.json()
+        setError(`Conta criada mas erro ao salvar perfil: ${msg}`)
         setLoading(false)
         return
       }
