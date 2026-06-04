@@ -90,54 +90,60 @@ export default function CadastroPage() {
     setLoading(true)
     setError('')
 
-    const supabase = getBrowserSupabase()
-    const { data, error: signUpError } = await supabase.auth.signUp({ email, password })
+    try {
+      const supabase = getBrowserSupabase()
+      const { data, error: signUpError } = await supabase.auth.signUp({ email, password })
 
-    if (signUpError) {
-      setError(signUpError.message || 'Erro ao criar conta.')
+      if (signUpError) {
+        setError(signUpError.message || 'Erro ao criar conta.')
+        setLoading(false)
+        return
+      }
+      if (!data.user || !data.session) {
+        setError('Confirme seu e-mail ou desative a confirmação de e-mail no Supabase (Authentication → Settings).')
+        setLoading(false)
+        return
+      }
+
+      const mensal = parseCurrencyInput(faturamentoMensal)
+      const esperado = parseCurrencyInput(faturamentoEsperado) || mensal * 12
+      const nFuncionarios = sozinho ? 0 : (Number(numFuncionarios) || 1)
+      const rec = calcTaxRecommendation(mensal, nFuncionarios)
+
+      const trialEnds = new Date()
+      trialEnds.setDate(trialEnds.getDate() + 7)
+
+      const { error: companyError } = await supabase.from('companies').insert([{
+        owner_id: data.user.id,
+        name: companyName.trim(),
+        tax_regime: rec.regime,
+        simples_rate: rec.rate,
+        trial_ends_at: trialEnds.toISOString(),
+        status: 'trial',
+        profissao: profissao.trim() || null,
+        tem_funcionarios: !sozinho,
+        num_funcionarios: nFuncionarios,
+        faturamento_mensal: mensal,
+        faturamento_esperado_12m: esperado,
+        emite_nf: emiteNF,
+        tem_contador: temContador,
+        controle_atual: controleAtual || null,
+        diagnostico_feito: true,
+        saldo_inicial: parseCurrencyInput(saldoInicial) || 0,
+      }])
+
+      if (companyError) {
+        setError(`Conta criada mas erro ao salvar perfil: ${companyError.message}`)
+        setLoading(false)
+        return
+      }
+
+      window.location.href = '/diagnostico'
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      setError(`Erro inesperado: ${msg}`)
       setLoading(false)
-      return
     }
-    if (!data.user || !data.session) {
-      setError('Não foi possível criar sessão. Verifique se a confirmação de e-mail está desativada no Supabase.')
-      setLoading(false)
-      return
-    }
-
-    const mensal = parseCurrencyInput(faturamentoMensal)
-    const esperado = parseCurrencyInput(faturamentoEsperado) || mensal * 12
-    const nFuncionarios = sozinho ? 0 : (Number(numFuncionarios) || 1)
-    const rec = calcTaxRecommendation(mensal, nFuncionarios)
-
-    const trialEnds = new Date()
-    trialEnds.setDate(trialEnds.getDate() + 7)
-
-    const { error: companyError } = await supabase.from('companies').insert([{
-      owner_id: data.user.id,
-      name: companyName.trim(),
-      tax_regime: rec.regime,
-      simples_rate: rec.rate,
-      trial_ends_at: trialEnds.toISOString(),
-      status: 'trial',
-      profissao: profissao.trim() || null,
-      tem_funcionarios: !sozinho,
-      num_funcionarios: nFuncionarios,
-      faturamento_mensal: mensal,
-      faturamento_esperado_12m: esperado,
-      emite_nf: emiteNF,
-      tem_contador: temContador,
-      controle_atual: controleAtual || null,
-      diagnostico_feito: true,
-      saldo_inicial: parseCurrencyInput(saldoInicial) || 0,
-    }])
-
-    if (companyError) {
-      setError(`Conta criada mas erro ao salvar perfil: ${companyError.message}`)
-      setLoading(false)
-      return
-    }
-
-    window.location.href = '/diagnostico'
   }
 
   const YesNoToggle = ({
