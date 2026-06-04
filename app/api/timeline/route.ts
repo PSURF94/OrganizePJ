@@ -66,7 +66,7 @@ export async function GET() {
   const events: { date: string; type: string; description: string; subtitle: string | null; amount: number }[] = []
 
   for (const r of (pendingReceivables || [])) {
-    const client = r.client as { name: string } | null
+    const client = r.client as unknown as { name: string } | null
     events.push({
       date: r.due_date,
       type: 'receita',
