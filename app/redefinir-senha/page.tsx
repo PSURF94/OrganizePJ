@@ -17,30 +17,38 @@ export default function RedefinirSenhaPage() {
 
   useEffect(() => {
     const supabase = getBrowserSupabase()
-    const code = new URLSearchParams(window.location.search).get('code')
 
-    if (code) {
-      supabase.auth.exchangeCodeForSession(code)
-        .then(({ error }) => {
-          if (error) {
-            setErrorMsg('Link inválido ou expirado. Solicite um novo.')
-            setStatus('error')
-          } else {
-            setStatus('ready')
-          }
-        })
-        .catch(() => {
-          setErrorMsg('Erro ao verificar link. Tente novamente.')
-          setStatus('error')
-        })
-      return
-    }
-
-    // Implicit flow fallback
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') setStatus('ready')
+    // Implicit flow: Supabase puts tokens in the URL hash (#access_token=...&type=recovery)
+    // onAuthStateChange processes the hash automatically and fires PASSWORD_RECOVERY
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setStatus('ready')
+      } else if (event === 'SIGNED_IN' && session) {
+        // Some Supabase versions fire SIGNED_IN instead of PASSWORD_RECOVERY for reset links
+        setStatus('ready')
+      }
     })
-    return () => subscription.unsubscribe()
+
+    // Fallback: if already has a session (e.g. user refreshed the page), go ready
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setStatus('ready')
+    })
+
+    // Safety timeout: if nothing fires after 8s, show error
+    const timeout = setTimeout(() => {
+      setStatus((prev) => {
+        if (prev === 'loading') {
+          setErrorMsg('Link inválido ou expirado. Solicite um novo link de redefinição.')
+          return 'error'
+        }
+        return prev
+      })
+    }, 8000)
+
+    return () => {
+      subscription.unsubscribe()
+      clearTimeout(timeout)
+    }
   }, [])
 
   async function handleSubmit(e: React.FormEvent) {
