@@ -12,6 +12,8 @@ type GoalSummary = {
 type DashboardData = {
   revenue: number; expenses: number; tax_reserve: number
   goals_this_month: number; disponivel: number
+  saldo_inicial: number; total_received_ever: number
+  total_expenses_ever: number; total_goals_ever: number
   receivables_pending: number; receivable_30d: number; receivables_overdue: number
   goals: GoalSummary[]; recommendations: string[]
 }
@@ -19,6 +21,8 @@ type DashboardData = {
 const EMPTY: DashboardData = {
   revenue: 0, expenses: 0, tax_reserve: 0,
   goals_this_month: 0, disponivel: 0,
+  saldo_inicial: 0, total_received_ever: 0,
+  total_expenses_ever: 0, total_goals_ever: 0,
   receivables_pending: 0, receivable_30d: 0, receivables_overdue: 0,
   goals: [], recommendations: [],
 }
@@ -51,14 +55,14 @@ export default function DashboardPage() {
           <div className="text-center py-20 text-slate-400 text-sm">Carregando...</div>
         ) : (
           <>
-            {/* 3 Grandes Blocos */}
-            <div className="bg-white rounded-2xl p-5 mb-3 shadow-sm">
+            {/* Saldo disponível — clicável para ver breakdown */}
+            <Link href="/saldo" className="block bg-white rounded-2xl p-5 mb-3 shadow-sm hover:shadow-md transition-shadow">
               <p className="text-xs text-slate-400 mb-1">💼 Disponível hoje</p>
               <p className={`text-3xl font-bold ${data.disponivel >= 0 ? 'text-slate-900' : 'text-red-500'}`}>
                 {formatCurrency(data.disponivel)}
               </p>
-              <p className="text-[11px] text-slate-400 mt-1">Após despesas, impostos e metas</p>
-            </div>
+              <p className="text-[11px] text-slate-400 mt-1">Após despesas e metas · Ver detalhamento →</p>
+            </Link>
 
             <div className="grid grid-cols-2 gap-3 mb-6">
               <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4">

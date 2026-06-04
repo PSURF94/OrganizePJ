@@ -47,7 +47,7 @@ export default function ReceberPage() {
         setContributions(activeGoals.map((g: GoalRow) => ({
           goal_id: g.id,
           name: g.name,
-          amount: fmtInput(String(Math.round(amount * g.percentage_allocation) * 100)),
+          amount: fmtInput(String(Math.round(amount * g.percentage_allocation / 100) * 100)),
         })))
       }
       setLoading(false)

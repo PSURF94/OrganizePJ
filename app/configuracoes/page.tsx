@@ -3,22 +3,51 @@ import { useEffect, useState } from 'react'
 import AppShell from '@/components/AppShell'
 import type { Company, TaxRegime } from '@/lib/constants'
 import { TAX_REGIMES } from '@/lib/constants'
-import { SERVICE_CATEGORIES } from '@/lib/tax-engine'
+import { SERVICE_CATEGORIES, calcTaxRecommendation } from '@/lib/tax-engine'
 
 export default function ConfiguracoesPage() {
   const [company, setCompany] = useState<Company | null>(null)
-  const [form, setForm] = useState({ name: '', cnpj: '', tax_regime: 'simples' as TaxRegime, simples_rate: '', saldo_inicial: '', service_category: '', folha_mensal: '' })
+  const [form, setForm] = useState({
+    name: '', cnpj: '', tax_regime: 'simples' as TaxRegime,
+    service_category: '', folha_mensal: '', saldo_inicial: '',
+  })
+  const [calculatedRate, setCalculatedRate] = useState<number | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     fetch('/api/configuracoes')
       .then((r) => r.json())
-      .then((d) => {
+      .then((d: Company) => {
         setCompany(d)
-        setForm({ name: d.name, cnpj: d.cnpj || '', tax_regime: d.tax_regime, simples_rate: String(d.simples_rate), saldo_inicial: d.saldo_inicial ? String(d.saldo_inicial) : '', service_category: d.service_category || '', folha_mensal: d.folha_mensal ? String(d.folha_mensal) : '' })
+        setForm({
+          name: d.name,
+          cnpj: d.cnpj || '',
+          tax_regime: d.tax_regime,
+          service_category: d.service_category || '',
+          folha_mensal: d.folha_mensal ? String(d.folha_mensal) : '',
+          saldo_inicial: d.saldo_inicial ? String(d.saldo_inicial) : '',
+        })
       })
   }, [])
+
+  // Recalculate tax rate whenever relevant fields change
+  useEffect(() => {
+    if (!company) return
+    const mensal = Number(company.faturamento_mensal) || 0
+    const nFunc = Number(company.num_funcionarios) || 0
+    const folha = Number(form.folha_mensal) || 0
+    const rec = calcTaxRecommendation(mensal, nFunc, form.service_category || null, folha)
+    // Override regime with what user selected
+    if (form.tax_regime !== rec.regime) {
+      // User manually chose a different regime — use generic rates
+      if (form.tax_regime === 'mei') setCalculatedRate(rec.das_fixo_mensal ? Math.round((rec.das_fixo_mensal / mensal) * 10000) / 100 : 5)
+      else if (form.tax_regime === 'presumido') setCalculatedRate(15)
+      else setCalculatedRate(rec.rate)
+    } else {
+      setCalculatedRate(rec.rate)
+    }
+  }, [form.tax_regime, form.service_category, form.folha_mensal, company])
 
   function set(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -30,7 +59,10 @@ export default function ConfiguracoesPage() {
     await fetch('/api/configuracoes', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      body: JSON.stringify({
+        ...form,
+        simples_rate: calculatedRate ?? company?.simples_rate ?? 0,
+      }),
     })
     setSaving(false)
     setSaved(true)
@@ -39,66 +71,89 @@ export default function ConfiguracoesPage() {
 
   if (!company) return <AppShell><div className="text-center py-20 text-slate-400 text-sm">Carregando...</div></AppShell>
 
+  const isMei = form.tax_regime === 'mei'
+
   return (
     <AppShell>
       <div className="px-4 pt-6 max-w-lg mx-auto">
         <h1 className="text-xl font-bold text-slate-900 mb-6">Configurações</h1>
 
-        <form onSubmit={handleSave} className="bg-white rounded-2xl p-5 space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">Nome da empresa *</label>
-            <input required value={form.name} onChange={(e) => set('name', e.target.value)}
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <form onSubmit={handleSave} className="space-y-4">
+          <div className="bg-white rounded-2xl p-5 space-y-4">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Empresa</p>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Nome da empresa *</label>
+              <input required value={form.name} onChange={(e) => set('name', e.target.value)}
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">CNPJ</label>
+              <input value={form.cnpj} onChange={(e) => set('cnpj', e.target.value)}
+                placeholder="00.000.000/0001-00"
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">
+                Saldo inicial em conta <span className="text-slate-400 font-normal">(opcional)</span>
+              </label>
+              <input type="number" min="0" step="0.01" value={form.saldo_inicial}
+                onChange={(e) => set('saldo_inicial', e.target.value)}
+                placeholder="0.00"
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <p className="text-xs text-slate-400 mt-1">Dinheiro que você já tinha antes de usar o sistema.</p>
+            </div>
           </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">CNPJ</label>
-            <input value={form.cnpj} onChange={(e) => set('cnpj', e.target.value)}
-              placeholder="00.000.000/0001-00"
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">Regime tributário</label>
-            <select value={form.tax_regime} onChange={(e) => set('tax_regime', e.target.value)}
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-              {Object.entries(TAX_REGIMES).map(([key, label]) => (
-                <option key={key} value={key}>{label}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">Tipo de serviço</label>
-            <select value={form.service_category} onChange={(e) => set('service_category', e.target.value)}
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="">— Não informado —</option>
-              {SERVICE_CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
-            </select>
-            <p className="text-xs text-slate-400 mt-1">Define se você usa Anexo III ou V no Simples Nacional.</p>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">Folha de pagamento mensal (R$)</label>
-            <input type="number" min="0" step="0.01" value={form.folha_mensal}
-              onChange={(e) => set('folha_mensal', e.target.value)}
-              placeholder="0.00"
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <p className="text-xs text-slate-400 mt-1">Salários pagos. Usado no cálculo do Fator R (Simples Nacional).</p>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">Alíquota de imposto (%)</label>
-            <input type="number" min="0" max="100" step="0.01" value={form.simples_rate}
-              onChange={(e) => set('simples_rate', e.target.value)}
-              placeholder="6.00"
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <p className="text-xs text-slate-400 mt-1">Calculada automaticamente pelo diagnóstico. Ajuste aqui se seu contador confirmar valor diferente.</p>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">
-              Saldo inicial em conta <span className="text-slate-400 font-normal">(opcional)</span>
-            </label>
-            <input type="number" min="0" step="0.01" value={form.saldo_inicial}
-              onChange={(e) => set('saldo_inicial', e.target.value)}
-              placeholder="0.00"
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <p className="text-xs text-slate-400 mt-1">Dinheiro que você já tinha antes de começar a usar o sistema. Somado ao seu disponível.</p>
+
+          <div className="bg-white rounded-2xl p-5 space-y-4">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tributação</p>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Regime tributário</label>
+              <select value={form.tax_regime} onChange={(e) => set('tax_regime', e.target.value)}
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                {Object.entries(TAX_REGIMES).map(([key, label]) => (
+                  <option key={key} value={key}>{label}</option>
+                ))}
+              </select>
+            </div>
+
+            {!isMei && (
+              <>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Tipo de serviço</label>
+                  <select value={form.service_category} onChange={(e) => set('service_category', e.target.value)}
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">— Não informado —</option>
+                    {SERVICE_CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+                  </select>
+                  <p className="text-xs text-slate-400 mt-1">Define Anexo III ou V no Simples Nacional.</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Folha de pagamento mensal (R$)</label>
+                  <input type="number" min="0" step="0.01" value={form.folha_mensal}
+                    onChange={(e) => set('folha_mensal', e.target.value)}
+                    placeholder="0.00"
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <p className="text-xs text-slate-400 mt-1">Salários pagos. Usado no Fator R.</p>
+                </div>
+              </>
+            )}
+
+            {/* Alíquota calculada — somente leitura */}
+            <div className="bg-slate-50 rounded-xl p-3">
+              <p className="text-xs font-medium text-slate-500 mb-1">Alíquota calculada</p>
+              {isMei ? (
+                <p className="text-lg font-bold text-slate-800">DAS fixo ~R$ 80,90/mês</p>
+              ) : (
+                <p className="text-lg font-bold text-slate-800">
+                  {calculatedRate !== null ? `${calculatedRate}%` : `${company.simples_rate}%`}
+                </p>
+              )}
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                {isMei
+                  ? 'Fixo — não varia com o faturamento'
+                  : 'Calculada a partir do regime, tipo de serviço e folha de pagamento'}
+              </p>
+            </div>
           </div>
 
           <div className="bg-slate-50 rounded-xl p-3 text-xs text-slate-500">

@@ -63,9 +63,9 @@ export async function GET(req: NextRequest) {
   const saldoInicial = Number(company.saldo_inicial) || 0
   const disponivel = saldoInicial + totalReceivedEver - totalExpensesEver - totalGoalsEver
 
-  const pending   = (allReceivables || []).filter((r) => r.status === 'pendente' && r.due_date >= today)
-  const overdue   = (allReceivables || []).filter((r) => r.status === 'pendente' && r.due_date < today)
-  const next30List = (allReceivables || []).filter((r) => r.status === 'pendente' && r.due_date <= next30)
+  const pending    = (allReceivables || []).filter((r) => r.status === 'pendente' && r.due_date >= today)
+  const overdue    = (allReceivables || []).filter((r) => r.status === 'pendente' && r.due_date < today)
+  const next30List = (allReceivables || []).filter((r) => r.status === 'pendente' && r.due_date >= today && r.due_date <= next30)
 
   const pendingTotal  = pending.reduce((s, r) => s + Number(r.amount), 0)
   const overdueTotal  = overdue.reduce((s, r) => s + Number(r.amount), 0)
@@ -103,9 +103,6 @@ export async function GET(req: NextRequest) {
   if (overdueTotal > 0) {
     recommendations.push(`Você tem ${formatCurrency(overdueTotal)} em recebimentos atrasados.`)
   }
-  if (receivable30d > 0) {
-    recommendations.push(`${formatCurrency(receivable30d)} previstos para receber nos próximos 30 dias.`)
-  }
   if (disponivel < 0) {
     recommendations.push(`Atenção: saldo disponível está negativo. Priorize receber pendências.`)
   }
@@ -117,6 +114,9 @@ export async function GET(req: NextRequest) {
     goals_this_month: goalsThisMonth,
     disponivel,
     saldo_inicial: saldoInicial,
+    total_received_ever: totalReceivedEver,
+    total_expenses_ever: totalExpensesEver,
+    total_goals_ever: totalGoalsEver,
     receivables_pending: pendingTotal,
     receivable_30d: receivable30d,
     receivables_overdue: overdueTotal,
