@@ -88,11 +88,16 @@ export default function DespesasPage() {
                     )}
                   </p>
                 </div>
-                <div className="text-right flex-shrink-0">
+                <div className="text-right flex-shrink-0 flex flex-col items-end gap-1">
                   <p className="font-semibold text-sm text-slate-800">{formatCurrency(e.amount)}</p>
-                  <button onClick={() => handleDelete(e.id)} className="text-xs text-slate-300 hover:text-red-400 mt-0.5">
-                    Excluir
-                  </button>
+                  <div className="flex gap-2">
+                    <Link href={`/despesas/${e.id}/editar`} className="text-xs text-blue-500 hover:text-blue-600">
+                      Editar
+                    </Link>
+                    <button onClick={() => handleDelete(e.id)} className="text-xs text-slate-300 hover:text-red-400">
+                      Excluir
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

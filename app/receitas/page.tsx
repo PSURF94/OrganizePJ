@@ -102,6 +102,10 @@ export default function ReceitasPage() {
                       Marcar recebido
                     </button>
                   )}
+                  <Link href={`/receitas/${r.id}/editar`}
+                    className="text-xs text-blue-500 font-medium px-2 py-1 rounded-lg hover:bg-blue-50">
+                    Editar
+                  </Link>
                   <button onClick={() => handleDelete(r.id)}
                     className="text-xs text-slate-300 hover:text-red-400 px-2 py-1 rounded-lg">
                     Excluir

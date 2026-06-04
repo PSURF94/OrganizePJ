@@ -42,6 +42,7 @@ export async function PATCH(
   if ('amount' in body) updates.amount = Number(body.amount)
   if ('due_date' in body) updates.due_date = body.due_date
   if ('description' in body) updates.description = body.description
+  if ('client_id' in body) updates.client_id = body.client_id || null
 
   const { data, error } = await supabase.from('receivables')
     .update(updates).eq('id', id).eq('company_id', company.id).select().single()

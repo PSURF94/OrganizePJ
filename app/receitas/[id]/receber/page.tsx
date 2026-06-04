@@ -6,6 +6,7 @@ import { formatCurrency, todayISO } from '@/lib/utils'
 type GoalRow = { id: string; name: string; percentage_allocation: number; target_amount: number; accumulated_amount: number }
 type Receivable = { id: string; description: string; amount: number; due_date: string; client?: { name: string } | null }
 type Contribution = { goal_id: string; name: string; amount: string }
+type Company = { simples_rate: number; tax_regime: string }
 
 function parseCurrency(v: string) {
   const digits = v.replace(/\D/g, '')
@@ -26,6 +27,7 @@ export default function ReceberPage() {
   const [receivable, setReceivable] = useState<Receivable | null>(null)
   const [goals, setGoals] = useState<GoalRow[]>([])
   const [contributions, setContributions] = useState<Contribution[]>([])
+  const [company, setCompany] = useState<Company | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -34,8 +36,10 @@ export default function ReceberPage() {
     Promise.all([
       fetch(`/api/receivables/${id}`).then((r) => r.json()),
       fetch('/api/goals').then((r) => r.json()),
-    ]).then(([rec, gs]) => {
+      fetch('/api/configuracoes').then((r) => r.json()),
+    ]).then(([rec, gs, co]) => {
       setReceivable(rec)
+      setCompany(co)
       const activeGoals: GoalRow[] = (Array.isArray(gs) ? gs : []).filter((g: GoalRow) => g.percentage_allocation > 0)
       setGoals(activeGoals)
       if (rec?.amount) {
@@ -56,7 +60,9 @@ export default function ReceberPage() {
 
   const totalGoals = contributions.reduce((s, c) => s + parseCurrency(c.amount), 0)
   const amount = Number(receivable?.amount || 0)
-  const disponivel = amount - totalGoals
+  const taxRate = Number(company?.simples_rate || 0)
+  const imposto = Math.round(amount * taxRate) / 100
+  const disponivel = amount - totalGoals - imposto
 
   async function handleConfirm() {
     setSaving(true)
@@ -127,12 +133,16 @@ export default function ReceberPage() {
               </div>
             ))}
 
-            <div className="pt-3 border-t border-slate-100">
+            <div className="pt-3 border-t border-slate-100 space-y-1">
               <div className="flex justify-between text-sm">
-                <span className="text-slate-500">Objetivos total</span>
-                <span className="font-semibold text-blue-600">{formatCurrency(totalGoals)}</span>
+                <span className="text-slate-500">🎯 Metas total</span>
+                <span className="font-semibold text-blue-600">− {formatCurrency(totalGoals)}</span>
               </div>
-              <div className="flex justify-between text-sm mt-1">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">🧾 Imposto estimado ({taxRate}%)</span>
+                <span className="font-semibold text-amber-600">− {formatCurrency(imposto)}</span>
+              </div>
+              <div className="flex justify-between text-sm pt-2 border-t border-slate-100">
                 <span className="font-semibold text-slate-700">Disponível</span>
                 <span className={`font-bold ${disponivel >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
                   {formatCurrency(disponivel)}
@@ -142,10 +152,22 @@ export default function ReceberPage() {
           </div>
         ) : (
           <div className="bg-slate-100 rounded-2xl p-4 mb-4 text-center">
-            <p className="text-sm text-slate-500">Nenhum objetivo com percentual configurado.</p>
+            <p className="text-sm text-slate-500">Nenhum objetivo configurado.</p>
             <p className="text-xs text-slate-400 mt-1">Crie objetivos para reservar parte das entradas automaticamente.</p>
           </div>
         )}
+
+        {/* Resumo imposto sempre visível */}
+        <div className="bg-white rounded-2xl p-4 mb-4 shadow-sm space-y-1">
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-500">🧾 Imposto estimado ({taxRate}%)</span>
+            <span className="font-semibold text-amber-600">− {formatCurrency(imposto)}</span>
+          </div>
+          <div className="flex justify-between text-sm pt-2 border-t border-slate-100">
+            <span className="font-semibold text-slate-700">Disponível após imposto</span>
+            <span className="font-bold text-emerald-600">{formatCurrency(disponivel)}</span>
+          </div>
+        </div>
 
         {error && <p className="text-red-500 text-xs mb-3">{error}</p>}
 
