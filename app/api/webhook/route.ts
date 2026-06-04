@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 
 export async function POST(req: NextRequest) {
   const supabaseAdmin = createClient(
-    (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim(),
+    'https://ylasrgswpybznngjhrmc.supabase.co',
     (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim()
   )
   const body = await req.json()
