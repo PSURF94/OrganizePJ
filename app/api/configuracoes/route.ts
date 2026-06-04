@@ -31,9 +31,12 @@ export async function PUT(req: NextRequest) {
       cnpj: body.cnpj || null,
       tax_regime: body.tax_regime,
       simples_rate: Number(body.simples_rate),
+      das_fixo_mensal: body.das_fixo_mensal ?? null,
       saldo_inicial: Number(body.saldo_inicial) || 0,
       service_category: body.service_category || null,
       folha_mensal: body.folha_mensal ? Number(body.folha_mensal) : null,
+      faturamento_mensal: body.faturamento_mensal ? Number(body.faturamento_mensal) : null,
+      num_funcionarios: body.num_funcionarios !== undefined ? Number(body.num_funcionarios) : null,
     })
     .eq('owner_id', session.user.id)
     .select()
