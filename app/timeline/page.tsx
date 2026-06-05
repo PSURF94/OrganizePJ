@@ -26,30 +26,9 @@ function formatDateShort(iso: string) {
 }
 
 const TYPE = {
-  receita: {
-    color: '#10b981',
-    bg: 'rgba(16,185,129,0.1)',
-    label: 'Entrada',
-    icon: TrendingUp,
-    sign: '+',
-    line: '#10b981',
-  },
-  despesa: {
-    color: '#E50914',
-    bg: 'rgba(229,9,20,0.08)',
-    label: 'Despesa',
-    icon: TrendingDown,
-    sign: '−',
-    line: '#E50914',
-  },
-  imposto: {
-    color: '#d97706',
-    bg: 'rgba(217,119,6,0.1)',
-    label: 'Imposto',
-    icon: Receipt,
-    sign: '−',
-    line: '#d97706',
-  },
+  receita: { color: '#10b981', bg: 'rgba(16,185,129,0.15)', label: 'Entrada',  icon: TrendingUp,   sign: '+' },
+  despesa: { color: '#E50914', bg: 'rgba(229,9,20,0.15)',   label: 'Despesa',  icon: TrendingDown, sign: '−' },
+  imposto: { color: '#d97706', bg: 'rgba(217,119,6,0.15)',  label: 'Imposto',  icon: Receipt,      sign: '−' },
 }
 
 export default function TimelinePage() {
@@ -78,26 +57,41 @@ export default function TimelinePage() {
 
         {loading ? (
           <div className="px-4 space-y-3">
-            {[1,2].map(i => (
-              <div key={i} className="bg-white rounded-2xl h-20 animate-pulse" style={{ opacity: 0.5 }} />
+            {[1, 2].map(i => (
+              <div key={i} className="rounded-2xl h-24 animate-pulse" style={{ background: '#1A1A1D', opacity: 0.3 }} />
             ))}
           </div>
         ) : !data ? (
           <div className="text-center py-20 text-slate-400 text-sm">Erro ao carregar.</div>
         ) : (
           <>
-            {/* Saldo atual */}
+            {/* ── Saldo disponível — hero ── */}
             <div className="px-4 mb-6">
-              <div className="bg-white rounded-2xl p-5" style={{ border: '1px solid #eef0f3', borderLeft: `4px solid ${data.current_balance >= 0 ? '#FF8A00' : '#E50914'}` }}>
-                <p className="text-xs text-slate-400 mb-1">Saldo disponível agora</p>
+              <div style={{
+                background: '#1A1A1D',
+                borderRadius: 20,
+                padding: '24px 28px',
+                border: '1px solid rgba(255,255,255,0.07)',
+              }}>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>
+                  Saldo disponível agora
+                </p>
                 <p style={{
                   fontFamily: 'var(--font-poppins, sans-serif)',
-                  fontSize: 28,
-                  fontWeight: 700,
-                  color: data.current_balance >= 0 ? '#1A1A1D' : '#E50914',
+                  fontSize: 42,
+                  fontWeight: 800,
+                  color: data.current_balance >= 0 ? '#FF8A00' : '#E50914',
+                  lineHeight: 1,
+                  letterSpacing: '-1px',
                 }}>
                   {formatCurrency(data.current_balance)}
                 </p>
+                {data.current_balance < 0 && (
+                  <div className="flex items-center gap-1.5 mt-3">
+                    <AlertTriangle size={13} color="#E50914" />
+                    <p style={{ color: '#E50914', fontSize: 12, fontWeight: 600 }}>Saldo negativo — atenção ao fluxo</p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -108,202 +102,200 @@ export default function TimelinePage() {
             ) : (
               <>
                 {/* Legenda */}
-                <div className="px-4 mb-4 flex gap-4">
-                  {Object.entries(TYPE).map(([key, t]) => (
-                    <div key={key} className="flex items-center gap-1.5">
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: t.color }} />
-                      <span className="text-xs text-slate-400">{t.label}</span>
+                <div className="px-4 mb-5 flex gap-5">
+                  {Object.entries(TYPE).map(([, t]) => (
+                    <div key={t.label} className="flex items-center gap-2">
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: t.color, boxShadow: `0 0 6px ${t.color}` }} />
+                      <span style={{ color: '#94a3b8', fontSize: 12 }}>{t.label}</span>
                     </div>
                   ))}
                 </div>
 
-                {/* Timeline horizontal */}
-                <div
-                  ref={scrollRef}
-                  className="overflow-x-auto pb-4"
-                  style={{ WebkitOverflowScrolling: 'touch' }}
-                >
+                {/* ── Timeline — fundo escuro ── */}
+                <div style={{ background: '#1A1A1D', marginBottom: selected !== null ? 0 : 0 }}>
                   <div
-                    className="flex items-end px-4"
-                    style={{ minWidth: `${Math.max(data.events.length * 148 + 80, 400)}px` }}
+                    ref={scrollRef}
+                    className="overflow-x-auto"
+                    style={{ WebkitOverflowScrolling: 'touch', paddingBottom: 28, paddingTop: 24 }}
                   >
-                    {data.events.map((ev, i) => {
-                      const t = TYPE[ev.type]
-                      const Icon = t.icon
-                      const isSelected = selected === i
-                      const nextEv = data.events[i + 1]
-                      const balanceColor = ev.running_balance < 0
-                        ? '#E50914'
-                        : ev.alert === 'warning' ? '#d97706' : '#94a3b8'
+                    <div
+                      className="flex items-end px-6"
+                      style={{ minWidth: `${Math.max(data.events.length * 160 + 80, 400)}px` }}
+                    >
+                      {data.events.map((ev, i) => {
+                        const t = TYPE[ev.type]
+                        const Icon = t.icon
+                        const isSelected = selected === i
+                        const nextEv = data.events[i + 1]
+                        const balColor = ev.running_balance < 0 ? '#E50914'
+                          : ev.alert === 'warning' ? '#d97706' : 'rgba(255,255,255,0.3)'
 
-                      return (
-                        <div key={i} className="flex items-end flex-shrink-0" style={{ width: 148 }}>
-                          <div className="flex flex-col items-center w-full">
+                        return (
+                          <div key={i} className="flex items-end flex-shrink-0" style={{ width: 160 }}>
+                            <div className="flex flex-col items-center w-full">
 
-                            {/* Event card */}
-                            <button
-                              onClick={() => setSelected(isSelected ? null : i)}
-                              className="w-32 text-left transition-all duration-200"
-                              style={{
-                                background: isSelected ? '#1A1A1D' : 'white',
-                                border: `1px solid ${isSelected ? '#1A1A1D' : '#eef0f3'}`,
-                                borderTop: `3px solid ${t.color}`,
-                                borderRadius: 14,
-                                padding: '10px 12px',
-                                marginBottom: 10,
-                                boxShadow: isSelected ? '0 8px 24px rgba(0,0,0,0.18)' : '0 1px 4px rgba(0,0,0,0.06)',
-                                transform: isSelected ? 'translateY(-4px)' : 'none',
-                              }}
-                            >
-                              {/* Type badge */}
-                              <div className="flex items-center gap-1.5 mb-2">
-                                <div style={{ width: 20, height: 20, borderRadius: 6, background: isSelected ? 'rgba(255,255,255,0.08)' : t.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                  <Icon size={11} color={isSelected ? t.color : t.color} strokeWidth={2.2} />
-                                </div>
-                                <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: isSelected ? t.color : t.color }}>
-                                  {t.label}
-                                </span>
-                              </div>
-
-                              {/* Description */}
-                              <p style={{ fontSize: 11, fontWeight: 600, color: isSelected ? 'white' : '#1e293b', lineHeight: 1.3, marginBottom: 6 }}
-                                className="line-clamp-2">
-                                {ev.description}
-                              </p>
-
-                              {/* Amount */}
-                              <p style={{ fontSize: 14, fontWeight: 700, color: t.color, fontFamily: 'var(--font-poppins, sans-serif)' }}>
-                                {t.sign}{formatCurrency(Math.abs(ev.amount))}
-                              </p>
-
-                              {/* Date */}
-                              <p style={{ fontSize: 10, color: isSelected ? 'rgba(255,255,255,0.35)' : '#94a3b8', marginTop: 3 }}>
-                                {formatDateShort(ev.date)}
-                              </p>
-                            </button>
-
-                            {/* Vertical connector */}
-                            <div style={{ width: 1.5, height: 20, background: t.color, opacity: 0.5 }} />
-
-                            {/* Dot on line */}
-                            <div style={{
-                              width: 14,
-                              height: 14,
-                              borderRadius: '50%',
-                              background: t.color,
-                              border: '2.5px solid #F6F6F6',
-                              boxShadow: `0 0 0 1.5px ${t.color}`,
-                              zIndex: 10,
-                              flexShrink: 0,
-                            }} />
-
-                            {/* Horizontal line to next event */}
-                            <div className="flex w-full items-center" style={{ height: 3 }}>
-                              <div style={{
-                                flex: 1,
-                                height: 2,
-                                background: ev.running_balance < 0 ? '#E50914' : ev.alert === 'warning' ? '#d97706' : '#e2e8f0',
-                                borderRadius: 2,
-                              }} />
-                              {!nextEv && (
-                                <div style={{ width: 16, height: 2, background: '#e2e8f0', borderRadius: 2 }} />
-                              )}
-                            </div>
-
-                            {/* Running balance */}
-                            <div className="mt-2 text-center">
-                              <p style={{ fontSize: 11, fontWeight: 600, color: balanceColor, fontFamily: 'var(--font-poppins, sans-serif)' }}>
-                                {formatCurrency(ev.running_balance)}
-                              </p>
-                              {ev.alert !== 'ok' && (
-                                <div className="flex items-center justify-center gap-1 mt-0.5">
-                                  <AlertTriangle size={9} color={balanceColor} />
-                                  <span style={{ fontSize: 9, fontWeight: 700, color: balanceColor }}>
-                                    {ev.alert === 'critical' ? 'negativo' : 'baixo'}
+                              {/* Card */}
+                              <button
+                                onClick={() => setSelected(isSelected ? null : i)}
+                                className="w-36 text-left transition-all duration-200"
+                                style={{
+                                  background: isSelected
+                                    ? t.bg
+                                    : 'rgba(255,255,255,0.05)',
+                                  border: `1px solid ${isSelected ? t.color : 'rgba(255,255,255,0.08)'}`,
+                                  borderRadius: 16,
+                                  padding: '12px 14px',
+                                  marginBottom: 14,
+                                  boxShadow: isSelected ? `0 0 20px ${t.color}30` : 'none',
+                                  transform: isSelected ? 'translateY(-6px)' : 'none',
+                                }}
+                              >
+                                <div className="flex items-center gap-1.5 mb-2.5">
+                                  <Icon size={12} color={t.color} strokeWidth={2.5} />
+                                  <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: t.color }}>
+                                    {t.label}
                                   </span>
                                 </div>
-                              )}
+                                <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.85)', lineHeight: 1.35, marginBottom: 8 }}
+                                  className="line-clamp-2">
+                                  {ev.description}
+                                </p>
+                                <p style={{ fontFamily: 'var(--font-poppins, sans-serif)', fontSize: 16, fontWeight: 700, color: t.color }}>
+                                  {t.sign}{formatCurrency(Math.abs(ev.amount))}
+                                </p>
+                                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>
+                                  {formatDateShort(ev.date)}
+                                </p>
+                              </button>
+
+                              {/* Conector vertical */}
+                              <div style={{ width: 2, height: 18, background: t.color, opacity: 0.6 }} />
+
+                              {/* Dot brilhante */}
+                              <div style={{
+                                width: 16,
+                                height: 16,
+                                borderRadius: '50%',
+                                background: t.color,
+                                boxShadow: `0 0 10px ${t.color}, 0 0 20px ${t.color}60`,
+                                border: '2.5px solid #1A1A1D',
+                                zIndex: 10,
+                                flexShrink: 0,
+                              }} />
+
+                              {/* Linha horizontal */}
+                              <div className="flex w-full items-center" style={{ height: 4 }}>
+                                <div style={{
+                                  flex: 1,
+                                  height: 3,
+                                  background: ev.running_balance < 0
+                                    ? '#E50914'
+                                    : ev.alert === 'warning'
+                                    ? '#d97706'
+                                    : 'rgba(255,255,255,0.12)',
+                                  borderRadius: 3,
+                                }} />
+                                {!nextEv && (
+                                  <div style={{ width: 20, height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 3 }} />
+                                )}
+                              </div>
+
+                              {/* Saldo projetado */}
+                              <div className="mt-3 text-center">
+                                <p style={{
+                                  fontFamily: 'var(--font-poppins, sans-serif)',
+                                  fontSize: 13,
+                                  fontWeight: 700,
+                                  color: balColor,
+                                }}>
+                                  {formatCurrency(ev.running_balance)}
+                                </p>
+                                {ev.alert !== 'ok' && (
+                                  <div className="flex items-center justify-center gap-1 mt-0.5">
+                                    <AlertTriangle size={9} color={balColor} />
+                                    <span style={{ fontSize: 9, fontWeight: 700, color: balColor }}>
+                                      {ev.alert === 'critical' ? 'negativo' : 'baixo'}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+
                             </div>
-
                           </div>
-                        </div>
-                      )
-                    })}
+                        )
+                      })}
 
-                    {/* End marker */}
-                    <div className="flex flex-col items-center flex-shrink-0 pb-8" style={{ width: 32 }}>
-                      <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#e2e8f0', marginBottom: 4 }} />
-                      <p style={{ fontSize: 9, color: '#cbd5e1', writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>90d</p>
+                      {/* Fim */}
+                      <div className="flex flex-col items-center flex-shrink-0 pb-10" style={{ width: 32 }}>
+                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', marginBottom: 4 }} />
+                        <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>90d</p>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Detail panel for selected event */}
-                {selected !== null && (
-                  <div className="px-4 mt-2">
-                    <div
-                      className="rounded-2xl overflow-hidden"
-                      style={{ background: '#1A1A1D', border: '1px solid rgba(255,255,255,0.07)' }}
-                    >
-                      <div className="p-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              {(() => {
-                                const t = TYPE[data.events[selected].type]
-                                const Icon = t.icon
-                                return (
-                                  <>
-                                    <div style={{ width: 24, height: 24, borderRadius: 7, background: t.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                      <Icon size={13} color={t.color} strokeWidth={2.2} />
-                                    </div>
-                                    <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: t.color }}>
-                                      {t.label} · {formatDateShort(data.events[selected].date)}
-                                    </span>
-                                  </>
-                                )
-                              })()}
-                            </div>
-                            <p className="text-sm font-semibold text-white mb-0.5">
-                              {data.events[selected].description}
-                            </p>
-                            {data.events[selected].subtitle && (
-                              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                                {data.events[selected].subtitle}
-                              </p>
-                            )}
-                          </div>
-                          <div className="text-right flex-shrink-0">
-                            <p style={{
-                              fontFamily: 'var(--font-poppins, sans-serif)',
-                              fontSize: 18,
+                  {/* ── Detalhe selecionado ── */}
+                  {selected !== null && (
+                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '20px 24px' }}>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          {(() => {
+                            const t = TYPE[data.events[selected].type]
+                            const Icon = t.icon
+                            return (
+                              <>
+                                <div className="flex items-center gap-2 mb-3">
+                                  <div style={{ width: 26, height: 26, borderRadius: 8, background: t.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <Icon size={14} color={t.color} strokeWidth={2.2} />
+                                  </div>
+                                  <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: t.color }}>
+                                    {t.label} · {formatDateShort(data.events[selected].date)}
+                                  </span>
+                                </div>
+                                <p style={{ color: 'white', fontWeight: 600, fontSize: 15, marginBottom: 4 }}>
+                                  {data.events[selected].description}
+                                </p>
+                                {data.events[selected].subtitle && (
+                                  <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>
+                                    {data.events[selected].subtitle}
+                                  </p>
+                                )}
+                              </>
+                            )
+                          })()}
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p style={{
+                            fontFamily: 'var(--font-poppins, sans-serif)',
+                            fontSize: 22,
+                            fontWeight: 800,
+                            color: TYPE[data.events[selected].type].color,
+                          }}>
+                            {TYPE[data.events[selected].type].sign}
+                            {formatCurrency(Math.abs(data.events[selected].amount))}
+                          </p>
+                          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)', marginTop: 4 }}>
+                            saldo após:{' '}
+                            <span style={{
+                              color: data.events[selected].running_balance < 0 ? '#E50914' : '#FF8A00',
                               fontWeight: 700,
-                              color: TYPE[data.events[selected].type].color,
                             }}>
-                              {TYPE[data.events[selected].type].sign}
-                              {formatCurrency(Math.abs(data.events[selected].amount))}
-                            </p>
-                            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                              saldo após:{' '}
-                              <span style={{ color: data.events[selected].running_balance < 0 ? '#E50914' : '#FF8A00', fontWeight: 600 }}>
-                                {formatCurrency(data.events[selected].running_balance)}
-                              </span>
-                            </p>
-                          </div>
+                              {formatCurrency(data.events[selected].running_balance)}
+                            </span>
+                          </p>
+                          <button
+                            onClick={() => setSelected(null)}
+                            className="flex items-center gap-1 mt-3 ml-auto transition-colors"
+                            style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12 }}
+                            onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.5)' }}
+                            onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.2)' }}
+                          >
+                            <X size={12} /> fechar
+                          </button>
                         </div>
                       </div>
-                      <button
-                        onClick={() => setSelected(null)}
-                        className="w-full flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors"
-                        style={{ color: 'rgba(255,255,255,0.25)', borderTop: '1px solid rgba(255,255,255,0.06)' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.5)' }}
-                        onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.25)' }}
-                      >
-                        <X size={12} /> fechar
-                      </button>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </>
             )}
           </>

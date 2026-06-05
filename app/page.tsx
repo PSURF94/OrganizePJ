@@ -74,7 +74,7 @@ function Hero() {
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,138,0,0.1)', border: '1px solid rgba(255,138,0,0.25)', borderRadius: 100, padding: '6px 16px', marginBottom: 28 }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.orange }} />
-              <span style={{ color: C.orange, fontSize: 13, fontWeight: 500 }}>Trial 7 dias grátis · Sem cartão de crédito</span>
+              <span style={{ color: C.orange, fontSize: 13, fontWeight: 500 }}>7 dias grátis · Acesso completo · Comece agora</span>
             </div>
 
             <h1 style={{ fontFamily: 'var(--font-poppins, sans-serif)', color: 'white', fontSize: 'clamp(36px, 5vw, 58px)', fontWeight: 800, lineHeight: 1.1, marginBottom: 22 }}>
@@ -285,7 +285,7 @@ function FinalCTA() {
           <span style={{ color: C.orange }}>Cresça com estratégia.</span>
         </h2>
         <p style={{ color: '#64748b', fontSize: 17, marginBottom: 38 }}>
-          7 dias grátis. Sem cartão de crédito. Sem compromisso.
+          7 dias de acesso completo. Cancele quando quiser.
         </p>
         <Link href="/cadastro"
           style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: `linear-gradient(135deg, ${C.orange}, ${C.lightRed})`, borderRadius: 14, padding: '16px 36px', color: 'white', fontWeight: 700, fontSize: 18, textDecoration: 'none', boxShadow: '0 12px 30px rgba(255,138,0,0.35)' }}>
