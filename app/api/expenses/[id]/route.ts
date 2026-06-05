@@ -46,6 +46,29 @@ export async function PUT(
   return NextResponse.json(data)
 }
 
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  const supabase = await getServerSupabase()
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { data: company } = await supabase.from('companies').select('id').eq('owner_id', session.user.id).single()
+  if (!company) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+  const body = await req.json()
+  const updates: Record<string, unknown> = {}
+  if ('date' in body) updates.date = body.date
+
+  const { data, error } = await supabase.from('expenses')
+    .update(updates).eq('id', id).eq('company_id', company.id).select().single()
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json(data)
+}
+
 export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

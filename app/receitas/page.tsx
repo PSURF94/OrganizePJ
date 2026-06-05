@@ -28,6 +28,8 @@ export default function ReceitasPage() {
   const [items, setItems] = useState<Receivable[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
+  const [adiando, setAdiando] = useState<string | null>(null)
+  const [novaData, setNovaData] = useState('')
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -52,6 +54,17 @@ export default function ReceitasPage() {
     if (!confirm('Excluir este recebível?')) return
     await fetch(`/api/receivables/${id}`, { method: 'DELETE' })
     setItems((prev) => prev.filter((r) => r.id !== id))
+  }
+
+  async function handleAdiar(id: string) {
+    if (!novaData) return
+    await fetch(`/api/receivables/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ due_date: novaData }),
+    })
+    setItems((prev) => prev.map((r) => r.id === id ? { ...r, due_date: novaData } : r))
+    setAdiando(null)
   }
 
   const filtered = filter === 'all' ? items : items.filter((r) => effectiveStatus(r) === filter)
@@ -122,6 +135,13 @@ export default function ReceitasPage() {
                       Marcar recebido
                     </button>
                   )}
+                  {effectiveStatus(r) !== 'recebido' && (
+                    <button
+                      onClick={() => { setAdiando(r.id); setNovaData(r.due_date) }}
+                      className="text-xs text-blue-400 hover:text-blue-600 font-medium px-2 py-1 rounded-lg hover:bg-blue-50">
+                      Adiar
+                    </button>
+                  )}
                   <Link href={`/receitas/${r.id}/editar`}
                     className="text-xs text-[#FF8A00] font-medium px-2 py-1 rounded-lg hover:bg-orange-50">
                     Editar
@@ -131,6 +151,28 @@ export default function ReceitasPage() {
                     Excluir
                   </button>
                 </div>
+
+                {adiando === r.id && (
+                  <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2">
+                    <span className="text-xs text-slate-500 flex-shrink-0">Nova data:</span>
+                    <input
+                      type="date"
+                      value={novaData}
+                      onChange={(ev) => setNovaData(ev.target.value)}
+                      className="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    />
+                    <button
+                      onClick={() => handleAdiar(r.id)}
+                      className="text-xs bg-blue-500 text-white font-semibold px-3 py-1.5 rounded-lg hover:bg-blue-600">
+                      Confirmar
+                    </button>
+                    <button
+                      onClick={() => setAdiando(null)}
+                      className="text-xs text-slate-400 hover:text-slate-600 px-1">
+                      ✕
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
