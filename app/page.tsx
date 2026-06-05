@@ -162,13 +162,13 @@ function Solution() {
     {
       icon: <TrendingUp size={28} />,
       label: 'Controle para crescer',
-      desc: 'Clientes, serviços, receitas e despesas em um único lugar. Tudo atualizado, tudo no controle.',
+      desc: 'Clientes, serviços, receitas e despesas — com parcelamento automático ou manual — tudo em um único lugar.',
       color: C.red,
     },
     {
       icon: <Rocket size={28} />,
       label: 'Estratégia para alavancar',
-      desc: 'Diagnóstico tributário, metas financeiras e score de saúde para tomar as decisões certas.',
+      desc: 'Diagnóstico tributário, motor de retiradas inteligentes e metas para saber exatamente quando e quanto retirar.',
       color: C.orange,
     },
   ]
@@ -204,14 +204,14 @@ function Solution() {
 /* ─── FEATURES ──────────────────────────────────────────────────────── */
 function Features() {
   const items = [
-    { icon: <Users size={20} />, label: 'Controle de clientes', desc: 'Cadastro e histórico completo dos seus clientes' },
-    { icon: <FileText size={20} />, label: 'Gestão de serviços', desc: 'Serviços contratados, status e pagamentos' },
-    { icon: <TrendingUp size={20} />, label: 'Receitas e recebimentos', desc: 'Controle do que entra com confirmação de recebimento' },
-    { icon: <Wallet size={20} />, label: 'Despesas e parcelamentos', desc: 'Saídas organizadas por categoria' },
-    { icon: <BarChart3 size={20} />, label: 'Fluxo de caixa', desc: 'Visão em tempo real do dinheiro disponível' },
-    { icon: <PiggyBank size={20} />, label: 'Metas e reservas', desc: 'Crie metas e aloque receitas automaticamente' },
-    { icon: <Shield size={20} />, label: 'Diagnóstico tributário', desc: 'MEI, Simples ou Lucro Presumido — o certo para você' },
-    { icon: <Target size={20} />, label: 'Score de saúde financeira', desc: 'Nota 0–100 com indicadores financeiros reais' },
+    { icon: <Users size={20} />, label: 'Controle de clientes', desc: 'Cadastro, histórico e vínculos com serviços e receitas' },
+    { icon: <FileText size={20} />, label: 'Gestão de serviços', desc: 'Pipeline completo: orçamento → aprovado → faturado → recebido' },
+    { icon: <TrendingUp size={20} />, label: 'Receitas parceladas', desc: 'Parcelamento automático ou manual, com % de alocação por meta a cada recebimento' },
+    { icon: <Wallet size={20} />, label: 'Despesas parceladas', desc: 'Registre parcelas automáticas ou defina datas e valores individuais por parcela' },
+    { icon: <BarChart3 size={20} />, label: 'Timeline de fluxo de caixa', desc: 'Eventos agrupados por dia, saldo projetado e alertas de liquidez em tempo real' },
+    { icon: <PiggyBank size={20} />, label: 'Metas e reservas', desc: 'Crie metas financeiras e aloque % de cada receita automaticamente' },
+    { icon: <Shield size={20} />, label: 'Diagnóstico tributário', desc: 'MEI, Simples ou Lucro Presumido — saiba qual regime é mais vantajoso para você' },
+    { icon: <Target size={20} />, label: 'Retiradas inteligentes', desc: 'Calcule pró-labore e distribuição de lucros otimizados pelo seu regime tributário' },
   ]
 
   return (
@@ -374,13 +374,31 @@ function DashboardMock() {
       </div>
 
       {/* Meta */}
-      <div>
+      <div style={{ marginBottom: 14 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
           <span style={{ color: '#475569', fontSize: 12 }}>Meta: Reserva Emergência</span>
           <span style={{ color: '#475569', fontSize: 12 }}>65%</span>
         </div>
         <div style={{ background: 'rgba(255,255,255,0.07)', borderRadius: 6, height: 8 }}>
           <div style={{ width: '65%', background: C.orange, height: '100%', borderRadius: 6 }} />
+        </div>
+      </div>
+
+      {/* Retiradas */}
+      <div style={{ background: 'rgba(34,197,94,0.07)', border: '1px solid rgba(34,197,94,0.18)', borderRadius: 10, padding: '10px 12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+          <span style={{ color: '#64748b', fontSize: 11 }}>Retiradas — Simples Nacional</span>
+          <span style={{ color: '#22c55e', fontSize: 10, fontWeight: 700 }}>OTIMIZADO</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <div>
+            <p style={{ color: '#334155', fontSize: 10, marginBottom: 2 }}>Pró-labore</p>
+            <p style={{ color: '#22c55e', fontSize: 13, fontWeight: 700 }}>R$ 1.518</p>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <p style={{ color: '#334155', fontSize: 10, marginBottom: 2 }}>Distribuição</p>
+            <p style={{ color: C.orange, fontSize: 13, fontWeight: 700 }}>R$ 13.822</p>
+          </div>
         </div>
       </div>
     </div>

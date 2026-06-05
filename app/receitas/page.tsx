@@ -18,6 +18,12 @@ const STATUS_LABEL: Record<string, string> = {
   atrasado: 'Atrasado',
 }
 
+function effectiveStatus(r: Receivable): string {
+  if (r.status === 'recebido') return 'recebido'
+  if (r.due_date < todayISO()) return 'atrasado'
+  return 'pendente'
+}
+
 export default function ReceitasPage() {
   const [items, setItems] = useState<Receivable[]>([])
   const [loading, setLoading] = useState(true)
@@ -48,7 +54,7 @@ export default function ReceitasPage() {
     setItems((prev) => prev.filter((r) => r.id !== id))
   }
 
-  const filtered = filter === 'all' ? items : items.filter((r) => r.status === filter)
+  const filtered = filter === 'all' ? items : items.filter((r) => effectiveStatus(r) === filter)
   const total = filtered.reduce((s, r) => s + Number(r.amount), 0)
 
   return (
@@ -104,13 +110,13 @@ export default function ReceitasPage() {
                   </div>
                   <div className="text-right flex-shrink-0">
                     <p className="font-semibold text-sm text-slate-800">{formatCurrency(r.amount)}</p>
-                    <span className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${STATUS_STYLE[r.status]}`}>
-                      {STATUS_LABEL[r.status]}
+                    <span className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${STATUS_STYLE[effectiveStatus(r)]}`}>
+                      {STATUS_LABEL[effectiveStatus(r)]}
                     </span>
                   </div>
                 </div>
                 <div className="flex gap-2 mt-3 pt-3 border-t border-slate-50">
-                  {r.status !== 'recebido' && (
+                  {effectiveStatus(r) !== 'recebido' && (
                     <button onClick={() => markReceived(r.id)}
                       className="text-xs text-emerald-600 font-medium px-2 py-1 rounded-lg hover:bg-emerald-50">
                       Marcar recebido

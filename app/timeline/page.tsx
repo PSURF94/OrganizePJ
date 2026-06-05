@@ -239,7 +239,7 @@ export default function TimelinePage() {
                           )
                         }
 
-                        // ── Card agrupado (múltiplos eventos no mesmo dia) ──
+                        // ── Card agrupado — mini cards com friso colorido individual ──
                         const visibleCount = Math.min(2, group.events.length)
                         const hiddenCount = group.events.length - visibleCount
                         const dotColor = lastEv.running_balance < 0 ? '#E50914'
@@ -250,70 +250,78 @@ export default function TimelinePage() {
                           <div key={gi} className="flex items-end flex-shrink-0" style={{ width: 164 }}>
                             <div className="flex flex-col items-center w-full">
 
-                              {/* Card agrupado */}
+                              {/* Stacked mini cards — cada um com friso colorido no topo */}
                               <div style={{
-                                width: 144, height: 148,
-                                display: 'flex', flexDirection: 'column',
-                                background: isAnySelected ? 'rgba(255,255,255,0.09)' : 'rgba(255,255,255,0.05)',
-                                border: `1px solid ${isAnySelected ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.08)'}`,
-                                borderTop: `3px solid rgba(255,255,255,0.2)`,
-                                borderRadius: 16,
-                                padding: '10px 10px 8px',
+                                width: 144,
+                                height: 148,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 4,
                                 marginBottom: 14,
                                 flexShrink: 0,
-                                overflow: 'hidden',
                               }}>
-                                {/* Header: data + contagem */}
-                                <div className="flex items-center justify-between mb-1.5" style={{ flexShrink: 0 }}>
-                                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>
-                                    {formatDateShort(group.date)}
-                                  </span>
-                                  <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                                    {group.events.length} eventos
-                                  </span>
-                                </div>
-
-                                {/* Mini-rows */}
-                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, overflow: 'hidden' }}>
-                                  {group.events.slice(0, visibleCount).map((ev, ei) => {
-                                    const t = TYPE[ev.type]
-                                    const Icon = t.icon
-                                    const isThisSelected = selected?.gi === gi && selected?.ei === ei
-                                    return (
-                                      <button
-                                        key={ei}
-                                        onClick={() => selectEvent(gi, ei)}
-                                        style={{
-                                          display: 'flex', alignItems: 'center', gap: 5,
-                                          padding: '5px 6px',
-                                          borderRadius: 8,
-                                          background: isThisSelected ? t.bg : 'rgba(255,255,255,0.04)',
-                                          border: `1px solid ${isThisSelected ? t.color : 'transparent'}`,
-                                          borderLeft: `2.5px solid ${t.color}`,
-                                          cursor: 'pointer', width: '100%', textAlign: 'left',
-                                          flex: 1, minHeight: 0,
-                                        }}
-                                      >
-                                        <Icon size={9} color={t.color} strokeWidth={2.5} style={{ flexShrink: 0 }} />
-                                        <span style={{
-                                          flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
-                                          fontSize: 10, color: 'rgba(255,255,255,0.7)', fontWeight: 600,
-                                        }}>
-                                          {ev.description}
+                                {group.events.slice(0, visibleCount).map((ev, ei) => {
+                                  const t = TYPE[ev.type]
+                                  const Icon = t.icon
+                                  const isThisSelected = selected?.gi === gi && selected?.ei === ei
+                                  return (
+                                    <button
+                                      key={ei}
+                                      onClick={() => selectEvent(gi, ei)}
+                                      style={{
+                                        flex: 1,
+                                        minHeight: 0,
+                                        textAlign: 'left',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        justifyContent: 'space-between',
+                                        background: isThisSelected ? t.bg : 'rgba(255,255,255,0.05)',
+                                        border: `1px solid ${isThisSelected ? t.color : 'rgba(255,255,255,0.08)'}`,
+                                        borderTop: `3px solid ${t.color}`,
+                                        borderRadius: 12,
+                                        padding: '7px 10px',
+                                        boxShadow: isThisSelected ? `0 0 20px ${t.color}28` : 'none',
+                                        transform: isThisSelected ? 'translateY(-2px)' : 'none',
+                                        transition: 'all 0.15s ease',
+                                        cursor: 'pointer',
+                                        flexShrink: 0,
+                                      }}
+                                    >
+                                      {/* Badge tipo */}
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                                        <Icon size={9} color={t.color} strokeWidth={2.5} />
+                                        <span style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: t.color }}>
+                                          {t.label}
                                         </span>
-                                        <span style={{ fontSize: 10, fontWeight: 700, color: t.color, flexShrink: 0, marginLeft: 2 }}>
-                                          {t.sign}{formatCurrency(Math.abs(ev.amount))}
-                                        </span>
-                                      </button>
-                                    )
-                                  })}
-                                </div>
+                                      </div>
 
-                                {/* "ver +N" indicator */}
+                                      {/* Descrição */}
+                                      <p style={{
+                                        fontSize: 10, fontWeight: 600,
+                                        color: isThisSelected ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.72)',
+                                        overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
+                                        flex: 1, margin: '3px 0',
+                                      }}>
+                                        {ev.description}
+                                      </p>
+
+                                      {/* Valor */}
+                                      <p style={{
+                                        fontFamily: 'var(--font-poppins, sans-serif)',
+                                        fontSize: 12, fontWeight: 700, color: t.color, lineHeight: 1, flexShrink: 0,
+                                      }}>
+                                        {t.sign}{formatCurrency(Math.abs(ev.amount))}
+                                      </p>
+                                    </button>
+                                  )
+                                })}
+
                                 {hiddenCount > 0 && (
-                                  <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.22)', marginTop: 4, textAlign: 'center', flexShrink: 0 }}>
-                                    + {hiddenCount} mais · clique para ver
-                                  </p>
+                                  <div style={{ height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.22)' }}>
+                                      + {hiddenCount} mais neste dia
+                                    </p>
+                                  </div>
                                 )}
                               </div>
 
@@ -334,8 +342,13 @@ export default function TimelinePage() {
                                   <div style={{ width: 20, height: 3, background: 'rgba(255,255,255,0.04)', borderRadius: 3 }} />
                                 )}
                               </div>
+
+                              {/* Data + contagem + saldo */}
                               <div style={{ marginTop: 10, textAlign: 'center' }}>
-                                <p style={{ fontFamily: 'var(--font-poppins, sans-serif)', fontSize: 12, fontWeight: 700, color: balColor, lineHeight: 1 }}>
+                                <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', lineHeight: 1, marginBottom: 4 }}>
+                                  {formatDateShort(group.date)} · {group.events.length} evento{group.events.length !== 1 ? 's' : ''}
+                                </p>
+                                <p style={{ fontFamily: 'var(--font-poppins, sans-serif)', fontSize: 11, fontWeight: 700, color: balColor, lineHeight: 1 }}>
                                   {formatCurrency(lastEv.running_balance)}
                                 </p>
                                 {lastEv.alert !== 'ok' && (
@@ -347,6 +360,7 @@ export default function TimelinePage() {
                                   </div>
                                 )}
                               </div>
+
                             </div>
                           </div>
                         )
