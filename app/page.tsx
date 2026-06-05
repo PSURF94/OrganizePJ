@@ -1,3 +1,4 @@
+import type React from 'react'
 import { getServerSupabase } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -197,54 +198,88 @@ function Questions() {
 
 /* ─── COMPARISON ────────────────────────────────────────────────────── */
 function Comparison() {
-  const rows = [
-    { criteria:'Responde quanto você pode retirar', plan: false, erp: false, orga: true },
-    { criteria:'Mostra seu lucro líquido real',     plan: false, erp: false, orga: true },
-    { criteria:'Diagnóstico tributário automático', plan: false, erp: false, orga: true },
-    { criteria:'Feito para o dono do negócio',      plan: false, erp: false, orga: true },
-    { criteria:'Configure em menos de 5 minutos',  plan: false, erp: false, orga: true },
-    { criteria:'Recomenda o que fazer',             plan: false, erp: false, orga: true },
+  const criteria = [
+    'Responde quanto você pode retirar',
+    'Mostra seu lucro líquido real',
+    'Diagnóstico tributário automático',
+    'Feito para o dono do negócio',
+    'Configure em menos de 5 minutos',
+    'Recomenda o que fazer',
   ]
 
-  function Cell({ ok }: { ok: boolean }) {
-    return ok
-      ? <div style={{ display:'flex', justifyContent:'center' }}><CheckCircle size={20} color="#22c55e" /></div>
-      : <div style={{ display:'flex', justifyContent:'center' }}><X size={18} color="#cbd5e1" /></div>
+  const dim: React.CSSProperties = {
+    background: 'rgba(255,255,255,0.02)',
+    border: '1px solid rgba(255,255,255,0.07)',
+    borderRadius: 20,
+    padding: 28,
+    opacity: 0.55,
   }
 
   return (
     <section style={{ background:C.dark }} className="py-24">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-14">
+        <div className="text-center mb-16">
           <p style={{ color:C.orange, fontSize:12, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:12 }}>Por que o OrganizePJ?</p>
-          <h2 style={{ fontFamily:'var(--font-poppins,sans-serif)', fontSize:'clamp(26px,3vw,40px)', fontWeight:700, color:'white', lineHeight:1.2, marginBottom:16 }}>
+          <h2 style={{ fontFamily:'var(--font-poppins,sans-serif)', fontSize:'clamp(26px,3vw,40px)', fontWeight:700, color:'white', lineHeight:1.2 }}>
             Planilhas não pensam.<br />ERPs complicam. O OrganizePJ decide com você.
           </h2>
         </div>
 
-        <div style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:20, overflow:'hidden' }}>
-          {/* Header */}
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 120px 120px 140px', gap:0, padding:'16px 24px', borderBottom:'1px solid rgba(255,255,255,0.07)', background:'rgba(255,255,255,0.03)' }}>
-            <div />
-            {['Planilha', 'Software de Gestão', 'OrganizePJ'].map((h, i) => (
-              <div key={h} style={{ textAlign:'center' }}>
-                <span style={{ fontSize:12, fontWeight:700, color: i === 2 ? C.orange : '#475569', textTransform:'uppercase', letterSpacing:'0.08em' }}>{h}</span>
-              </div>
-            ))}
-          </div>
-          {/* Rows */}
-          {rows.map(({ criteria, plan, erp, orga }, i) => (
-            <div key={i} style={{ display:'grid', gridTemplateColumns:'1fr 120px 120px 140px', gap:0, padding:'14px 24px', borderBottom: i < rows.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}>
-              <p style={{ color:'#94a3b8', fontSize:14 }}>{criteria}</p>
-              <Cell ok={plan} />
-              <Cell ok={erp} />
-              <div style={{ display:'flex', justifyContent:'center', background: orga ? 'rgba(255,138,0,0.08)' : 'transparent', borderRadius:8, padding:'2px 0' }}>
-                <CheckCircle size={20} color={C.orange} />
-              </div>
-            </div>
-          ))}
-        </div>
+        <div className="grid sm:grid-cols-3 gap-5 items-start">
 
+          {/* Planilha */}
+          <div style={dim}>
+            <p style={{ color:'#64748b', fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:8 }}>Planilha</p>
+            <p style={{ color:'#334155', fontSize:13, marginBottom:24, lineHeight:1.4 }}>Você faz o trabalho todo</p>
+            <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+              {criteria.map((c) => (
+                <div key={c} style={{ display:'flex', alignItems:'center', gap:10 }}>
+                  <X size={15} color="#334155" strokeWidth={2.5} style={{ flexShrink:0 }} />
+                  <span style={{ color:'#334155', fontSize:13, lineHeight:1.3 }}>{c}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Software de Gestão */}
+          <div style={dim}>
+            <p style={{ color:'#64748b', fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:8 }}>Software de Gestão</p>
+            <p style={{ color:'#334155', fontSize:13, marginBottom:24, lineHeight:1.4 }}>Feito para quem tem contador</p>
+            <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+              {criteria.map((c) => (
+                <div key={c} style={{ display:'flex', alignItems:'center', gap:10 }}>
+                  <X size={15} color="#334155" strokeWidth={2.5} style={{ flexShrink:0 }} />
+                  <span style={{ color:'#334155', fontSize:13, lineHeight:1.3 }}>{c}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* OrganizePJ — destaque */}
+          <div style={{ position:'relative', background:'rgba(255,138,0,0.07)', border:'2px solid rgba(255,138,0,0.45)', borderRadius:20, padding:28, boxShadow:'0 24px 64px rgba(255,138,0,0.18)', transform:'translateY(-12px)' }}>
+            {/* Badge */}
+            <div style={{ position:'absolute', top:-16, left:'50%', transform:'translateX(-50%)', background:`linear-gradient(135deg,${C.orange},${C.lightRed})`, borderRadius:100, padding:'5px 18px', whiteSpace:'nowrap', boxShadow:'0 4px 14px rgba(255,138,0,0.4)' }}>
+              <span style={{ color:'white', fontSize:11, fontWeight:800, letterSpacing:'0.06em', textTransform:'uppercase' }}>Melhor escolha</span>
+            </div>
+
+            <p style={{ color:C.orange, fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:8 }}>OrganizePJ</p>
+            <p style={{ color:'#94a3b8', fontSize:13, marginBottom:24, lineHeight:1.4 }}>Feito para você decidir</p>
+
+            <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+              {criteria.map((c) => (
+                <div key={c} style={{ display:'flex', alignItems:'center', gap:10 }}>
+                  <CheckCircle size={15} color={C.orange} strokeWidth={2.5} style={{ flexShrink:0 }} />
+                  <span style={{ color:'white', fontSize:13, fontWeight:500, lineHeight:1.3 }}>{c}</span>
+                </div>
+              ))}
+            </div>
+
+            <Link href="/cadastro" style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginTop:28, background:`linear-gradient(135deg,${C.orange},${C.lightRed})`, borderRadius:12, padding:'12px 20px', color:'white', fontWeight:700, fontSize:14, textDecoration:'none', boxShadow:'0 6px 20px rgba(255,138,0,0.3)' }}>
+              Começar grátis <ArrowRight size={15} />
+            </Link>
+          </div>
+
+        </div>
       </div>
     </section>
   )
