@@ -75,10 +75,10 @@ export default function TimelinePage() {
 
         {/* Header */}
         <div className="px-4 mb-5">
-          <h1 style={{ fontFamily: 'var(--font-poppins, sans-serif)', fontWeight: 700, fontSize: 22, color: '#1A1A1D' }}>
+          <h1 style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontWeight: 800, fontSize: 22, color: '#1A1A1D', letterSpacing: '-0.3px', paddingLeft: 11, borderLeft: '3px solid #FF8A00' }}>
             Timeline
           </h1>
-          <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>Projeção dos próximos 90 dias</p>
+          <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>Projeção dos próximos 90 dias</p>
         </div>
 
         {loading ? (

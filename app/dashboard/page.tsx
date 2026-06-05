@@ -25,6 +25,8 @@ type DashboardData = {
   company_tax_regime: string
   company_prolabore_mensal: number | null
   company_retirada_desejada_mensal: number | null
+  trial_status: string
+  trial_ends_at: string | null
 }
 
 const EMPTY: DashboardData = {
@@ -37,6 +39,8 @@ const EMPTY: DashboardData = {
   company_tax_regime: 'simples',
   company_prolabore_mensal: null,
   company_retirada_desejada_mensal: null,
+  trial_status: 'trial',
+  trial_ends_at: null,
 }
 
 const C = { orange: '#FF8A00', red: '#E50914', dark: '#1A1A1D' } as const
@@ -64,11 +68,40 @@ export default function DashboardPage() {
 
         {/* Header */}
         <div className="mb-5 flex items-baseline justify-between">
-          <h1 style={{ fontFamily: 'var(--font-poppins, sans-serif)', fontWeight: 700, fontSize: 22, color: C.dark }}>
+          <h1 style={{ fontFamily: 'var(--font-poppins, sans-serif)', fontWeight: 800, fontSize: 22, color: C.dark, letterSpacing: '-0.3px', paddingLeft: 11, borderLeft: '3px solid #FF8A00' }}>
             Painel
           </h1>
           <p className="text-sm text-slate-400 capitalize">{monthLabel}</p>
         </div>
+
+        {/* Banner trial */}
+        {data.trial_status === 'trial' && data.trial_ends_at && (() => {
+          const daysLeft = Math.ceil((new Date(data.trial_ends_at).getTime() - Date.now()) / 86400000)
+          if (daysLeft <= 0) return null
+          const urgent = daysLeft <= 2
+          return (
+            <div style={{
+              background: urgent ? 'rgba(229,9,20,0.07)' : 'rgba(255,138,0,0.07)',
+              border: `1px solid ${urgent ? 'rgba(229,9,20,0.2)' : 'rgba(255,138,0,0.2)'}`,
+              borderRadius: 16, padding: '13px 18px', marginBottom: 16,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+            }}>
+              <div>
+                <p style={{ fontWeight: 700, fontSize: 13, color: urgent ? C.red : C.orange, marginBottom: 2 }}>
+                  {daysLeft === 1 ? 'Último dia de trial' : `${daysLeft} dias de trial restantes`}
+                </p>
+                <p style={{ fontSize: 12, color: '#64748b' }}>Assine para não perder o acesso ao OrganizePJ</p>
+              </div>
+              <Link href="/assinar" style={{
+                background: urgent ? C.red : C.orange, color: 'white',
+                fontWeight: 700, fontSize: 12, padding: '8px 14px',
+                borderRadius: 10, textDecoration: 'none', whiteSpace: 'nowrap' as const,
+              }}>
+                Assinar agora
+              </Link>
+            </div>
+          )
+        })()}
 
         {loading ? (
           <div className="space-y-3">

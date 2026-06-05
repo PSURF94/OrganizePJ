@@ -29,6 +29,25 @@ export async function proxy(req: NextRequest) {
     if (!session) {
       return NextResponse.redirect(new URL('/login', req.url))
     }
+
+    // Verifica licença apenas em rotas de página (não em /api/*)
+    if (!pathname.startsWith('/api/')) {
+      const { data: company } = await supabase
+        .from('companies')
+        .select('status, trial_ends_at, license_expires_at')
+        .eq('owner_id', session.user.id)
+        .single()
+
+      const now = new Date()
+      const isExpired =
+        company?.status === 'expired' ||
+        (company?.status === 'trial' && company?.trial_ends_at && new Date(company.trial_ends_at) < now) ||
+        (company?.status === 'active' && company?.license_expires_at && new Date(company.license_expires_at) < now)
+
+      if (isExpired) {
+        return NextResponse.redirect(new URL('/assinar', req.url))
+      }
+    }
   } catch {
     return NextResponse.redirect(new URL('/login', req.url))
   }

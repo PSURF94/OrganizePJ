@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { data: company } = await supabase
-    .from('companies').select('id, simples_rate, saldo_inicial, tax_regime, prolabore_mensal, retirada_desejada_mensal').eq('owner_id', session.user.id).single()
+    .from('companies').select('id, simples_rate, saldo_inicial, tax_regime, prolabore_mensal, retirada_desejada_mensal, status, trial_ends_at, license_expires_at').eq('owner_id', session.user.id).single()
   if (!company) return NextResponse.json({ error: 'Company not found' }, { status: 404 })
 
   const { searchParams } = new URL(req.url)
@@ -126,5 +126,7 @@ export async function GET(req: NextRequest) {
     company_tax_regime: company.tax_regime,
     company_prolabore_mensal: company.prolabore_mensal ? Number(company.prolabore_mensal) : null,
     company_retirada_desejada_mensal: company.retirada_desejada_mensal ? Number(company.retirada_desejada_mensal) : null,
+    trial_status: company.status,
+    trial_ends_at: company.trial_ends_at ?? null,
   })
 }
