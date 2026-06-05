@@ -28,6 +28,7 @@ export async function createOrFindCustomer(name: string, email: string): Promise
     body: JSON.stringify({ name, email }),
   })
   const data = await res.json()
+  if (!data.id) throw new Error(`Asaas customer error: ${JSON.stringify(data)}`)
   return data.id
 }
 
@@ -51,5 +52,6 @@ export async function createPayment(params: {
     }),
   })
   const data = await res.json()
+  if (!data.invoiceUrl) throw new Error(`Asaas payment error: ${JSON.stringify(data)}`)
   return { id: data.id, invoiceUrl: data.invoiceUrl }
 }

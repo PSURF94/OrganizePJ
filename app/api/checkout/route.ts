@@ -32,14 +32,19 @@ export async function POST(req: NextRequest) {
   dueDate.setDate(dueDate.getDate() + 5)
   const dueDateStr = dueDate.toISOString().split('T')[0]
 
-  const customerId = await createOrFindCustomer(company.name, session.user.email!)
-  const { invoiceUrl } = await createPayment({
-    customerId,
-    value: planConfig.value,
-    description: planConfig.description,
-    externalReference: company.id,
-    dueDate: dueDateStr,
-  })
-
-  return NextResponse.json({ invoiceUrl })
+  try {
+    const customerId = await createOrFindCustomer(company.name, session.user.email!)
+    const { invoiceUrl } = await createPayment({
+      customerId,
+      value: planConfig.value,
+      description: planConfig.description,
+      externalReference: company.id,
+      dueDate: dueDateStr,
+    })
+    return NextResponse.json({ invoiceUrl })
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    console.error('[checkout]', msg)
+    return NextResponse.json({ error: msg }, { status: 502 })
+  }
 }
