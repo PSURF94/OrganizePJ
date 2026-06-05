@@ -118,7 +118,7 @@ export default function DashboardPage() {
                   border: '#d97706',
                   iconBg: '#fef3c7',
                   icon: <Receipt size={16} color="#d97706" />,
-                  href: '/despesas',
+                  href: '/impostos',
                 },
                 {
                   label: 'Metas',
