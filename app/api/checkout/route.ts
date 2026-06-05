@@ -34,7 +34,8 @@ export async function POST(req: NextRequest) {
   const dueDateStr = dueDate.toISOString().split('T')[0]
 
   try {
-    const customerId = await createOrFindCustomer(company.name, session.user.email!, company.cnpj)
+    const cnpjDigits = company.cnpj?.replace(/\D/g, '') || undefined
+    const customerId = await createOrFindCustomer(company.name, session.user.email!, cnpjDigits)
     const { invoiceUrl } = await createPayment({
       customerId,
       value: planConfig.value,
