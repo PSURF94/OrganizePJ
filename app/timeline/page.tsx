@@ -248,11 +248,12 @@ export default function TimelinePage() {
                                   </div>
                                 </button>
 
-                                <div style={{ width: 2, height: 16, background: 'rgba(255,255,255,0.12)' }} />
+                                <div style={{ width: 2, height: 16, background: ev.status === 'recebido' ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.12)' }} />
                                 <div style={{
                                   width: 13, height: 13, borderRadius: '50%',
-                                  background: balColor,
-                                  border: `2.5px solid ${DARK}`, zIndex: 10, flexShrink: 0,
+                                  background: ev.status === 'recebido' ? 'transparent' : balColor,
+                                  border: ev.status === 'recebido' ? '2px solid rgba(16,185,129,0.25)' : `2.5px solid ${DARK}`,
+                                  zIndex: 10, flexShrink: 0,
                                 }} />
                                 <div style={{ display: 'flex', width: '100%', height: 3, alignItems: 'center' }}>
                                   <div style={{
@@ -264,19 +265,23 @@ export default function TimelinePage() {
                                     <div style={{ width: 20, height: 3, background: 'rgba(255,255,255,0.04)', borderRadius: 3 }} />
                                   )}
                                 </div>
-                                <div style={{ marginTop: 10, textAlign: 'center' }}>
-                                  <p style={{ fontFamily: 'var(--font-poppins, sans-serif)', fontSize: 12, fontWeight: 700, color: balColor, lineHeight: 1 }}>
-                                    {formatCurrency(lastEv.running_balance)}
-                                  </p>
-                                  {lastEv.alert !== 'ok' && (
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, marginTop: 3 }}>
-                                      <AlertTriangle size={9} color={balColor} />
-                                      <span style={{ fontSize: 9, fontWeight: 700, color: balColor }}>
-                                        {lastEv.alert === 'critical' ? 'negativo' : 'baixo'}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
+                                {ev.status === 'recebido' ? (
+                                  <div style={{ marginTop: 10, height: 14 }} />
+                                ) : (
+                                  <div style={{ marginTop: 10, textAlign: 'center' }}>
+                                    <p style={{ fontFamily: 'var(--font-poppins, sans-serif)', fontSize: 12, fontWeight: 700, color: balColor, lineHeight: 1 }}>
+                                      {formatCurrency(lastEv.running_balance)}
+                                    </p>
+                                    {lastEv.alert !== 'ok' && (
+                                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, marginTop: 3 }}>
+                                        <AlertTriangle size={9} color={balColor} />
+                                        <span style={{ fontSize: 9, fontWeight: 700, color: balColor }}>
+                                          {lastEv.alert === 'critical' ? 'negativo' : 'baixo'}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                             </div>
                           )
@@ -297,6 +302,7 @@ export default function TimelinePage() {
                               {/* Stacked mini cards */}
                               <div style={{
                                 width: 144,
+                                minHeight: 190,
                                 display: 'flex',
                                 flexDirection: 'column',
                                 gap: 5,
