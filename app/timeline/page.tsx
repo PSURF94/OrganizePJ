@@ -250,7 +250,7 @@ export default function TimelinePage() {
                           <div key={gi} className="flex items-end flex-shrink-0" style={{ width: 164 }}>
                             <div className="flex flex-col items-center w-full">
 
-                              {/* Stacked mini cards — cada um com friso colorido no topo */}
+                              {/* Stacked mini cards — data no topo do container, saldo abaixo do dot (igual ao card simples) */}
                               <div style={{
                                 width: 144,
                                 height: 148,
@@ -260,6 +260,16 @@ export default function TimelinePage() {
                                 marginBottom: 14,
                                 flexShrink: 0,
                               }}>
+                                {/* Header: data + contagem — dentro do card, não abaixo do dot */}
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, height: 16 }}>
+                                  <span style={{ fontSize: 9, fontWeight: 600, color: 'rgba(255,255,255,0.35)' }}>
+                                    {formatDateShort(group.date)}
+                                  </span>
+                                  <span style={{ fontSize: 8, fontWeight: 700, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                                    {group.events.length} eventos
+                                  </span>
+                                </div>
+
                                 {group.events.slice(0, visibleCount).map((ev, ei) => {
                                   const t = TYPE[ev.type]
                                   const Icon = t.icon
@@ -278,24 +288,20 @@ export default function TimelinePage() {
                                         background: isThisSelected ? t.bg : 'rgba(255,255,255,0.05)',
                                         border: `1px solid ${isThisSelected ? t.color : 'rgba(255,255,255,0.08)'}`,
                                         borderTop: `3px solid ${t.color}`,
-                                        borderRadius: 12,
-                                        padding: '7px 10px',
+                                        borderRadius: 10,
+                                        padding: '6px 10px',
                                         boxShadow: isThisSelected ? `0 0 20px ${t.color}28` : 'none',
                                         transform: isThisSelected ? 'translateY(-2px)' : 'none',
                                         transition: 'all 0.15s ease',
                                         cursor: 'pointer',
-                                        flexShrink: 0,
                                       }}
                                     >
-                                      {/* Badge tipo */}
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                         <Icon size={9} color={t.color} strokeWidth={2.5} />
                                         <span style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: t.color }}>
                                           {t.label}
                                         </span>
                                       </div>
-
-                                      {/* Descrição */}
                                       <p style={{
                                         fontSize: 10, fontWeight: 600,
                                         color: isThisSelected ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.72)',
@@ -304,11 +310,9 @@ export default function TimelinePage() {
                                       }}>
                                         {ev.description}
                                       </p>
-
-                                      {/* Valor */}
                                       <p style={{
                                         fontFamily: 'var(--font-poppins, sans-serif)',
-                                        fontSize: 12, fontWeight: 700, color: t.color, lineHeight: 1, flexShrink: 0,
+                                        fontSize: 11, fontWeight: 700, color: t.color, lineHeight: 1,
                                       }}>
                                         {t.sign}{formatCurrency(Math.abs(ev.amount))}
                                       </p>
@@ -317,15 +321,13 @@ export default function TimelinePage() {
                                 })}
 
                                 {hiddenCount > 0 && (
-                                  <div style={{ height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                    <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.22)' }}>
-                                      + {hiddenCount} mais neste dia
-                                    </p>
+                                  <div style={{ height: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    <p style={{ fontSize: 8, color: 'rgba(255,255,255,0.2)' }}>+ {hiddenCount} mais</p>
                                   </div>
                                 )}
                               </div>
 
-                              {/* Conector + dot + linha */}
+                              {/* Conector + dot + linha — idêntico ao card simples */}
                               <div style={{ width: 2, height: 16, background: dotColor, opacity: 0.5 }} />
                               <div style={{
                                 width: 15, height: 15, borderRadius: '50%',
@@ -343,12 +345,9 @@ export default function TimelinePage() {
                                 )}
                               </div>
 
-                              {/* Data + contagem + saldo */}
+                              {/* Saldo — igual ao card simples (sem data aqui, data está dentro do card) */}
                               <div style={{ marginTop: 10, textAlign: 'center' }}>
-                                <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', lineHeight: 1, marginBottom: 4 }}>
-                                  {formatDateShort(group.date)} · {group.events.length} evento{group.events.length !== 1 ? 's' : ''}
-                                </p>
-                                <p style={{ fontFamily: 'var(--font-poppins, sans-serif)', fontSize: 11, fontWeight: 700, color: balColor, lineHeight: 1 }}>
+                                <p style={{ fontFamily: 'var(--font-poppins, sans-serif)', fontSize: 12, fontWeight: 700, color: balColor, lineHeight: 1 }}>
                                   {formatCurrency(lastEv.running_balance)}
                                 </p>
                                 {lastEv.alert !== 'ok' && (
@@ -366,8 +365,8 @@ export default function TimelinePage() {
                         )
                       })}
 
-                      {/* Marcador de fim */}
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, width: 24, paddingBottom: 68 }}>
+                      {/* Marcador de fim — paddingBottom alinha o dot com o centro dos dots da timeline */}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', flexShrink: 0, width: 24, paddingBottom: 34 }}>
                         <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255,255,255,0.12)' }} />
                       </div>
                     </div>
