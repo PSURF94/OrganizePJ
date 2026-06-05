@@ -120,6 +120,7 @@ export async function GET(req: NextRequest) {
     receivables_pending: pendingTotal,
     receivable_30d: receivable30d,
     receivables_overdue: overdueTotal,
+    receivables_overdue_count: overdue.length,
     goals: goalsData,
     recommendations,
     company_tax_regime: company.tax_regime,

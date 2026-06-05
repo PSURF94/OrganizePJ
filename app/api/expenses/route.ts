@@ -34,6 +34,26 @@ export async function POST(req: NextRequest) {
   if (!company) return NextResponse.json({ error: 'Company not found' }, { status: 404 })
 
   const body = await req.json()
+
+  // Manual installments: array with individual dates + amounts
+  if (Array.isArray(body.installments) && body.installments.length > 0) {
+    const groupId = randomUUID()
+    const total = body.installments.length
+    const rows = body.installments.map((inst: { amount: number; date: string }, i: number) => ({
+      company_id: company.id,
+      category: body.category,
+      description: body.description,
+      amount: Number(inst.amount),
+      date: inst.date,
+      installment_group_id: groupId,
+      installment_number: i + 1,
+      installment_total: total,
+    }))
+    const { data, error } = await supabase.from('expenses').insert(rows).select()
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json(data, { status: 201 })
+  }
+
   const total = Number(body.installment_total) || 1
   const amount = Number(body.amount)
   const groupId = total > 1 ? randomUUID() : null

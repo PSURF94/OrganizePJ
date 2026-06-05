@@ -20,7 +20,7 @@ type DashboardData = {
   goals_this_month: number; disponivel: number
   saldo_inicial: number; total_received_ever: number
   total_expenses_ever: number; total_goals_ever: number
-  receivables_pending: number; receivable_30d: number; receivables_overdue: number
+  receivables_pending: number; receivable_30d: number; receivables_overdue: number; receivables_overdue_count: number
   goals: GoalSummary[]; recommendations: string[]
   company_tax_regime: string
   company_prolabore_mensal: number | null
@@ -32,7 +32,7 @@ const EMPTY: DashboardData = {
   goals_this_month: 0, disponivel: 0,
   saldo_inicial: 0, total_received_ever: 0,
   total_expenses_ever: 0, total_goals_ever: 0,
-  receivables_pending: 0, receivable_30d: 0, receivables_overdue: 0,
+  receivables_pending: 0, receivable_30d: 0, receivables_overdue: 0, receivables_overdue_count: 0,
   goals: [], recommendations: [],
   company_tax_regime: 'simples',
   company_prolabore_mensal: null,
@@ -168,7 +168,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   {data.receivables_overdue > 0 && (
-                    <div className="text-right">
+                    <Link href="/receitas?filter=atrasado" className="text-right block">
                       <div className="flex items-center gap-1 justify-end mb-1">
                         <AlertTriangle size={11} color={C.red} />
                         <p style={{ fontSize: 10, fontWeight: 700, color: C.red, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Em atraso</p>
@@ -176,7 +176,10 @@ export default function DashboardPage() {
                       <p style={{ fontFamily: 'var(--font-poppins, sans-serif)', fontSize: 16, fontWeight: 700, color: C.red }}>
                         {formatCurrency(data.receivables_overdue)}
                       </p>
-                    </div>
+                      <p style={{ fontSize: 10, color: C.red, opacity: 0.65, marginTop: 2 }}>
+                        {data.receivables_overdue_count} recebimento{data.receivables_overdue_count !== 1 ? 's' : ''} · ver →
+                      </p>
+                    </Link>
                   )}
                 </div>
               </div>

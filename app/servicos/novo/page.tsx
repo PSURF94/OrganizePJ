@@ -16,7 +16,7 @@ export default function NovoServicoPage() {
     client_id: '',
     contracted_value: '',
     execution_date: '',
-    expected_payment_date: todayISO(),
+    expected_payment_date: '',
   })
 
   useEffect(() => {
@@ -79,9 +79,10 @@ export default function NovoServicoPage() {
                 className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1">Prev. pagamento</label>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Previsão de faturamento</label>
               <input type="date" value={form.expected_payment_date} onChange={(e) => set('expected_payment_date', e.target.value)}
                 className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
+              <p className="text-xs text-slate-400 mt-1">Quando emitir a nota / criar a receita vinculada.</p>
             </div>
           </div>
 

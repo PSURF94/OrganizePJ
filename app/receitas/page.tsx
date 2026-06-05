@@ -23,6 +23,12 @@ export default function ReceitasPage() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const f = params.get('filter')
+    if (f && ['all', 'pendente', 'atrasado', 'recebido'].includes(f)) setFilter(f)
+  }, [])
+
   async function load() {
     const res = await fetch('/api/receivables')
     const data = await res.json()
