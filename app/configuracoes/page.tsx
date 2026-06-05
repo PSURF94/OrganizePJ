@@ -4,6 +4,7 @@ import AppShell from '@/components/AppShell'
 import type { Company, TaxRegime } from '@/lib/constants'
 import { TAX_REGIMES } from '@/lib/constants'
 import { SERVICE_CATEGORIES, calcTaxRecommendation } from '@/lib/tax-engine'
+import { getBrowserSupabase } from '@/lib/supabase-browser'
 
 export default function ConfiguracoesPage() {
   const [company, setCompany] = useState<Company | null>(null)
@@ -15,6 +16,10 @@ export default function ConfiguracoesPage() {
   })
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+
+  const [passwordForm, setPasswordForm] = useState({ nova: '', confirmar: '' })
+  const [savingPassword, setSavingPassword] = useState(false)
+  const [passwordMsg, setPasswordMsg] = useState<{ ok: boolean; text: string } | null>(null)
 
   useEffect(() => {
     fetch('/api/configuracoes')
@@ -48,6 +53,30 @@ export default function ConfiguracoesPage() {
 
   const regimesDiffer = rec && rec.regime !== form.tax_regime
   const isMei = form.tax_regime === 'mei'
+
+  async function handlePasswordChange(e: React.FormEvent) {
+    e.preventDefault()
+    if (passwordForm.nova.length < 6) {
+      setPasswordMsg({ ok: false, text: 'A senha deve ter pelo menos 6 caracteres.' })
+      return
+    }
+    if (passwordForm.nova !== passwordForm.confirmar) {
+      setPasswordMsg({ ok: false, text: 'As senhas não coincidem.' })
+      return
+    }
+    setSavingPassword(true)
+    setPasswordMsg(null)
+    const supabase = getBrowserSupabase()
+    const { error } = await supabase.auth.updateUser({ password: passwordForm.nova })
+    setSavingPassword(false)
+    if (error) {
+      setPasswordMsg({ ok: false, text: 'Erro ao alterar senha. Tente novamente.' })
+    } else {
+      setPasswordForm({ nova: '', confirmar: '' })
+      setPasswordMsg({ ok: true, text: 'Senha alterada com sucesso!' })
+      setTimeout(() => setPasswordMsg(null), 3000)
+    }
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
@@ -215,6 +244,49 @@ export default function ConfiguracoesPage() {
             className="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl text-sm disabled:opacity-50">
             {saved ? 'Salvo!' : saving ? 'Salvando...' : 'Salvar Configurações'}
           </button>
+        </form>
+
+        {/* Segurança */}
+        <form onSubmit={handlePasswordChange} className="mt-4 space-y-4">
+          <div className="bg-white rounded-2xl p-5 space-y-4">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Segurança</p>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Nova senha</label>
+              <input
+                type="password"
+                value={passwordForm.nova}
+                onChange={(e) => setPasswordForm((p) => ({ ...p, nova: e.target.value }))}
+                required
+                minLength={6}
+                placeholder="Mínimo 6 caracteres"
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Confirmar nova senha</label>
+              <input
+                type="password"
+                value={passwordForm.confirmar}
+                onChange={(e) => setPasswordForm((p) => ({ ...p, confirmar: e.target.value }))}
+                required
+                minLength={6}
+                placeholder="Repita a nova senha"
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            {passwordMsg && (
+              <p className={`text-xs font-medium ${passwordMsg.ok ? 'text-emerald-600' : 'text-red-500'}`}>
+                {passwordMsg.text}
+              </p>
+            )}
+            <button
+              type="submit"
+              disabled={savingPassword}
+              className="w-full bg-slate-800 text-white font-semibold py-2.5 rounded-xl text-sm disabled:opacity-50"
+            >
+              {savingPassword ? 'Salvando...' : 'Alterar Senha'}
+            </button>
+          </div>
         </form>
       </div>
     </AppShell>

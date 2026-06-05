@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react'
-import { getBrowserSupabase } from '@/lib/supabase-browser'
 import Link from 'next/link'
 
 export default function EsqueciSenhaPage() {
@@ -13,15 +12,16 @@ export default function EsqueciSenhaPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const supabase = getBrowserSupabase()
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/api/auth/callback?next=/redefinir-senha`,
-    })
-    if (error) {
-      setError('Erro ao enviar e-mail. Verifique o endereço informado.')
-      setLoading(false)
-    } else {
+    try {
+      await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
       setSent(true)
+    } catch {
+      setError('Erro ao processar. Tente novamente.')
+      setLoading(false)
     }
   }
 
@@ -37,16 +37,21 @@ export default function EsqueciSenhaPage() {
               <div className="text-4xl mb-3">📬</div>
               <h2 className="font-semibold text-slate-800 mb-2">E-mail enviado!</h2>
               <p className="text-sm text-slate-500 leading-relaxed">
-                Enviamos um link de redefinição para <strong>{email}</strong>. Verifique sua caixa de entrada.
+                Se <strong>{email}</strong> estiver cadastrado, você receberá uma senha temporária em instantes.
+              </p>
+              <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                Após entrar, troque a senha em <strong>Configurações → Segurança</strong>.
               </p>
               <Link href="/login" className="block mt-5 text-sm text-blue-600 font-medium">
-                Voltar ao login
+                Ir para o login
               </Link>
             </div>
           ) : (
             <>
               <h2 className="font-semibold text-slate-800 mb-1">Esqueceu a senha?</h2>
-              <p className="text-sm text-slate-500 mb-5">Informe seu e-mail e enviamos um link para criar uma nova senha.</p>
+              <p className="text-sm text-slate-500 mb-5">
+                Informe seu e-mail e enviaremos uma senha temporária. Depois você pode alterar em Configurações.
+              </p>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="text-xs font-medium text-slate-600 block mb-1">E-mail</label>
@@ -65,7 +70,7 @@ export default function EsqueciSenhaPage() {
                   disabled={loading}
                   className="w-full bg-blue-600 text-white rounded-xl py-2.5 text-sm font-semibold disabled:opacity-60"
                 >
-                  {loading ? 'Enviando...' : 'Enviar link'}
+                  {loading ? 'Enviando...' : 'Enviar senha temporária'}
                 </button>
               </form>
               <p className="text-center text-xs text-slate-500 mt-4">
