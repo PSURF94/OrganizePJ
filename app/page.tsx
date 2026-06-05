@@ -87,7 +87,7 @@ function Hero() {
               A maioria dos empresários fatura, paga contas, reinveste — e no final não sabe se lucrou ou só sobreviveu.
             </p>
             <p style={{ color:'#64748b', fontSize:16, lineHeight:1.65, marginBottom:38, maxWidth:490 }}>
-              O OrganizePJ é seu parceiro para entender seu negócio e tomar decisões com clareza — não mais um sistema financeiro.
+              O OrganizePJ mostra o que realmente importa para você decidir, crescer e lucrar com mais segurança.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3">
@@ -176,7 +176,7 @@ function Questions() {
             O OrganizePJ responde as perguntas<br />que todo empresário faz
           </h2>
           <p style={{ color:'#64748b', fontSize:16, maxWidth:480, margin:'0 auto' }}>
-            Não mais relatórios para interpretar. Respostas diretas para decidir.
+            Você não precisa de mais relatórios. Precisa de clareza para agir.
           </p>
         </div>
 
