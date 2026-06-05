@@ -124,9 +124,9 @@ function Hero() {
 /* ─── PAIN ──────────────────────────────────────────────────────────── */
 function Pain() {
   const pains = [
-    { icon: <DollarSign size={20} />, text: 'Você olha o saldo da conta e não sabe se pode contratar alguém ou não' },
+    { icon: <DollarSign size={20} />, text: 'Tem dinheiro na conta, mas não sabe se pode contratar sem correr riscos' },
     { icon: <Wallet size={20} />,     text: 'Faturou bem esse mês, mas no final sobrou muito menos do que deveria' },
-    { icon: <TrendingUp size={20} />, text: 'Mistura gastos pessoais com os da empresa e no final fica confuso' },
+    { icon: <TrendingUp size={20} />, text: 'Você tira dinheiro da empresa quando precisa e depois não sabe quanto realmente lucrou' },
     { icon: <Rocket size={20} />,     text: 'Quer retirar dinheiro da empresa mas tem medo de comprometer o caixa' },
     { icon: <Shield size={20} />,     text: 'Paga imposto todo mês mas não tem certeza se está pagando o correto' },
     { icon: <BarChart3 size={20} />,  text: 'Não sabe se está crescendo de verdade ou apenas faturando mais' },
