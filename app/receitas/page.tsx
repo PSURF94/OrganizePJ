@@ -150,6 +150,16 @@ export default function ReceitasPage() {
                     className="text-xs text-slate-300 hover:text-red-400 px-2 py-1 rounded-lg">
                     Excluir
                   </button>
+                  <Link href="/em-breve?f=link-pagamento"
+                    className="text-xs font-bold px-2 py-1 rounded-full"
+                    style={{ background: 'linear-gradient(135deg,#FF8A00,#FF3B30)', color: 'white', textDecoration: 'none', fontSize: 9, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                    PRO: Link pgto
+                  </Link>
+                  <Link href="/em-breve?f=cobranca-whatsapp"
+                    className="text-xs font-bold px-2 py-1 rounded-full"
+                    style={{ background: 'linear-gradient(135deg,#FF8A00,#FF3B30)', color: 'white', textDecoration: 'none', fontSize: 9, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                    PRO: WhatsApp
+                  </Link>
                 </div>
 
                 {adiando === r.id && (

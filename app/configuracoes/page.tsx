@@ -188,6 +188,17 @@ export default function ConfiguracoesPage() {
             </button>
           </div>
         </form>
+
+        {/* PRO: Multi-empresa */}
+        <a href="/em-breve?f=multi-empresa" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 8, border: '1.5px dashed rgba(255,138,0,0.35)', borderRadius: 16, padding: '14px 18px', textDecoration: 'none', background: 'rgba(255,138,0,0.03)' }}>
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1D', marginBottom: 2 }}>Multi-Empresa</p>
+            <p style={{ fontSize: 11, color: '#94a3b8' }}>Gerencie mais de um CNPJ na mesma conta, alternando entre eles com um clique</p>
+          </div>
+          <span style={{ flexShrink: 0, background: 'linear-gradient(135deg,#FF8A00,#FF3B30)', borderRadius: 100, padding: '5px 12px', color: 'white', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+            USE NO PRO
+          </span>
+        </a>
       </div>
     </AppShell>
   )

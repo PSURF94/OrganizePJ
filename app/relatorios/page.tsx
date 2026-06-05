@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState, type ElementType } from 'react'
+import Link from 'next/link'
 import AppShell from '@/components/AppShell'
 import { formatCurrency } from '@/lib/utils'
 import { TrendingUp, BarChart3, PieChart as PieIcon, Target } from 'lucide-react'
@@ -268,6 +269,19 @@ export default function RelatoriosPage() {
             )
           })}
         </div>
+
+        {/* PRO: Relatório com IA */}
+        <Link href="/em-breve?f=relatorio-ia" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 12, border: '1.5px dashed rgba(255,138,0,0.35)', borderRadius: 16, padding: '14px 18px', textDecoration: 'none', background: 'rgba(255,138,0,0.03)', transition: 'background 0.15s' }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(255,138,0,0.07)' }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(255,138,0,0.03)' }}>
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1D', marginBottom: 2 }}>Relatório com IA</p>
+            <p style={{ fontSize: 11, color: '#94a3b8' }}>Saúde financeira, projeções e insights automáticos</p>
+          </div>
+          <span style={{ flexShrink: 0, background: 'linear-gradient(135deg,#FF8A00,#FF3B30)', borderRadius: 100, padding: '5px 12px', color: 'white', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+            USE NO PRO
+          </span>
+        </Link>
       </div>
     </AppShell>
   )

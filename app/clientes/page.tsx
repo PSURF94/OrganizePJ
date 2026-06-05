@@ -70,7 +70,7 @@ export default function ClientesPage() {
                     {[client.email, client.phone, client.cpf_cnpj].filter(Boolean).join(' · ') || 'Sem contato'}
                   </p>
                 </div>
-                <div className="flex gap-2 flex-shrink-0">
+                <div className="flex gap-2 flex-shrink-0 flex-wrap justify-end">
                   <Link href={`/clientes/${client.id}`}
                     className="text-xs text-[#FF8A00] font-medium px-2 py-1 rounded-lg hover:bg-orange-50">
                     Ver
@@ -79,6 +79,11 @@ export default function ClientesPage() {
                     className="text-xs text-slate-300 hover:text-red-400 px-2 py-1 rounded-lg">
                     Excluir
                   </button>
+                  <Link href="/em-breve?f=proposta-comercial"
+                    className="text-xs font-bold px-2 py-1 rounded-full"
+                    style={{ background: 'linear-gradient(135deg,#FF8A00,#FF3B30)', color: 'white', textDecoration: 'none', fontSize: 9, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                    PRO: Proposta
+                  </Link>
                 </div>
               </div>
             ))}
