@@ -22,18 +22,19 @@ export async function POST(req: NextRequest) {
 
   const { data: company } = await supabase
     .from('companies')
-    .select('id, name')
+    .select('id, name, cnpj')
     .eq('owner_id', session.user.id)
     .single()
 
   if (!company) return NextResponse.json({ error: 'Empresa não encontrada' }, { status: 404 })
+  if (!company.cnpj) return NextResponse.json({ error: 'Adicione seu CNPJ em Configurações antes de assinar.' }, { status: 400 })
 
   const dueDate = new Date()
   dueDate.setDate(dueDate.getDate() + 5)
   const dueDateStr = dueDate.toISOString().split('T')[0]
 
   try {
-    const customerId = await createOrFindCustomer(company.name, session.user.email!)
+    const customerId = await createOrFindCustomer(company.name, session.user.email!, company.cnpj)
     const { invoiceUrl } = await createPayment({
       customerId,
       value: planConfig.value,

@@ -18,14 +18,14 @@ async function findCustomerByEmail(email: string): Promise<string | null> {
   return data.data?.[0]?.id ?? null
 }
 
-export async function createOrFindCustomer(name: string, email: string): Promise<string> {
+export async function createOrFindCustomer(name: string, email: string, cpfCnpj?: string): Promise<string> {
   const existing = await findCustomerByEmail(email)
   if (existing) return existing
 
   const res = await fetch(`${BASE}/customers`, {
     method: 'POST',
     headers: headers(),
-    body: JSON.stringify({ name, email }),
+    body: JSON.stringify({ name, email, ...(cpfCnpj ? { cpfCnpj } : {}) }),
   })
   const data = await res.json()
   if (!data.id) throw new Error(`Asaas customer error: ${JSON.stringify(data)}`)
