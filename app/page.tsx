@@ -139,9 +139,6 @@ function Pain() {
           <h2 style={{ fontFamily:'var(--font-poppins,sans-serif)', fontSize:'clamp(26px,3vw,40px)', fontWeight:700, color:C.dark, lineHeight:1.2, marginBottom:16 }}>
             Faturando, mas sem saber<br />se está lucrando de verdade
           </h2>
-          <p style={{ color:'#64748b', fontSize:16, maxWidth:520, margin:'0 auto' }}>
-            Se você se identificou com alguma dessas situações, o problema não é você — é que nunca teve as informações certas no momento certo.
-          </p>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -248,9 +245,6 @@ function Comparison() {
           ))}
         </div>
 
-        <p style={{ color:'#334155', fontSize:12, textAlign:'center', marginTop:16 }}>
-          * Conta Azul e Omie são ótimas ferramentas para quem tem contador. O OrganizePJ é para quem está sozinho na gestão.
-        </p>
       </div>
     </section>
   )
