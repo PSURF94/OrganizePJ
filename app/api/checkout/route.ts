@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSupabase } from '@/lib/supabase-server'
-import { createClient } from '@supabase/supabase-js'
 import { createOrFindCustomer, createPayment } from '@/lib/asaas'
 
 const PLANS = {
@@ -21,12 +20,7 @@ export async function POST(req: NextRequest) {
   const planConfig = PLANS[plan as keyof typeof PLANS]
   if (!planConfig) return NextResponse.json({ error: 'Plano inválido' }, { status: 400 })
 
-  const supabaseAdmin = createClient(
-    'https://ylasrgswpybznngjhrmc.supabase.co',
-    (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim()
-  )
-
-  const { data: company } = await supabaseAdmin
+  const { data: company } = await supabase
     .from('companies')
     .select('id, name')
     .eq('owner_id', session.user.id)
