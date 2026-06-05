@@ -20,7 +20,16 @@ async function findCustomerByEmail(email: string): Promise<string | null> {
 
 export async function createOrFindCustomer(name: string, email: string, cpfCnpj?: string): Promise<string> {
   const existing = await findCustomerByEmail(email)
-  if (existing) return existing
+  if (existing) {
+    if (cpfCnpj) {
+      await fetch(`${BASE}/customers/${existing}`, {
+        method: 'PUT',
+        headers: headers(),
+        body: JSON.stringify({ name, email, cpfCnpj }),
+      })
+    }
+    return existing
+  }
 
   const res = await fetch(`${BASE}/customers`, {
     method: 'POST',
