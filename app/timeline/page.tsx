@@ -302,23 +302,14 @@ export default function TimelinePage() {
                               {/* Stacked mini cards */}
                               <div style={{
                                 width: 144,
-                                minHeight: 190,
+                                height: 190,
                                 display: 'flex',
                                 flexDirection: 'column',
                                 gap: 5,
                                 marginBottom: 14,
                                 flexShrink: 0,
+                                overflow: 'hidden',
                               }}>
-                                {/* Header: data + contagem — dentro do card, não abaixo do dot */}
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, height: 16 }}>
-                                  <span style={{ fontSize: 9, fontWeight: 600, color: 'rgba(255,255,255,0.35)' }}>
-                                    {formatDateShort(group.date)}
-                                  </span>
-                                  <span style={{ fontSize: 8, fontWeight: 700, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                                    {group.events.length} eventos
-                                  </span>
-                                </div>
-
                                 {group.events.slice(0, visibleCount).map((ev, ei) => {
                                   const t = TYPE[ev.type]
                                   const Icon = t.icon
@@ -404,8 +395,10 @@ export default function TimelinePage() {
                                 )}
                               </div>
 
-                              {/* Saldo — igual ao card simples (sem data aqui, data está dentro do card) */}
                               <div style={{ marginTop: 10, textAlign: 'center' }}>
+                                <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', marginBottom: 2 }}>
+                                  {formatDateShort(group.date)} · {group.events.length} eventos
+                                </p>
                                 <p style={{ fontFamily: 'var(--font-poppins, sans-serif)', fontSize: 12, fontWeight: 700, color: balColor, lineHeight: 1 }}>
                                   {formatCurrency(lastEv.running_balance)}
                                 </p>
