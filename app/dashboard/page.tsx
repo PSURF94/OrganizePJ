@@ -118,6 +118,7 @@ export default function DashboardPage() {
                   border: '#d97706',
                   iconBg: '#fef3c7',
                   icon: <Receipt size={16} color="#d97706" />,
+                  href: '/despesas',
                 },
                 {
                   label: 'Metas',
@@ -127,9 +128,10 @@ export default function DashboardPage() {
                   border: C.orange,
                   iconBg: '#fff7ed',
                   icon: <Target size={16} color={C.orange} />,
+                  href: '/objetivos',
                 },
-              ].map(({ label, value, sub, color, border, iconBg, icon }) => (
-                <div key={label} className="bg-white rounded-2xl overflow-hidden"
+              ].map(({ label, value, sub, color, border, iconBg, icon, href }) => (
+                <Link key={label} href={href} className="bg-white rounded-2xl overflow-hidden hover:shadow-md transition-shadow"
                   style={{ border: '1px solid #eef0f3', borderTop: `4px solid ${border}` }}>
                   <div className="px-4 py-4">
                     <div className="flex items-center gap-2 mb-3">
@@ -145,7 +147,7 @@ export default function DashboardPage() {
                     </p>
                     <p style={{ fontSize: 10, color: '#cbd5e1', marginTop: 6 }}>{sub}</p>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
 
@@ -154,8 +156,8 @@ export default function DashboardPage() {
               <div className="bg-white rounded-2xl overflow-hidden mb-3"
                 style={{ border: '1px solid #eef0f3', borderTop: '4px solid #10b981' }}>
                 <div className="px-5 py-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div style={{ width: 32, height: 32, borderRadius: 9, background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Link href="/receitas?filter=pendente" className="flex items-center gap-3 flex-1">
+                    <div style={{ width: 32, height: 32, borderRadius: 9, background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <TrendingUp size={17} color="#10b981" />
                     </div>
                     <div>
@@ -166,9 +168,9 @@ export default function DashboardPage() {
                         {formatCurrency(data.receivable_30d)}
                       </p>
                     </div>
-                  </div>
+                  </Link>
                   {data.receivables_overdue > 0 && (
-                    <Link href="/receitas?filter=atrasado" className="text-right block">
+                    <Link href="/receitas?filter=atrasado" className="text-right block ml-3">
                       <div className="flex items-center gap-1 justify-end mb-1">
                         <AlertTriangle size={11} color={C.red} />
                         <p style={{ fontSize: 10, fontWeight: 700, color: C.red, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Em atraso</p>
@@ -253,7 +255,7 @@ export default function DashboardPage() {
               const borderColor = hasWaste ? '#d97706' : '#10b981'
               const bgWaste = '#fef3c7'
               return (
-                <div className="mb-3 rounded-2xl overflow-hidden" style={{ border: '1px solid #eef0f3', borderTop: `4px solid ${borderColor}` }}>
+                <Link href="/fiscal" className="block mb-3 rounded-2xl overflow-hidden hover:shadow-md transition-shadow" style={{ border: '1px solid #eef0f3', borderTop: `4px solid ${borderColor}` }}>
                   <div className="bg-white px-5 py-4">
                     <div className="flex items-center gap-2 mb-3">
                       <div style={{ width: 28, height: 28, borderRadius: 7, background: hasWaste ? '#fef3c7' : '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -295,7 +297,7 @@ export default function DashboardPage() {
                       </div>
                     )}
                   </div>
-                </div>
+                </Link>
               )
             })()}
 

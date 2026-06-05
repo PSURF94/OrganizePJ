@@ -38,7 +38,10 @@ export async function PATCH(
 
   const body = await req.json()
   const updates: Record<string, unknown> = {}
-  if ('received_date' in body) updates.received_date = body.received_date
+  if ('received_date' in body) {
+    updates.received_date = body.received_date
+    updates.status = body.received_date ? 'recebido' : 'pendente'
+  }
   if ('amount' in body) updates.amount = Number(body.amount)
   if ('due_date' in body) updates.due_date = body.due_date
   if ('description' in body) updates.description = body.description
