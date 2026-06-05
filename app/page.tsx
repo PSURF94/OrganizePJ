@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import {
   Target, TrendingUp, Rocket, DollarSign,
-  Users, FileText, Wallet,
+  Users, FileText, BarChart3, Wallet,
   PiggyBank, Shield, CheckCircle, ArrowRight,
 } from 'lucide-react'
 import BrandIcon from '@/components/BrandIcon'
