@@ -4,6 +4,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 export async function POST(req: NextRequest) {
+  const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET
+  if (!WEBHOOK_SECRET) return NextResponse.json({ error: 'Webhook not configured' }, { status: 503 })
+
+  const incoming = req.headers.get('x-webhook-secret') ?? new URL(req.url).searchParams.get('secret')
+  if (incoming !== WEBHOOK_SECRET) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const supabaseAdmin = createClient(
     'https://ylasrgswpybznngjhrmc.supabase.co',
     (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim()

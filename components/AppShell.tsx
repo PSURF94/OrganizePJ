@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 import {
   LayoutDashboard, TrendingUp, Target, Wallet,
-  Users, FileText, CalendarDays, Settings, LogOut, Receipt,
+  Users, FileText, CalendarDays, Settings, LogOut, Receipt, BarChart2,
 } from 'lucide-react'
 import BrandIcon from './BrandIcon'
 
@@ -16,7 +16,8 @@ const NAV = [
   { href: '/clientes',  label: 'Clientes',   icon: Users },
   { href: '/servicos',  label: 'Serviços',   icon: FileText },
   { href: '/timeline',  label: 'Timeline',   icon: CalendarDays },
-  { href: '/fiscal',    label: 'Fiscal',     icon: Receipt },
+  { href: '/fiscal',      label: 'Fiscal',      icon: Receipt },
+  { href: '/relatorios',  label: 'Relatórios',  icon: BarChart2 },
 ]
 
 const MOBILE_NAV = NAV.slice(0, 5)

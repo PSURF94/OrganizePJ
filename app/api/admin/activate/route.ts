@@ -3,9 +3,10 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'organizepj-dev-2024'
-
 export async function POST(req: NextRequest) {
+  const ADMIN_TOKEN = process.env.ADMIN_TOKEN
+  if (!ADMIN_TOKEN) return NextResponse.json({ error: 'Not configured' }, { status: 503 })
+
   const token = req.headers.get('x-admin-token')
   if (token !== ADMIN_TOKEN) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
