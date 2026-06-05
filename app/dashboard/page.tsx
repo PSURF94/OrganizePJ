@@ -71,9 +71,7 @@ export default function DashboardPage() {
             {/* ── Disponível ─────────────────────────────── */}
             <Link href="/saldo"
               className="block bg-white rounded-2xl mb-3 overflow-hidden hover:shadow-md transition-shadow"
-              style={{ border: '1px solid #eef0f3' }}>
-              {/* Top accent bar */}
-              <div style={{ height: 4, background: `linear-gradient(to right, ${C.orange}, ${C.red})` }} />
+              style={{ border: '1px solid #eef0f3', borderLeft: `4px solid ${C.orange}` }}>
               <div className="p-5">
                 <div className="flex items-start justify-between">
                   <div>
@@ -180,9 +178,7 @@ export default function DashboardPage() {
                           className="h-full rounded-full transition-all duration-700"
                           style={{
                             width: `${g.pct}%`,
-                            background: g.pct >= 80
-                              ? 'linear-gradient(to right, #10b981, #059669)'
-                              : `linear-gradient(to right, ${C.orange}, ${C.red})`,
+                            background: g.pct >= 80 ? '#10b981' : C.orange,
                           }}
                         />
                       </div>

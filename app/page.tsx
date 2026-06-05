@@ -3,9 +3,10 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import {
   Target, TrendingUp, Rocket, DollarSign,
-  Users, FileText, BarChart3, Wallet,
+  Users, FileText, Wallet,
   PiggyBank, Shield, CheckCircle, ArrowRight,
 } from 'lucide-react'
+import BrandIcon from '@/components/BrandIcon'
 
 const C = {
   dark: '#1A1A1D',
@@ -318,9 +319,7 @@ function Footer() {
 function Logo() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-      <div style={{ background: `linear-gradient(135deg, ${C.orange}, ${C.red})`, borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <BarChart3 size={17} color="white" />
-      </div>
+      <BrandIcon size={34} />
       <span style={{ fontFamily: 'var(--font-poppins, sans-serif)', color: 'white', fontWeight: 700, fontSize: 18 }}>
         Organize<span style={{ color: C.orange }}>PJ</span>
       </span>

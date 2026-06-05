@@ -4,8 +4,9 @@ import { usePathname } from 'next/navigation'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 import {
   LayoutDashboard, TrendingUp, Target, Wallet,
-  Users, FileText, CalendarDays, Settings, LogOut, BarChart3,
+  Users, FileText, CalendarDays, Settings, LogOut,
 } from 'lucide-react'
+import BrandIcon from './BrandIcon'
 
 const NAV = [
   { href: '/dashboard', label: 'Dashboard',  icon: LayoutDashboard },
@@ -22,10 +23,10 @@ const MOBILE_NAV = NAV.slice(0, 5)
 const C = {
   sidebar:  '#1A1A1D',
   border:   'rgba(255,255,255,0.07)',
-  inactive: 'rgba(255,255,255,0.4)',
-  hover:    'rgba(255,255,255,0.06)',
+  inactive: 'rgba(255,255,255,0.38)',
+  hover:    'rgba(255,255,255,0.05)',
   active:   '#FF8A00',
-  activeBg: 'rgba(255,138,0,0.12)',
+  activeBg: 'rgba(255,138,0,0.10)',
 } as const
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -51,20 +52,23 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       >
         {/* Logo */}
         <div className="px-4 py-5" style={{ borderBottom: `1px solid ${C.border}` }}>
-          <div className="flex items-center gap-2.5">
-            <div
-              className="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0"
-              style={{ background: 'linear-gradient(135deg, #FF8A00, #E50914)' }}
-            >
-              <BarChart3 size={16} color="white" />
-            </div>
+          <Link href="/dashboard" className="flex items-center gap-2.5">
+            <BrandIcon size={34} />
             <div>
-              <p style={{ fontFamily: 'var(--font-poppins, sans-serif)', color: 'white', fontWeight: 700, fontSize: 15, lineHeight: 1 }}>
+              <p style={{
+                fontFamily: 'var(--font-poppins, sans-serif)',
+                color: 'white',
+                fontWeight: 700,
+                fontSize: 15,
+                lineHeight: 1,
+              }}>
                 Organize<span style={{ color: C.active }}>PJ</span>
               </p>
-              <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 10, marginTop: 2 }}>Gestão simplificada</p>
+              <p style={{ color: 'rgba(255,255,255,0.22)', fontSize: 10, marginTop: 2 }}>
+                Gestão simplificada
+              </p>
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* Nav links */}
@@ -83,7 +87,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 onMouseEnter={(e) => {
                   if (!active) {
                     e.currentTarget.style.background = C.hover
-                    e.currentTarget.style.color = 'rgba(255,255,255,0.75)'
+                    e.currentTarget.style.color = 'rgba(255,255,255,0.72)'
                   }
                 }}
                 onMouseLeave={(e) => {
@@ -108,7 +112,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             style={{ color: isActive('/configuracoes') ? C.active : C.inactive }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = C.hover
-              e.currentTarget.style.color = 'rgba(255,255,255,0.75)'
+              e.currentTarget.style.color = 'rgba(255,255,255,0.72)'
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = 'transparent'
@@ -121,9 +125,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <button
             onClick={handleLogout}
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium w-full text-left mt-0.5 transition-colors"
-            style={{ color: 'rgba(255,255,255,0.25)' }}
+            style={{ color: 'rgba(255,255,255,0.22)' }}
             onMouseEnter={(e) => { e.currentTarget.style.color = '#FF3B30' }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.25)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.22)' }}
           >
             <LogOut size={17} strokeWidth={1.8} />
             Sair
@@ -151,9 +155,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               style={{ color: active ? C.active : C.inactive }}
             >
               <Icon size={20} strokeWidth={active ? 2.2 : 1.7} />
-              <span className="text-[10px] mt-1 font-medium">
-                {label === 'Metas e Reservas' ? 'Metas' : label}
-              </span>
+              <span className="text-[10px] mt-1 font-medium">{label}</span>
             </Link>
           )
         })}
