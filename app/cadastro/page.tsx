@@ -170,8 +170,8 @@ export default function CadastroPage() {
           onClick={() => onChange(v)}
           className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
             value === v
-              ? 'bg-blue-600 text-white border-blue-600'
-              : 'bg-white text-slate-700 border-slate-200 hover:border-blue-300'
+              ? 'bg-[#FF8A00] text-white border-[#FF8A00]'
+              : 'bg-white text-slate-700 border-slate-200 hover:border-orange-300'
           }`}
         >
           {v ? 'Sim' : 'Não'}
@@ -195,7 +195,7 @@ export default function CadastroPage() {
           </div>
           <div className="h-1.5 bg-slate-200 rounded-full">
             <div
-              className="h-1.5 bg-blue-600 rounded-full transition-all duration-300"
+              className="h-1.5 bg-[#FF8A00] rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -211,17 +211,17 @@ export default function CadastroPage() {
                 <div>
                   <label className="text-xs font-medium text-slate-600 block mb-1">E-mail</label>
                   <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
                     placeholder="seu@email.com" />
                 </div>
                 <div>
                   <label className="text-xs font-medium text-slate-600 block mb-1">Senha</label>
                   <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
                     placeholder="mínimo 6 caracteres" />
                 </div>
                 {error && <p className="text-red-500 text-xs">{error}</p>}
-                <button type="submit" className="w-full bg-blue-600 text-white rounded-xl py-2.5 text-sm font-semibold">
+                <button type="submit" className="w-full bg-[#FF8A00] text-white rounded-xl py-2.5 text-sm font-semibold">
                   Continuar
                 </button>
               </form>
@@ -236,7 +236,7 @@ export default function CadastroPage() {
                 <div>
                   <label className="text-xs font-medium text-slate-600 block mb-1">Nome da empresa ou seu nome</label>
                   <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} required
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
                     placeholder="Ex: João Silva Engenharia" />
                 </div>
                 <div>
@@ -246,7 +246,7 @@ export default function CadastroPage() {
                     type="text"
                     value={profissao}
                     onChange={(e) => setProfissao(e.target.value)}
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
                     placeholder="Ex: Engenheiro, Arquiteto..."
                   />
                   <datalist id="profissoes-list">
@@ -254,7 +254,7 @@ export default function CadastroPage() {
                   </datalist>
                 </div>
                 {error && <p className="text-red-500 text-xs">{error}</p>}
-                <button type="submit" className="w-full bg-blue-600 text-white rounded-xl py-2.5 text-sm font-semibold">
+                <button type="submit" className="w-full bg-[#FF8A00] text-white rounded-xl py-2.5 text-sm font-semibold">
                   Continuar
                 </button>
               </form>
@@ -271,7 +271,7 @@ export default function CadastroPage() {
                   <select
                     value={serviceCategory}
                     onChange={(e) => setServiceCategory(e.target.value)}
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00] bg-white"
                   >
                     <option value="">Selecione...</option>
                     {SERVICE_CATEGORIES.map((c) => (
@@ -292,7 +292,7 @@ export default function CadastroPage() {
                           type="number" min="1" max="999"
                           value={numFuncionarios}
                           onChange={(e) => setNumFuncionarios(e.target.value)}
-                          className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
                           placeholder="Ex: 2"
                         />
                       </div>
@@ -304,7 +304,7 @@ export default function CadastroPage() {
                             type="text" inputMode="numeric"
                             value={folhaMensal}
                             onChange={(e) => setFolhaMensal(formatCurrencyInput(e.target.value))}
-                            className="w-full border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
                             placeholder="0,00"
                           />
                         </div>
@@ -322,7 +322,7 @@ export default function CadastroPage() {
                       type="text" inputMode="numeric"
                       value={faturamentoMensal}
                       onChange={(e) => setFaturamentoMensal(formatCurrencyInput(e.target.value))}
-                      className="w-full border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
                       placeholder="0,00"
                     />
                   </div>
@@ -339,7 +339,7 @@ export default function CadastroPage() {
                       type="text" inputMode="numeric"
                       value={faturamentoEsperado}
                       onChange={(e) => setFaturamentoEsperado(formatCurrencyInput(e.target.value))}
-                      className="w-full border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
                       placeholder="0,00"
                     />
                   </div>
@@ -356,7 +356,7 @@ export default function CadastroPage() {
                       type="text" inputMode="numeric"
                       value={saldoInicial}
                       onChange={(e) => setSaldoInicial(formatCurrencyInput(e.target.value))}
-                      className="w-full border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
                       placeholder="0,00"
                     />
                   </div>
@@ -364,7 +364,7 @@ export default function CadastroPage() {
                 </div>
 
                 {error && <p className="text-red-500 text-xs">{error}</p>}
-                <button type="submit" className="w-full bg-blue-600 text-white rounded-xl py-2.5 text-sm font-semibold">
+                <button type="submit" className="w-full bg-[#FF8A00] text-white rounded-xl py-2.5 text-sm font-semibold">
                   Continuar
                 </button>
               </form>
@@ -391,7 +391,7 @@ export default function CadastroPage() {
                   <select
                     value={controleAtual}
                     onChange={(e) => setControleAtual(e.target.value)}
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00] bg-white"
                   >
                     <option value="">Selecione...</option>
                     {CONTROLE_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
@@ -400,7 +400,7 @@ export default function CadastroPage() {
 
                 {error && <p className="text-red-500 text-xs bg-red-50 p-2 rounded-lg">{error}</p>}
                 <button type="submit" disabled={loading}
-                  className="w-full bg-blue-600 text-white rounded-xl py-2.5 text-sm font-semibold disabled:opacity-60">
+                  className="w-full bg-[#FF8A00] text-white rounded-xl py-2.5 text-sm font-semibold disabled:opacity-60">
                   {loading ? 'Criando sua conta...' : 'Ver meu diagnóstico'}
                 </button>
               </form>
@@ -409,7 +409,7 @@ export default function CadastroPage() {
 
           <p className="text-center text-xs text-slate-500 mt-4">
             Já tem conta?{' '}
-            <Link href="/login" className="text-blue-600 font-medium">Entrar</Link>
+            <Link href="/login" className="text-[#FF8A00] font-medium">Entrar</Link>
           </p>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import AppShell from '@/components/AppShell'
 import { formatCurrency } from '@/lib/utils'
 import Link from 'next/link'
+import { Target } from 'lucide-react'
 
 type Goal = {
   id: string
@@ -58,7 +59,7 @@ export default function ObjetivosPage() {
             <p className="text-sm text-slate-400">Construindo o futuro da empresa</p>
           </div>
           <Link href="/objetivos/novo"
-            className="bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-xl">
+            className="bg-[#FF8A00] text-white text-sm font-semibold px-4 py-2 rounded-xl">
             + Novo
           </Link>
         </div>
@@ -67,13 +68,13 @@ export default function ObjetivosPage() {
           <div className="text-center py-20 text-slate-400 text-sm">Carregando...</div>
         ) : activeGoals.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-5xl mb-4">🎯</p>
+            <Target size={48} className="mx-auto mb-4 text-slate-300" />
             <p className="text-slate-700 font-semibold mb-1">Nenhuma meta ainda</p>
             <p className="text-sm text-slate-400 mb-6">
               Crie sua primeira meta e comece a reservar parte de cada entrada automaticamente.
             </p>
             <Link href="/objetivos/novo"
-              className="bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl">
+              className="bg-[#FF8A00] text-white text-sm font-semibold px-5 py-2.5 rounded-xl">
               Criar primeira meta
             </Link>
           </div>
@@ -83,7 +84,7 @@ export default function ObjetivosPage() {
             <div className="grid grid-cols-2 gap-3 mb-6">
               <div className="bg-white rounded-2xl p-4 shadow-sm">
                 <p className="text-xs text-slate-400 mb-1">Total acumulado</p>
-                <p className="text-lg font-bold text-blue-600">{formatCurrency(totalAccumulated)}</p>
+                <p className="text-lg font-bold text-[#FF8A00]">{formatCurrency(totalAccumulated)}</p>
               </div>
               <div className="bg-white rounded-2xl p-4 shadow-sm">
                 <p className="text-xs text-slate-400 mb-1">% reservado por entrada</p>
@@ -116,7 +117,7 @@ export default function ObjetivosPage() {
                         className="h-full rounded-full transition-all duration-700"
                         style={{
                           width: `${pct}%`,
-                          background: pct >= 80 ? '#10b981' : pct >= 40 ? '#3b82f6' : '#6366f1',
+                          background: pct >= 80 ? '#10b981' : pct >= 40 ? '#FF8A00' : '#d97706',
                         }}
                       />
                     </div>

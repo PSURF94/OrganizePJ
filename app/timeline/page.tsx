@@ -14,6 +14,11 @@ interface TimelineEvent {
   alert: 'ok' | 'warning' | 'critical'
 }
 
+interface DayGroup {
+  date: string
+  events: TimelineEvent[]
+}
+
 interface TimelineData {
   current_balance: number
   events: TimelineEvent[]
@@ -31,12 +36,21 @@ const TYPE = {
   imposto: { color: '#d97706', bg: 'rgba(217,119,6,0.15)',   label: 'Imposto', icon: Receipt,      sign: '−' },
 }
 
-const DARK = '#1c1917' // quente, não frio
+const DARK = '#1c1917'
+
+function groupByDate(events: TimelineEvent[]): DayGroup[] {
+  const map = new Map<string, TimelineEvent[]>()
+  for (const ev of events) {
+    if (!map.has(ev.date)) map.set(ev.date, [])
+    map.get(ev.date)!.push(ev)
+  }
+  return Array.from(map.entries()).map(([date, evs]) => ({ date, events: evs }))
+}
 
 export default function TimelinePage() {
   const [data, setData] = useState<TimelineData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [selected, setSelected] = useState<number | null>(null)
+  const [selected, setSelected] = useState<{ gi: number; ei: number } | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -44,6 +58,16 @@ export default function TimelinePage() {
       .then((r) => r.json())
       .then((d) => { setData(d); setLoading(false) })
   }, [])
+
+  const dayGroups: DayGroup[] = data ? groupByDate(data.events) : []
+
+  function selectEvent(gi: number, ei: number) {
+    if (selected?.gi === gi && selected?.ei === ei) {
+      setSelected(null)
+    } else {
+      setSelected({ gi, ei })
+    }
+  }
 
   return (
     <AppShell>
@@ -117,143 +141,218 @@ export default function TimelinePage() {
                   >
                     <div
                       className="flex items-end px-6"
-                      style={{ minWidth: `${Math.max(data.events.length * 164 + 60, 400)}px` }}
+                      style={{ minWidth: `${Math.max(dayGroups.length * 164 + 60, 400)}px` }}
                     >
-                      {data.events.map((ev, i) => {
-                        const t = TYPE[ev.type]
-                        const Icon = t.icon
-                        const isSelected = selected === i
-                        const nextEv = data.events[i + 1]
-                        const balColor = ev.running_balance < 0 ? '#E50914'
-                          : ev.alert === 'warning' ? '#d97706'
+                      {dayGroups.map((group, gi) => {
+                        const lastEv = group.events[group.events.length - 1]
+                        const nextGroup = dayGroups[gi + 1]
+                        const balColor = lastEv.running_balance < 0 ? '#E50914'
+                          : lastEv.alert === 'warning' ? '#d97706'
                           : 'rgba(255,255,255,0.28)'
+                        const isAnySelected = selected?.gi === gi
+
+                        if (group.events.length === 1) {
+                          // ── Card simples (1 evento) ── mesmo comportamento original
+                          const ev = group.events[0]
+                          const t = TYPE[ev.type]
+                          const Icon = t.icon
+                          const isSelected = selected?.gi === gi && selected?.ei === 0
+
+                          return (
+                            <div key={gi} className="flex items-end flex-shrink-0" style={{ width: 164 }}>
+                              <div className="flex flex-col items-center w-full">
+                                <button
+                                  onClick={() => selectEvent(gi, 0)}
+                                  style={{
+                                    width: 144, height: 148,
+                                    textAlign: 'left',
+                                    display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                                    background: isSelected ? t.bg : 'rgba(255,255,255,0.05)',
+                                    border: `1px solid ${isSelected ? t.color : 'rgba(255,255,255,0.08)'}`,
+                                    borderTop: `3px solid ${t.color}`,
+                                    borderRadius: 16,
+                                    padding: '12px 13px',
+                                    marginBottom: 14,
+                                    boxShadow: isSelected ? `0 0 24px ${t.color}28` : 'none',
+                                    transform: isSelected ? 'translateY(-6px)' : 'none',
+                                    transition: 'all 0.2s ease',
+                                    cursor: 'pointer', flexShrink: 0,
+                                  }}
+                                >
+                                  <div className="flex items-center gap-1.5">
+                                    <Icon size={11} color={t.color} strokeWidth={2.5} />
+                                    <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: t.color }}>
+                                      {t.label}
+                                    </span>
+                                  </div>
+                                  <p style={{
+                                    fontSize: 11, fontWeight: 600,
+                                    color: isSelected ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.75)',
+                                    lineHeight: 1.35, overflow: 'hidden',
+                                    display: '-webkit-box', WebkitLineClamp: 2,
+                                    WebkitBoxOrient: 'vertical' as const,
+                                    flex: 1, margin: '8px 0',
+                                  }}>
+                                    {ev.description}
+                                  </p>
+                                  <div>
+                                    <p style={{ fontFamily: 'var(--font-poppins, sans-serif)', fontSize: 15, fontWeight: 700, color: t.color, lineHeight: 1, marginBottom: 4 }}>
+                                      {t.sign}{formatCurrency(Math.abs(ev.amount))}
+                                    </p>
+                                    <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.28)' }}>
+                                      {formatDateShort(ev.date)}
+                                    </p>
+                                  </div>
+                                </button>
+
+                                <div style={{ width: 2, height: 16, background: t.color, opacity: 0.5 }} />
+                                <div style={{
+                                  width: 15, height: 15, borderRadius: '50%',
+                                  background: t.color, boxShadow: `0 0 8px ${t.color}, 0 0 16px ${t.color}50`,
+                                  border: `2.5px solid ${DARK}`, zIndex: 10, flexShrink: 0,
+                                }} />
+                                <div style={{ display: 'flex', width: '100%', height: 3, alignItems: 'center' }}>
+                                  <div style={{
+                                    flex: 1, height: 3,
+                                    background: lastEv.running_balance < 0 ? '#E50914' : lastEv.alert === 'warning' ? '#d97706' : 'rgba(255,255,255,0.1)',
+                                    borderRadius: 3,
+                                  }} />
+                                  {!nextGroup && (
+                                    <div style={{ width: 20, height: 3, background: 'rgba(255,255,255,0.04)', borderRadius: 3 }} />
+                                  )}
+                                </div>
+                                <div style={{ marginTop: 10, textAlign: 'center' }}>
+                                  <p style={{ fontFamily: 'var(--font-poppins, sans-serif)', fontSize: 12, fontWeight: 700, color: balColor, lineHeight: 1 }}>
+                                    {formatCurrency(lastEv.running_balance)}
+                                  </p>
+                                  {lastEv.alert !== 'ok' && (
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, marginTop: 3 }}>
+                                      <AlertTriangle size={9} color={balColor} />
+                                      <span style={{ fontSize: 9, fontWeight: 700, color: balColor }}>
+                                        {lastEv.alert === 'critical' ? 'negativo' : 'baixo'}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        }
+
+                        // ── Card agrupado (múltiplos eventos no mesmo dia) ──
+                        const visibleCount = Math.min(2, group.events.length)
+                        const hiddenCount = group.events.length - visibleCount
+                        const dotColor = lastEv.running_balance < 0 ? '#E50914'
+                          : lastEv.alert === 'warning' ? '#d97706'
+                          : TYPE[lastEv.type].color
 
                         return (
-                          <div key={i} className="flex items-end flex-shrink-0" style={{ width: 164 }}>
+                          <div key={gi} className="flex items-end flex-shrink-0" style={{ width: 164 }}>
                             <div className="flex flex-col items-center w-full">
 
-                              {/* ── Card — altura fixa ── */}
-                              <button
-                                onClick={() => setSelected(isSelected ? null : i)}
-                                style={{
-                                  width: 144,
-                                  height: 148,          // altura fixa — todos iguais
-                                  textAlign: 'left',
-                                  display: 'flex',
-                                  flexDirection: 'column',
-                                  justifyContent: 'space-between',
-                                  background: isSelected ? t.bg : 'rgba(255,255,255,0.05)',
-                                  border: `1px solid ${isSelected ? t.color : 'rgba(255,255,255,0.08)'}`,
-                                  borderTop: `3px solid ${t.color}`,
-                                  borderRadius: 16,
-                                  padding: '12px 13px',
-                                  marginBottom: 14,
-                                  boxShadow: isSelected ? `0 0 24px ${t.color}28` : 'none',
-                                  transform: isSelected ? 'translateY(-6px)' : 'none',
-                                  transition: 'all 0.2s ease',
-                                  cursor: 'pointer',
-                                  flexShrink: 0,
-                                }}
-                              >
-                                {/* Topo — badge tipo */}
-                                <div className="flex items-center gap-1.5">
-                                  <Icon size={11} color={t.color} strokeWidth={2.5} />
-                                  <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: t.color }}>
-                                    {t.label}
+                              {/* Card agrupado */}
+                              <div style={{
+                                width: 144, height: 148,
+                                display: 'flex', flexDirection: 'column',
+                                background: isAnySelected ? 'rgba(255,255,255,0.09)' : 'rgba(255,255,255,0.05)',
+                                border: `1px solid ${isAnySelected ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.08)'}`,
+                                borderTop: `3px solid rgba(255,255,255,0.2)`,
+                                borderRadius: 16,
+                                padding: '10px 10px 8px',
+                                marginBottom: 14,
+                                flexShrink: 0,
+                                overflow: 'hidden',
+                              }}>
+                                {/* Header: data + contagem */}
+                                <div className="flex items-center justify-between mb-1.5" style={{ flexShrink: 0 }}>
+                                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>
+                                    {formatDateShort(group.date)}
+                                  </span>
+                                  <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                                    {group.events.length} eventos
                                   </span>
                                 </div>
 
-                                {/* Descrição — 2 linhas fixas, sem crescer o card */}
-                                <p style={{
-                                  fontSize: 11,
-                                  fontWeight: 600,
-                                  color: isSelected ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.75)',
-                                  lineHeight: 1.35,
-                                  overflow: 'hidden',
-                                  display: '-webkit-box',
-                                  WebkitLineClamp: 2,
-                                  WebkitBoxOrient: 'vertical' as const,
-                                  flex: 1,
-                                  margin: '8px 0',
-                                }}>
-                                  {ev.description}
-                                </p>
-
-                                {/* Rodapé — valor e data */}
-                                <div>
-                                  <p style={{
-                                    fontFamily: 'var(--font-poppins, sans-serif)',
-                                    fontSize: 15,
-                                    fontWeight: 700,
-                                    color: t.color,
-                                    lineHeight: 1,
-                                    marginBottom: 4,
-                                  }}>
-                                    {t.sign}{formatCurrency(Math.abs(ev.amount))}
-                                  </p>
-                                  <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.28)' }}>
-                                    {formatDateShort(ev.date)}
-                                  </p>
+                                {/* Mini-rows */}
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, overflow: 'hidden' }}>
+                                  {group.events.slice(0, visibleCount).map((ev, ei) => {
+                                    const t = TYPE[ev.type]
+                                    const Icon = t.icon
+                                    const isThisSelected = selected?.gi === gi && selected?.ei === ei
+                                    return (
+                                      <button
+                                        key={ei}
+                                        onClick={() => selectEvent(gi, ei)}
+                                        style={{
+                                          display: 'flex', alignItems: 'center', gap: 5,
+                                          padding: '5px 6px',
+                                          borderRadius: 8,
+                                          background: isThisSelected ? t.bg : 'rgba(255,255,255,0.04)',
+                                          border: `1px solid ${isThisSelected ? t.color : 'transparent'}`,
+                                          borderLeft: `2.5px solid ${t.color}`,
+                                          cursor: 'pointer', width: '100%', textAlign: 'left',
+                                          flex: 1, minHeight: 0,
+                                        }}
+                                      >
+                                        <Icon size={9} color={t.color} strokeWidth={2.5} style={{ flexShrink: 0 }} />
+                                        <span style={{
+                                          flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
+                                          fontSize: 10, color: 'rgba(255,255,255,0.7)', fontWeight: 600,
+                                        }}>
+                                          {ev.description}
+                                        </span>
+                                        <span style={{ fontSize: 10, fontWeight: 700, color: t.color, flexShrink: 0, marginLeft: 2 }}>
+                                          {t.sign}{formatCurrency(Math.abs(ev.amount))}
+                                        </span>
+                                      </button>
+                                    )
+                                  })}
                                 </div>
-                              </button>
 
-                              {/* Conector vertical */}
-                              <div style={{ width: 2, height: 16, background: t.color, opacity: 0.5 }} />
-
-                              {/* Dot com glow */}
-                              <div style={{
-                                width: 15,
-                                height: 15,
-                                borderRadius: '50%',
-                                background: t.color,
-                                boxShadow: `0 0 8px ${t.color}, 0 0 16px ${t.color}50`,
-                                border: `2.5px solid ${DARK}`,
-                                zIndex: 10,
-                                flexShrink: 0,
-                              }} />
-
-                              {/* Linha horizontal */}
-                              <div style={{ display: 'flex', width: '100%', height: 3, alignItems: 'center' }}>
-                                <div style={{
-                                  flex: 1,
-                                  height: 3,
-                                  background: ev.running_balance < 0 ? '#E50914'
-                                    : ev.alert === 'warning' ? '#d97706'
-                                    : 'rgba(255,255,255,0.1)',
-                                  borderRadius: 3,
-                                }} />
-                                {!nextEv && (
-                                  <div style={{ width: 20, height: 3, background: 'rgba(255,255,255,0.04)', borderRadius: 3 }} />
+                                {/* "ver +N" indicator */}
+                                {hiddenCount > 0 && (
+                                  <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.22)', marginTop: 4, textAlign: 'center', flexShrink: 0 }}>
+                                    + {hiddenCount} mais · clique para ver
+                                  </p>
                                 )}
                               </div>
 
-                              {/* Saldo projetado */}
+                              {/* Conector + dot + linha */}
+                              <div style={{ width: 2, height: 16, background: dotColor, opacity: 0.5 }} />
+                              <div style={{
+                                width: 15, height: 15, borderRadius: '50%',
+                                background: dotColor, boxShadow: `0 0 8px ${dotColor}, 0 0 16px ${dotColor}50`,
+                                border: `2.5px solid ${DARK}`, zIndex: 10, flexShrink: 0,
+                              }} />
+                              <div style={{ display: 'flex', width: '100%', height: 3, alignItems: 'center' }}>
+                                <div style={{
+                                  flex: 1, height: 3,
+                                  background: lastEv.running_balance < 0 ? '#E50914' : lastEv.alert === 'warning' ? '#d97706' : 'rgba(255,255,255,0.1)',
+                                  borderRadius: 3,
+                                }} />
+                                {!nextGroup && (
+                                  <div style={{ width: 20, height: 3, background: 'rgba(255,255,255,0.04)', borderRadius: 3 }} />
+                                )}
+                              </div>
                               <div style={{ marginTop: 10, textAlign: 'center' }}>
-                                <p style={{
-                                  fontFamily: 'var(--font-poppins, sans-serif)',
-                                  fontSize: 12,
-                                  fontWeight: 700,
-                                  color: balColor,
-                                  lineHeight: 1,
-                                }}>
-                                  {formatCurrency(ev.running_balance)}
+                                <p style={{ fontFamily: 'var(--font-poppins, sans-serif)', fontSize: 12, fontWeight: 700, color: balColor, lineHeight: 1 }}>
+                                  {formatCurrency(lastEv.running_balance)}
                                 </p>
-                                {ev.alert !== 'ok' && (
+                                {lastEv.alert !== 'ok' && (
                                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, marginTop: 3 }}>
                                     <AlertTriangle size={9} color={balColor} />
                                     <span style={{ fontSize: 9, fontWeight: 700, color: balColor }}>
-                                      {ev.alert === 'critical' ? 'negativo' : 'baixo'}
+                                      {lastEv.alert === 'critical' ? 'negativo' : 'baixo'}
                                     </span>
                                   </div>
                                 )}
                               </div>
-
                             </div>
                           </div>
                         )
                       })}
 
-                      {/* Marcador de fim — sem texto rotacionado */}
+                      {/* Marcador de fim */}
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, width: 24, paddingBottom: 68 }}>
                         <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255,255,255,0.12)' }} />
                       </div>
@@ -262,9 +361,11 @@ export default function TimelinePage() {
 
                   {/* ── Detalhe do evento selecionado ── */}
                   {selected !== null && (() => {
-                    const ev = data.events[selected]
+                    const ev = dayGroups[selected.gi]?.events[selected.ei]
+                    if (!ev) return null
                     const t = TYPE[ev.type]
                     const Icon = t.icon
+                    const group = dayGroups[selected.gi]
                     return (
                       <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '20px 24px' }}>
                         <div className="flex items-start justify-between gap-4">
@@ -275,6 +376,11 @@ export default function TimelinePage() {
                               </div>
                               <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: t.color }}>
                                 {t.label} · {formatDateShort(ev.date)}
+                                {group.events.length > 1 && (
+                                  <span style={{ color: 'rgba(255,255,255,0.25)', fontWeight: 400, textTransform: 'none' }}>
+                                    {' '}· evento {selected.ei + 1}/{group.events.length}
+                                  </span>
+                                )}
                               </span>
                             </div>
                             <p style={{ color: 'white', fontWeight: 600, fontSize: 14, marginBottom: 4, lineHeight: 1.4 }}>
@@ -287,10 +393,7 @@ export default function TimelinePage() {
                           <div style={{ textAlign: 'right', flexShrink: 0 }}>
                             <p style={{
                               fontFamily: 'var(--font-poppins, sans-serif)',
-                              fontSize: 22,
-                              fontWeight: 800,
-                              color: t.color,
-                              lineHeight: 1,
+                              fontSize: 22, fontWeight: 800, color: t.color, lineHeight: 1,
                             }}>
                               {t.sign}{formatCurrency(Math.abs(ev.amount))}
                             </p>

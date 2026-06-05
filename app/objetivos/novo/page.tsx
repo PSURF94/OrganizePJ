@@ -66,7 +66,7 @@ export default function NovoObjetivoPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
               placeholder="Ex: Comprar drone, Capital de giro..."
             />
             <datalist id="sugestoes-list">
@@ -82,7 +82,7 @@ export default function NovoObjetivoPage() {
                 type="text" inputMode="numeric"
                 value={targetRaw}
                 onChange={(e) => setTargetRaw(fmtInput(e.target.value))}
-                className="w-full border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
                 placeholder="0,00"
               />
             </div>
@@ -91,13 +91,13 @@ export default function NovoObjetivoPage() {
           <div>
             <div className="flex justify-between items-center mb-2">
               <label className="text-xs font-medium text-slate-600">% reservado por entrada</label>
-              <span className="text-sm font-bold text-blue-600">{pct}%</span>
+              <span className="text-sm font-bold text-[#FF8A00]">{pct}%</span>
             </div>
             <input
               type="range" min="0" max="50" step="1"
               value={pct}
               onChange={(e) => setPct(Number(e.target.value))}
-              className="w-full accent-blue-600"
+              className="w-full accent-[#FF8A00]"
             />
             <div className="flex justify-between text-[11px] text-slate-400 mt-1">
               <span>0%</span>
@@ -105,7 +105,7 @@ export default function NovoObjetivoPage() {
               <span>50%</span>
             </div>
             {pct > 0 && targetRaw && (
-              <div className="mt-3 bg-blue-50 rounded-xl p-3 text-xs text-blue-700">
+              <div className="mt-3 bg-orange-50 rounded-xl p-3 text-xs text-orange-700">
                 Em uma entrada de R$5.000, serão reservados{' '}
                 <strong>R$ {(5000 * pct / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong> para este objetivo.
               </div>
@@ -115,7 +115,7 @@ export default function NovoObjetivoPage() {
           {error && <p className="text-red-500 text-xs">{error}</p>}
 
           <button type="submit" disabled={loading}
-            className="w-full bg-blue-600 text-white rounded-2xl py-3 text-sm font-semibold disabled:opacity-60">
+            className="w-full bg-[#FF8A00] text-white rounded-2xl py-3 text-sm font-semibold disabled:opacity-60">
             {loading ? 'Criando...' : 'Criar objetivo'}
           </button>
         </form>

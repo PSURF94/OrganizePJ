@@ -77,6 +77,8 @@ export interface Company {
   controle_atual?: string
   diagnostico_feito?: boolean
   saldo_inicial?: number
+  prolabore_mensal?: number | null
+  retirada_desejada_mensal?: number | null
 }
 
 export interface Client {
@@ -116,6 +118,9 @@ export interface Receivable {
   received_date?: string
   status: ReceivableStatus
   created_at: string
+  installment_group_id?: string | null
+  installment_number: number
+  installment_total: number
 }
 
 export interface Expense {

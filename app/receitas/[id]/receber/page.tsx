@@ -115,30 +115,39 @@ export default function ReceberPage() {
           <div className="bg-white rounded-2xl p-5 mb-4 shadow-sm space-y-4">
             <h2 className="text-sm font-semibold text-slate-700">Distribuição desta entrada</h2>
 
-            {contributions.map((c) => (
-              <div key={c.goal_id}>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-medium text-slate-600">🎯 {c.name}</label>
-                  <span className="text-[11px] text-slate-400">
-                    {goals.find((g) => g.id === c.goal_id)?.percentage_allocation}% da entrada
-                  </span>
+            {contributions.map((c) => {
+              const plannedPct = goals.find((g) => g.id === c.goal_id)?.percentage_allocation ?? 0
+              const editedPct = amount > 0 ? Math.round(parseCurrency(c.amount) / amount * 1000) / 10 : 0
+              const pctMatch = editedPct === plannedPct
+              return (
+                <div key={c.goal_id}>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-medium text-slate-600">{c.name}</label>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[11px] text-slate-400">{plannedPct}% plan.</span>
+                      <span className="text-[11px] text-slate-300">·</span>
+                      <span className={`text-[11px] font-semibold ${pctMatch ? 'text-emerald-500' : 'text-[#FF8A00]'}`}>
+                        {editedPct}% atual
+                      </span>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">R$</span>
+                    <input
+                      type="text" inputMode="numeric"
+                      value={c.amount}
+                      onChange={(e) => updateContribution(c.goal_id, e.target.value)}
+                      className="w-full border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
+                    />
+                  </div>
                 </div>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">R$</span>
-                  <input
-                    type="text" inputMode="numeric"
-                    value={c.amount}
-                    onChange={(e) => updateContribution(c.goal_id, e.target.value)}
-                    className="w-full border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-            ))}
+              )
+            })}
 
             <div className="pt-3 border-t border-slate-100 space-y-1">
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500">🎯 Metas total</span>
-                <span className="font-semibold text-blue-600">− {formatCurrency(totalGoals)}</span>
+                <span className="font-semibold text-[#FF8A00]">− {formatCurrency(totalGoals)}</span>
               </div>
               {isMei ? (
                 <div className="flex justify-between text-sm">

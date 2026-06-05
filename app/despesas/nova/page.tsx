@@ -47,7 +47,7 @@ export default function NovaDespesaPage() {
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">Categoria</label>
             <select value={form.category} onChange={(e) => set('category', e.target.value)}
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00] bg-white">
               {EXPENSE_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
@@ -55,26 +55,26 @@ export default function NovaDespesaPage() {
             <label className="block text-xs font-medium text-slate-500 mb-1">Descrição *</label>
             <input required value={form.description} onChange={(e) => set('description', e.target.value)}
               placeholder="Ex: Assinatura Adobe CC"
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">Valor por parcela (R$) *</label>
               <input required type="number" min="0" step="0.01" value={form.amount}
                 onChange={(e) => set('amount', e.target.value)} placeholder="0,00"
-                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">Parcelas</label>
               <input type="number" min="1" max="60" value={form.installment_total}
                 onChange={(e) => set('installment_total', e.target.value)}
-                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
             </div>
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">Data (1ª parcela)</label>
             <input type="date" value={form.date} onChange={(e) => set('date', e.target.value)}
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
           </div>
 
           {total > 1 && (
@@ -84,7 +84,7 @@ export default function NovaDespesaPage() {
           )}
 
           <button type="submit" disabled={saving}
-            className="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl text-sm disabled:opacity-50">
+            className="w-full bg-[#FF8A00] text-white font-semibold py-3 rounded-xl text-sm disabled:opacity-50">
             {saving ? 'Salvando...' : 'Lançar Despesa'}
           </button>
         </form>

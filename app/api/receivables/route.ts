@@ -37,6 +37,28 @@ export async function POST(req: NextRequest) {
   if (!company) return NextResponse.json({ error: 'Company not found' }, { status: 404 })
 
   const body = await req.json()
+
+  // Batch insert for installments
+  if (Array.isArray(body.installments) && body.installments.length > 0) {
+    const groupId = crypto.randomUUID()
+    const total = body.installments.length
+    const rows = body.installments.map((inst: { amount: number; due_date: string }, i: number) => ({
+      company_id: company.id,
+      client_id: body.client_id || null,
+      service_id: body.service_id || null,
+      description: body.description,
+      amount: Number(inst.amount),
+      due_date: inst.due_date,
+      status: 'pendente',
+      installment_group_id: groupId,
+      installment_number: i + 1,
+      installment_total: total,
+    }))
+    const { data, error } = await supabase.from('receivables').insert(rows).select()
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json(data, { status: 201 })
+  }
+
   const { data, error } = await supabase.from('receivables').insert([{
     company_id: company.id,
     client_id: body.client_id || null,

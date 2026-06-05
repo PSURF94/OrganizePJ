@@ -99,7 +99,7 @@ export default function ObjetivoDetailPage() {
           <div className="flex justify-between items-end mb-3">
             <div>
               <p className="text-xs text-slate-400">Acumulado</p>
-              <p className="text-2xl font-bold text-blue-600">{formatCurrency(goal.accumulated_amount)}</p>
+              <p className="text-2xl font-bold text-[#FF8A00]">{formatCurrency(goal.accumulated_amount)}</p>
             </div>
             <div className="text-right">
               <p className="text-xs text-slate-400">Meta</p>
@@ -112,7 +112,7 @@ export default function ObjetivoDetailPage() {
               className="h-full rounded-full transition-all duration-700"
               style={{
                 width: `${pct}%`,
-                background: pct >= 80 ? '#10b981' : pct >= 40 ? '#3b82f6' : '#6366f1',
+                background: pct >= 80 ? '#10b981' : pct >= 40 ? '#FF8A00' : '#d97706',
               }}
             />
           </div>
@@ -127,7 +127,7 @@ export default function ObjetivoDetailPage() {
         {/* Contribuição manual */}
         <button
           onClick={() => setShowForm(!showForm)}
-          className="w-full mb-4 border-2 border-dashed border-blue-200 text-blue-600 rounded-2xl py-3 text-sm font-semibold hover:bg-blue-50 transition-colors"
+          className="w-full mb-4 border-2 border-dashed border-orange-200 text-[#FF8A00] rounded-2xl py-3 text-sm font-semibold hover:bg-orange-50 transition-colors"
         >
           {showForm ? 'Cancelar' : '+ Contribuição manual'}
         </button>
@@ -142,7 +142,7 @@ export default function ObjetivoDetailPage() {
                   type="text" inputMode="numeric" autoFocus
                   value={manualAmount}
                   onChange={(e) => setManualAmount(fmtInput(e.target.value))}
-                  className="w-full border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
                   placeholder="0,00"
                 />
               </div>
@@ -151,13 +151,13 @@ export default function ObjetivoDetailPage() {
               <label className="text-xs font-medium text-slate-600 block mb-1">Observação (opcional)</label>
               <input
                 type="text" value={manualNote} onChange={(e) => setManualNote(e.target.value)}
-                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
                 placeholder="Ex: Saldo extra de maio"
               />
             </div>
             {error && <p className="text-red-500 text-xs">{error}</p>}
             <button type="submit" disabled={saving}
-              className="w-full bg-blue-600 text-white rounded-xl py-2.5 text-sm font-semibold disabled:opacity-60">
+              className="w-full bg-[#FF8A00] text-white rounded-xl py-2.5 text-sm font-semibold disabled:opacity-60">
               {saving ? 'Salvando...' : 'Salvar contribuição'}
             </button>
           </form>

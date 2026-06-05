@@ -1,0 +1,7 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="40" height="40" rx="9" fill="#1A1A1D"/>
+  <path d="M 25.5 12.5 A 11 11 0 1 1 14.5 12.5" stroke="#FF8A00" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+  <line x1="20" y1="11.5" x2="20" y2="5.5" stroke="#FF8A00" stroke-width="2.2" stroke-linecap="round"/>
+  <polyline points="17,8 20,5.5 23,8" stroke="#FF8A00" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <text x="20" y="27" text-anchor="middle" fill="white" font-weight="800" font-size="12" font-family="system-ui, -apple-system, sans-serif" letter-spacing="-0.3">PJ</text>
+</svg>

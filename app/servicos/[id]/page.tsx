@@ -103,12 +103,12 @@ export default function ServicoDetailPage() {
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">Título *</label>
             <input required value={form.title} onChange={(e) => set('title', e.target.value)}
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">Cliente</label>
             <select value={form.client_id} onChange={(e) => set('client_id', e.target.value)}
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00] bg-white">
               <option value="">— Sem cliente —</option>
               {clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
@@ -117,28 +117,28 @@ export default function ServicoDetailPage() {
             <label className="block text-xs font-medium text-slate-500 mb-1">Valor (R$) *</label>
             <input required type="number" min="0" step="0.01" value={form.contracted_value}
               onChange={(e) => set('contracted_value', e.target.value)}
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">Data execução</label>
               <input type="date" value={form.execution_date} onChange={(e) => set('execution_date', e.target.value)}
-                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">Prev. pagamento</label>
               <input type="date" value={form.expected_payment_date} onChange={(e) => set('expected_payment_date', e.target.value)}
-                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
             </div>
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">Descrição</label>
             <textarea value={form.description} onChange={(e) => set('description', e.target.value)}
               rows={3}
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00] resize-none" />
           </div>
           <button type="submit" disabled={saving}
-            className="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl text-sm disabled:opacity-50">
+            className="w-full bg-[#FF8A00] text-white font-semibold py-3 rounded-xl text-sm disabled:opacity-50">
             {saving ? 'Salvando...' : 'Salvar Alterações'}
           </button>
         </form>

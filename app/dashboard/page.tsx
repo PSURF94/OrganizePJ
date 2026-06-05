@@ -5,8 +5,10 @@ import { formatCurrency } from '@/lib/utils'
 import Link from 'next/link'
 import {
   Receipt, Target, TrendingUp, TrendingDown,
-  AlertTriangle, Lightbulb, ChevronRight, Clock,
+  AlertTriangle, Lightbulb, ChevronRight, Clock, Wallet,
 } from 'lucide-react'
+import { calcWithdrawalRecommendation } from '@/lib/withdrawal-engine'
+import type { TaxRegime } from '@/lib/constants'
 
 type GoalSummary = {
   id: string; name: string; target_amount: number; accumulated_amount: number
@@ -20,6 +22,9 @@ type DashboardData = {
   total_expenses_ever: number; total_goals_ever: number
   receivables_pending: number; receivable_30d: number; receivables_overdue: number
   goals: GoalSummary[]; recommendations: string[]
+  company_tax_regime: string
+  company_prolabore_mensal: number | null
+  company_retirada_desejada_mensal: number | null
 }
 
 const EMPTY: DashboardData = {
@@ -29,6 +34,9 @@ const EMPTY: DashboardData = {
   total_expenses_ever: 0, total_goals_ever: 0,
   receivables_pending: 0, receivable_30d: 0, receivables_overdue: 0,
   goals: [], recommendations: [],
+  company_tax_regime: 'simples',
+  company_prolabore_mensal: null,
+  company_retirada_desejada_mensal: null,
 }
 
 const C = { orange: '#FF8A00', red: '#E50914', dark: '#1A1A1D' } as const
@@ -228,6 +236,65 @@ export default function DashboardPage() {
                 <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>Reserve parte das entradas para um objetivo</p>
               </Link>
             )}
+
+            {/* ── Retiradas ── */}
+            {(() => {
+              const target = data.company_retirada_desejada_mensal
+              if (!target || target <= 0) return null
+              const wr = calcWithdrawalRecommendation(
+                (data.company_tax_regime || 'simples') as TaxRegime,
+                target,
+                data.company_prolabore_mensal,
+              )
+              const hasWaste = !!wr.annual_waste
+              const borderColor = hasWaste ? '#d97706' : '#10b981'
+              const bgWaste = '#fef3c7'
+              return (
+                <div className="mb-3 rounded-2xl overflow-hidden" style={{ border: '1px solid #eef0f3', borderTop: `4px solid ${borderColor}` }}>
+                  <div className="bg-white px-5 py-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div style={{ width: 28, height: 28, borderRadius: 7, background: hasWaste ? '#fef3c7' : '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Wallet size={15} color={borderColor} />
+                      </div>
+                      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#94a3b8' }}>
+                        Suas retiradas
+                      </p>
+                    </div>
+
+                    {wr.regime === 'mei' ? (
+                      <p style={{ fontSize: 12, color: '#64748b' }}>{wr.reason}</p>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 2 }}>Pró-labore</p>
+                            <p style={{ fontFamily: 'var(--font-poppins, sans-serif)', fontSize: 16, fontWeight: 700, color: '#1A1A1D' }}>
+                              {formatCurrency(wr.optimal_prolabore)}
+                            </p>
+                            <p style={{ fontSize: 10, color: '#94a3b8' }}>INSS {formatCurrency(wr.inss_cost)}/mês</p>
+                          </div>
+                          <div>
+                            <p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 2 }}>Dist. de lucros</p>
+                            <p style={{ fontFamily: 'var(--font-poppins, sans-serif)', fontSize: 16, fontWeight: 700, color: '#10b981' }}>
+                              {formatCurrency(wr.optimal_distribution)}
+                            </p>
+                            <p style={{ fontSize: 10, color: '#10b981' }}>Isento de IR e INSS</p>
+                          </div>
+                        </div>
+
+                        {hasWaste && (
+                          <div style={{ background: bgWaste, borderRadius: 10, padding: '8px 12px' }}>
+                            <p style={{ fontSize: 11, fontWeight: 600, color: '#92400e' }}>
+                              Pró-labore atual de {formatCurrency(wr.current_prolabore || 0)} gera {formatCurrency((wr.current_tax_cost || 0) - wr.total_tax_cost)} a mais/mês — {formatCurrency(wr.annual_waste!)}/ano de custo extra.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })()}
 
             {/* ── Assistente ── */}
             {data.recommendations.length > 0 && (

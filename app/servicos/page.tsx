@@ -5,6 +5,7 @@ import type { Service, ServiceStatus } from '@/lib/constants'
 import { SERVICE_STATUSES, SERVICE_STATUS_COLORS } from '@/lib/constants'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import Link from 'next/link'
+import { Briefcase } from 'lucide-react'
 
 const ALL = 'all'
 
@@ -35,7 +36,7 @@ export default function ServicosPage() {
       <div className="px-4 pt-6 max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl font-bold text-slate-900">Serviços</h1>
-          <Link href="/servicos/novo" className="bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-xl">
+          <Link href="/servicos/novo" className="bg-[#FF8A00] text-white text-sm font-semibold px-4 py-2 rounded-xl">
             + Novo
           </Link>
         </div>
@@ -57,9 +58,9 @@ export default function ServicosPage() {
           <div className="text-center py-20 text-slate-400 text-sm">Carregando...</div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-16 text-slate-400">
-            <p className="text-4xl mb-3">📋</p>
+            <Briefcase size={40} className="mx-auto mb-3 text-slate-300" />
             <p className="text-sm">Nenhum serviço encontrado</p>
-            <Link href="/servicos/novo" className="text-blue-600 text-sm mt-2 inline-block">Criar primeiro serviço</Link>
+            <Link href="/servicos/novo" className="text-[#FF8A00] text-sm mt-2 inline-block">Criar primeiro serviço</Link>
           </div>
         ) : (
           <div className="space-y-2">
@@ -84,7 +85,7 @@ export default function ServicosPage() {
                 </div>
                 <div className="flex gap-2 mt-3 pt-3 border-t border-slate-50">
                   <Link href={`/servicos/${s.id}`}
-                    className="text-xs text-blue-600 font-medium px-2 py-1 rounded-lg hover:bg-blue-50">
+                    className="text-xs text-[#FF8A00] font-medium px-2 py-1 rounded-lg hover:bg-orange-50">
                     Ver / Editar
                   </Link>
                   <button onClick={() => handleDelete(s.id, s.title)}

@@ -37,6 +37,8 @@ export async function PUT(req: NextRequest) {
       folha_mensal: body.folha_mensal ? Number(body.folha_mensal) : null,
       faturamento_mensal: body.faturamento_mensal ? Number(body.faturamento_mensal) : null,
       num_funcionarios: body.num_funcionarios !== undefined ? Number(body.num_funcionarios) : null,
+      prolabore_mensal: body.prolabore_mensal !== undefined && body.prolabore_mensal !== null ? Number(body.prolabore_mensal) : null,
+      retirada_desejada_mensal: body.retirada_desejada_mensal !== undefined && body.retirada_desejada_mensal !== null ? Number(body.retirada_desejada_mensal) : null,
     })
     .eq('owner_id', session.user.id)
     .select()

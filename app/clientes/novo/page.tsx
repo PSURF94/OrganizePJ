@@ -41,7 +41,7 @@ export default function NovoClientePage() {
               value={form.name}
               onChange={(e) => set('name', e.target.value)}
               placeholder="Nome completo ou razão social"
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
             />
           </div>
           <div>
@@ -50,7 +50,7 @@ export default function NovoClientePage() {
               value={form.cpf_cnpj}
               onChange={(e) => set('cpf_cnpj', e.target.value)}
               placeholder="000.000.000-00"
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
             />
           </div>
           <div>
@@ -60,7 +60,7 @@ export default function NovoClientePage() {
               value={form.email}
               onChange={(e) => set('email', e.target.value)}
               placeholder="email@exemplo.com"
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
             />
           </div>
           <div>
@@ -69,14 +69,14 @@ export default function NovoClientePage() {
               value={form.phone}
               onChange={(e) => set('phone', e.target.value)}
               placeholder="(11) 99999-9999"
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
             />
           </div>
 
           <button
             type="submit"
             disabled={saving}
-            className="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl text-sm disabled:opacity-50"
+            className="w-full bg-[#FF8A00] text-white font-semibold py-3 rounded-xl text-sm disabled:opacity-50"
           >
             {saving ? 'Salvando...' : 'Cadastrar Cliente'}
           </button>

@@ -48,7 +48,7 @@ export default async function DiagnosticoPage() {
         <div className="bg-white rounded-2xl p-5 mb-4 shadow-sm">
           <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Regime recomendado</p>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-2xl font-bold text-blue-600">{rec.label}</h2>
+            <h2 className="text-2xl font-bold text-[#FF8A00]">{rec.label}</h2>
             <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${COMPLEXIDADE_STYLE[rec.complexidade] || ''}`}>
               Complexidade {rec.complexidade}
             </span>
@@ -76,9 +76,9 @@ export default async function DiagnosticoPage() {
         </div>
 
         {/* Faixa */}
-        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-4">
-          <p className="text-xs font-semibold text-blue-600 mb-0.5">Faixa de tributação</p>
-          <p className="text-sm font-bold text-blue-900">{rec.faixa_tributacao}</p>
+        <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4 mb-4">
+          <p className="text-xs font-semibold text-[#FF8A00] mb-0.5">Faixa de tributação</p>
+          <p className="text-sm font-bold text-slate-800">{rec.faixa_tributacao}</p>
         </div>
 
         {/* Pontos de atenção */}
@@ -111,7 +111,7 @@ export default async function DiagnosticoPage() {
 
         <Link
           href="/dashboard"
-          className="block w-full bg-blue-600 text-white rounded-2xl py-3.5 text-sm font-semibold text-center"
+          className="block w-full bg-[#FF8A00] text-white rounded-2xl py-3.5 text-sm font-semibold text-center"
         >
           Ir para o painel →
         </Link>

@@ -77,7 +77,7 @@ function RedefinirSenhaForm() {
           <div className="text-4xl mb-3">⚠️</div>
           <h2 className="font-semibold text-slate-800 mb-2">Link inválido ou expirado</h2>
           <p className="text-sm text-slate-500 mb-4">Solicite um novo link de redefinição.</p>
-          <Link href="/esqueci-senha" className="text-sm text-blue-600 font-medium">
+          <Link href="/esqueci-senha" className="text-sm text-[#FF8A00] font-medium">
             Solicitar novo link
           </Link>
         </div>
@@ -99,18 +99,18 @@ function RedefinirSenhaForm() {
             <div>
               <label className="text-xs font-medium text-slate-600 block mb-1">Nova senha</label>
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required
-                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
                 placeholder="mínimo 6 caracteres" />
             </div>
             <div>
               <label className="text-xs font-medium text-slate-600 block mb-1">Confirmar senha</label>
               <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required
-                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
                 placeholder="repita a senha" />
             </div>
             {formError && <p className="text-red-500 text-xs">{formError}</p>}
             <button type="submit" disabled={saving}
-              className="w-full bg-blue-600 text-white rounded-xl py-2.5 text-sm font-semibold disabled:opacity-60">
+              className="w-full bg-[#FF8A00] text-white rounded-xl py-2.5 text-sm font-semibold disabled:opacity-60">
               {saving ? 'Salvando...' : 'Salvar nova senha'}
             </button>
           </form>

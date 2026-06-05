@@ -18,7 +18,7 @@ export default function AssinarPage() {
         </p>
         <a
           href="https://pay.hotmart.com/organizepj"
-          className="block w-full bg-blue-600 text-white font-semibold py-3 rounded-xl text-sm mb-3">
+          className="block w-full bg-[#FF8A00] text-white font-semibold py-3 rounded-xl text-sm mb-3">
           Renovar licença — R$ 197/ano
         </a>
         <button onClick={handleLogout} className="text-sm text-slate-400 hover:text-slate-600">

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import AppShell from '@/components/AppShell'
 import type { Client } from '@/lib/constants'
 import Link from 'next/link'
+import { Users } from 'lucide-react'
 
 export default function ClientesPage() {
   const [clients, setClients] = useState<Client[]>([])
@@ -35,7 +36,7 @@ export default function ClientesPage() {
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl font-bold text-slate-900">Clientes</h1>
           <Link href="/clientes/novo"
-            className="bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-xl">
+            className="bg-[#FF8A00] text-white text-sm font-semibold px-4 py-2 rounded-xl">
             + Novo
           </Link>
         </div>
@@ -45,22 +46,22 @@ export default function ClientesPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar cliente..."
-          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
         />
 
         {loading ? (
           <div className="text-center py-20 text-slate-400 text-sm">Carregando...</div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-16 text-slate-400">
-            <p className="text-4xl mb-3">👥</p>
+            <Users size={40} className="mx-auto mb-3 text-slate-300" />
             <p className="text-sm">{search ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado'}</p>
-            {!search && <Link href="/clientes/novo" className="text-blue-600 text-sm mt-2 inline-block">Cadastrar primeiro cliente</Link>}
+            {!search && <Link href="/clientes/novo" className="text-[#FF8A00] text-sm mt-2 inline-block">Cadastrar primeiro cliente</Link>}
           </div>
         ) : (
           <div className="bg-white rounded-2xl divide-y divide-slate-100">
             {filtered.map((client) => (
               <div key={client.id} className="flex items-center gap-3 px-4 py-3">
-                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-[#FF8A00] font-bold text-sm flex-shrink-0">
                   {client.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -71,7 +72,7 @@ export default function ClientesPage() {
                 </div>
                 <div className="flex gap-2 flex-shrink-0">
                   <Link href={`/clientes/${client.id}`}
-                    className="text-xs text-blue-600 font-medium px-2 py-1 rounded-lg hover:bg-blue-50">
+                    className="text-xs text-[#FF8A00] font-medium px-2 py-1 rounded-lg hover:bg-orange-50">
                     Ver
                   </Link>
                   <button onClick={() => handleDelete(client.id, client.name)}

@@ -42,7 +42,7 @@ export default function EsqueciSenhaPage() {
               <p className="text-sm text-slate-400 mt-2 leading-relaxed">
                 Após entrar, troque a senha em <strong>Configurações → Segurança</strong>.
               </p>
-              <Link href="/login" className="block mt-5 text-sm text-blue-600 font-medium">
+              <Link href="/login" className="block mt-5 text-sm text-[#FF8A00] font-medium">
                 Ir para o login
               </Link>
             </div>
@@ -60,7 +60,7 @@ export default function EsqueciSenhaPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
                     placeholder="seu@email.com"
                   />
                 </div>
@@ -68,13 +68,13 @@ export default function EsqueciSenhaPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-blue-600 text-white rounded-xl py-2.5 text-sm font-semibold disabled:opacity-60"
+                  className="w-full bg-[#FF8A00] text-white rounded-xl py-2.5 text-sm font-semibold disabled:opacity-60"
                 >
                   {loading ? 'Enviando...' : 'Enviar senha temporária'}
                 </button>
               </form>
               <p className="text-center text-xs text-slate-500 mt-4">
-                <Link href="/login" className="text-blue-600 font-medium">Voltar ao login</Link>
+                <Link href="/login" className="text-[#FF8A00] font-medium">Voltar ao login</Link>
               </p>
             </>
           )}

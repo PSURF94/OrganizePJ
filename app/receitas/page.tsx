@@ -4,6 +4,7 @@ import AppShell from '@/components/AppShell'
 import type { Receivable } from '@/lib/constants'
 import { formatCurrency, formatDate, todayISO } from '@/lib/utils'
 import Link from 'next/link'
+import { TrendingUp } from 'lucide-react'
 
 const STATUS_STYLE: Record<string, string> = {
   pendente: 'bg-amber-50 text-amber-600',
@@ -49,7 +50,7 @@ export default function ReceitasPage() {
       <div className="px-4 pt-6 max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl font-bold text-slate-900">Receitas</h1>
-          <Link href="/receitas/nova" className="bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-xl">
+          <Link href="/receitas/nova" className="bg-[#FF8A00] text-white text-sm font-semibold px-4 py-2 rounded-xl">
             + Nova
           </Link>
         </div>
@@ -74,9 +75,9 @@ export default function ReceitasPage() {
           <div className="text-center py-20 text-slate-400 text-sm">Carregando...</div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-16 text-slate-400">
-            <p className="text-4xl mb-3">💰</p>
+            <TrendingUp size={40} className="mx-auto mb-3 text-slate-300" />
             <p className="text-sm">Nenhuma receita encontrada</p>
-            <Link href="/receitas/nova" className="text-blue-600 text-sm mt-2 inline-block">Lançar receita</Link>
+            <Link href="/receitas/nova" className="text-[#FF8A00] text-sm mt-2 inline-block">Lançar receita</Link>
           </div>
         ) : (
           <div className="space-y-2">
@@ -84,7 +85,14 @@ export default function ReceitasPage() {
               <div key={r.id} className="bg-white rounded-2xl p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm text-slate-800">{r.description}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-sm text-slate-800">{r.description}</p>
+                      {r.installment_total > 1 && (
+                        <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full font-medium flex-shrink-0">
+                          {r.installment_number}/{r.installment_total}
+                        </span>
+                      )}
+                    </div>
                     {r.client && <p className="text-xs text-slate-400 mt-0.5">{(r.client as { name: string }).name}</p>}
                     <p className="text-xs text-slate-400 mt-0.5">Vence {formatDate(r.due_date)}</p>
                   </div>
@@ -103,7 +111,7 @@ export default function ReceitasPage() {
                     </button>
                   )}
                   <Link href={`/receitas/${r.id}/editar`}
-                    className="text-xs text-blue-500 font-medium px-2 py-1 rounded-lg hover:bg-blue-50">
+                    className="text-xs text-[#FF8A00] font-medium px-2 py-1 rounded-lg hover:bg-orange-50">
                     Editar
                   </Link>
                   <button onClick={() => handleDelete(r.id)}

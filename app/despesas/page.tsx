@@ -4,6 +4,7 @@ import AppShell from '@/components/AppShell'
 import type { Expense } from '@/lib/constants'
 import { formatCurrency, formatDate, todayISO } from '@/lib/utils'
 import Link from 'next/link'
+import { TrendingDown } from 'lucide-react'
 
 function monthBounds(offset = 0) {
   const d = new Date()
@@ -49,7 +50,7 @@ export default function DespesasPage() {
       <div className="px-4 pt-6 max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl font-bold text-slate-900">Despesas</h1>
-          <Link href="/despesas/nova" className="bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-xl">
+          <Link href="/despesas/nova" className="bg-[#FF8A00] text-white text-sm font-semibold px-4 py-2 rounded-xl">
             + Nova
           </Link>
         </div>
@@ -71,9 +72,9 @@ export default function DespesasPage() {
           <div className="text-center py-20 text-slate-400 text-sm">Carregando...</div>
         ) : items.length === 0 ? (
           <div className="text-center py-16 text-slate-400">
-            <p className="text-4xl mb-3">💸</p>
+            <TrendingDown size={40} className="mx-auto mb-3 text-slate-300" />
             <p className="text-sm">Nenhuma despesa em {label}</p>
-            <Link href="/despesas/nova" className="text-blue-600 text-sm mt-2 inline-block">Lançar despesa</Link>
+            <Link href="/despesas/nova" className="text-[#FF8A00] text-sm mt-2 inline-block">Lançar despesa</Link>
           </div>
         ) : (
           <div className="space-y-2">
@@ -91,7 +92,7 @@ export default function DespesasPage() {
                 <div className="text-right flex-shrink-0 flex flex-col items-end gap-1">
                   <p className="font-semibold text-sm text-slate-800">{formatCurrency(e.amount)}</p>
                   <div className="flex gap-2">
-                    <Link href={`/despesas/${e.id}/editar`} className="text-xs text-blue-500 hover:text-blue-600">
+                    <Link href={`/despesas/${e.id}/editar`} className="text-xs text-[#FF8A00] hover:text-orange-600">
                       Editar
                     </Link>
                     <button onClick={() => handleDelete(e.id)} className="text-xs text-slate-300 hover:text-red-400">

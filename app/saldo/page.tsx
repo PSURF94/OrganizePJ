@@ -62,7 +62,7 @@ export default function SaldoPage() {
               <Row label="Disponível hoje" value={data.disponivel} highlight />
             </div>
 
-            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-sm text-blue-700 leading-relaxed">
+            <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4 text-sm text-orange-700 leading-relaxed">
               <p className="font-semibold mb-1">Como é calculado</p>
               <p className="text-xs">
                 Saldo inicial + receitas recebidas − despesas pagas − valores alocados em metas.
