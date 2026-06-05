@@ -50,11 +50,11 @@ export default function AssinarPage() {
       if (data.invoiceUrl) {
         window.location.href = data.invoiceUrl
       } else {
-        setError('Não foi possível gerar o link de pagamento. Tente novamente.')
+        setError(data.error || `Erro ${res.status} — verifique os logs do servidor.`)
         setLoading(null)
       }
-    } catch {
-      setError('Erro ao conectar. Tente novamente.')
+    } catch (e) {
+      setError(`Erro ao conectar: ${e instanceof Error ? e.message : String(e)}`)
       setLoading(null)
     }
   }
@@ -145,7 +145,10 @@ export default function AssinarPage() {
         )}
 
         <div style={{ textAlign: 'center', marginTop: 20 }}>
-          <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: '#334155', fontSize: 13, cursor: 'pointer' }}>
+          <button onClick={handleLogout}
+            style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: 'rgba(255,255,255,0.35)', fontSize: 13, cursor: 'pointer', padding: '8px 20px' }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.35)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}>
             Sair da conta
           </button>
         </div>
