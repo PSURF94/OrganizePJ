@@ -128,11 +128,25 @@ export default function ReceitasPage() {
                     </span>
                   </div>
                 </div>
-                <div className="flex gap-2 mt-3 pt-3 border-t border-slate-50">
+                <div className="flex gap-2 mt-3 pt-3 border-t border-slate-50 flex-wrap">
                   {effectiveStatus(r) !== 'recebido' && (
                     <button onClick={() => markReceived(r.id)}
                       className="text-xs text-emerald-600 font-medium px-2 py-1 rounded-lg hover:bg-emerald-50">
                       Marcar recebido
+                    </button>
+                  )}
+                  {effectiveStatus(r) === 'recebido' && (
+                    <button
+                      onClick={async () => {
+                        await fetch(`/api/receivables/${r.id}`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ received_date: null }),
+                        })
+                        load()
+                      }}
+                      className="text-xs text-slate-400 hover:text-amber-600 font-medium px-2 py-1 rounded-lg hover:bg-amber-50">
+                      ↩ Desfazer recebimento
                     </button>
                   )}
                   {effectiveStatus(r) !== 'recebido' && (

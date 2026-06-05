@@ -1,8 +1,8 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 import BrandIcon from '@/components/BrandIcon'
-import { CheckCircle, Lock } from 'lucide-react'
+import { CheckCircle, Lock, AlertCircle } from 'lucide-react'
 
 const C = { bg: '#1A1A1D', orange: '#FF8A00', red: '#E50914' }
 
@@ -27,9 +27,100 @@ const PRO_EXTRA = [
   'Multi-empresa (vários CNPJs)',
 ]
 
+function formatCNPJ(v: string) {
+  const d = v.replace(/\D/g, '').slice(0, 14)
+  if (d.length <= 2) return d
+  if (d.length <= 5) return `${d.slice(0,2)}.${d.slice(2)}`
+  if (d.length <= 8) return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5)}`
+  if (d.length <= 12) return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5,8)}/${d.slice(8)}`
+  return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5,8)}/${d.slice(8,12)}-${d.slice(12)}`
+}
+
+function validateCNPJ(v: string) {
+  const d = v.replace(/\D/g, '')
+  if (d.length !== 14 || /^(\d)\1{13}$/.test(d)) return false
+  const calc = (digits: string, weights: number[]) =>
+    digits.split('').reduce((s, c, i) => s + Number(c) * weights[i], 0)
+  const w1 = [5,4,3,2,9,8,7,6,5,4,3,2]
+  const w2 = [6,5,4,3,2,9,8,7,6,5,4,3,2]
+  const r1 = calc(d.slice(0,12), w1) % 11
+  const d1 = r1 < 2 ? 0 : 11 - r1
+  if (d1 !== Number(d[12])) return false
+  const r2 = calc(d.slice(0,13), w2) % 11
+  const d2 = r2 < 2 ? 0 : 11 - r2
+  return d2 === Number(d[13])
+}
+
+const INPUT: React.CSSProperties = {
+  width: '100%', padding: '11px 14px', borderRadius: 10,
+  background: '#2a2a2e', border: '1px solid rgba(255,255,255,0.1)',
+  color: 'white', fontSize: 15, fontFamily: 'var(--font-inter,sans-serif)',
+  outline: 'none', boxSizing: 'border-box',
+}
+
 export default function AssinarPage() {
   const [loading, setLoading] = useState<'basic' | 'pro' | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const [cnpjNeeded, setCnpjNeeded] = useState(false)
+  const [cnpjValue, setCnpjValue] = useState('')
+  const [cnpjSaving, setCnpjSaving] = useState(false)
+  const [cnpjError, setCnpjError] = useState<string | null>(null)
+  const [configLoading, setConfigLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/configuracoes')
+      .then((r) => r.json())
+      .then((d) => {
+        if (!d.cnpj || d.cnpj.replace(/\D/g, '').length < 14) {
+          setCnpjNeeded(true)
+        }
+      })
+      .catch(() => {})
+      .finally(() => setConfigLoading(false))
+  }, [])
+
+  async function handleSaveCNPJ() {
+    if (!validateCNPJ(cnpjValue)) {
+      setCnpjError('CNPJ inválido. Verifique e tente novamente.')
+      return
+    }
+    setCnpjSaving(true)
+    setCnpjError(null)
+    try {
+      const configRes = await fetch('/api/configuracoes')
+      const config = await configRes.json()
+      if (!configRes.ok) throw new Error(config.error || 'Erro ao buscar configurações')
+
+      const putRes = await fetch('/api/configuracoes', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: config.name ?? '',
+          cnpj: cnpjValue,
+          tax_regime: config.tax_regime ?? 'simples',
+          simples_rate: config.simples_rate ?? 6,
+          das_fixo_mensal: config.das_fixo_mensal ?? null,
+          saldo_inicial: config.saldo_inicial ?? 0,
+          service_category: config.service_category ?? '',
+          folha_mensal: config.folha_mensal ?? null,
+          faturamento_mensal: config.faturamento_mensal ?? null,
+          num_funcionarios: config.num_funcionarios ?? null,
+          prolabore_mensal: config.prolabore_mensal ?? null,
+          retirada_desejada_mensal: config.retirada_desejada_mensal ?? null,
+        }),
+      })
+      if (!putRes.ok) {
+        const d = await putRes.json()
+        throw new Error(d.error || `Erro ${putRes.status}`)
+      }
+      setCnpjNeeded(false)
+    } catch (e) {
+      setCnpjError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setCnpjSaving(false)
+    }
+  }
 
   async function handleLogout() {
     const supabase = getBrowserSupabase()
@@ -83,6 +174,40 @@ export default function AssinarPage() {
           </p>
         </div>
 
+        {/* CNPJ inline block */}
+        {!configLoading && cnpjNeeded && (
+          <div style={{ background: '#222226', border: `1px solid rgba(255,138,0,0.25)`, borderRadius: 16, padding: '20px 20px', marginBottom: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 14 }}>
+              <AlertCircle size={16} color={C.orange} style={{ flexShrink: 0, marginTop: 1 }} />
+              <div>
+                <p style={{ color: 'white', fontWeight: 700, fontSize: 14, marginBottom: 2 }}>Informe seu CNPJ para continuar</p>
+                <p style={{ color: '#64748b', fontSize: 12, lineHeight: 1.5 }}>
+                  Necessário para emitir a cobrança. Será salvo nas suas Configurações.
+                </p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
+                type="text"
+                placeholder="00.000.000/0000-00"
+                value={cnpjValue}
+                onChange={(e) => { setCnpjValue(formatCNPJ(e.target.value)); setCnpjError(null) }}
+                onKeyDown={(e) => e.key === 'Enter' && handleSaveCNPJ()}
+                style={{ ...INPUT, flex: 1 }}
+              />
+              <button
+                onClick={handleSaveCNPJ}
+                disabled={cnpjSaving || cnpjValue.replace(/\D/g, '').length < 14}
+                style={{ padding: '11px 18px', background: C.orange, color: 'white', fontWeight: 700, fontSize: 13, borderRadius: 10, border: 'none', cursor: cnpjSaving || cnpjValue.replace(/\D/g, '').length < 14 ? 'not-allowed' : 'pointer', opacity: cnpjSaving || cnpjValue.replace(/\D/g, '').length < 14 ? 0.5 : 1, whiteSpace: 'nowrap' }}>
+                {cnpjSaving ? 'Salvando…' : 'Salvar'}
+              </button>
+            </div>
+            {cnpjError && (
+              <p style={{ color: C.red, fontSize: 12, marginTop: 8 }}>{cnpjError}</p>
+            )}
+          </div>
+        )}
+
         <div className="grid sm:grid-cols-2 gap-4">
 
           {/* Basic */}
@@ -103,8 +228,8 @@ export default function AssinarPage() {
             </div>
             <button
               onClick={() => handleCheckout('basic')}
-              disabled={loading !== null}
-              style={{ width: '100%', background: C.orange, color: 'white', fontWeight: 700, fontSize: 14, padding: '13px', borderRadius: 12, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading && loading !== 'basic' ? 0.5 : 1, transition: 'opacity 0.15s' }}>
+              disabled={loading !== null || cnpjNeeded || configLoading}
+              style={{ width: '100%', background: C.orange, color: 'white', fontWeight: 700, fontSize: 14, padding: '13px', borderRadius: 12, border: 'none', cursor: loading !== null || cnpjNeeded || configLoading ? 'not-allowed' : 'pointer', opacity: loading !== null || cnpjNeeded || configLoading ? 0.5 : 1, transition: 'opacity 0.15s' }}>
               {loading === 'basic' ? 'Aguarde...' : 'Assinar Basic — R$ 100/ano'}
             </button>
           </div>

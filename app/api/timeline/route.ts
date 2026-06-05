@@ -32,19 +32,20 @@ export async function GET() {
     { data: pendingReceivables },
     { data: futureExpenses },
     { data: thisMonthReceived },
+    { data: receivedInWindow },
   ] = await Promise.all([
     supabase.from('receivables').select('amount').eq('company_id', company.id).not('received_date', 'is', null),
     supabase.from('expenses').select('amount').eq('company_id', company.id),
     supabase.from('goal_contributions').select('amount').eq('company_id', company.id),
     supabase.from('receivables')
-      .select('description, amount, due_date, client:clients(name)')
+      .select('id, description, amount, due_date, client:clients(name)')
       .eq('company_id', company.id)
       .is('received_date', null)
       .gte('due_date', todayStr)
       .lte('due_date', endStr)
       .order('due_date'),
     supabase.from('expenses')
-      .select('description, amount, date, category')
+      .select('id, description, amount, date, category')
       .eq('company_id', company.id)
       .gte('date', todayStr)
       .lte('date', endStr)
@@ -54,6 +55,13 @@ export async function GET() {
       .eq('company_id', company.id)
       .not('received_date', 'is', null)
       .gte('received_date', `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-01`),
+    supabase.from('receivables')
+      .select('id, description, amount, due_date, client:clients(name)')
+      .eq('company_id', company.id)
+      .not('received_date', 'is', null)
+      .gte('due_date', todayStr)
+      .lte('due_date', endStr)
+      .order('due_date'),
   ])
 
   const currentBalance =
@@ -63,21 +71,39 @@ export async function GET() {
     - (allContributions || []).reduce((s, c) => s + Number(c.amount), 0)
 
   // Build raw events
-  const events: { date: string; type: string; description: string; subtitle: string | null; amount: number }[] = []
+  const events: { id?: string; date: string; type: string; description: string; subtitle: string | null; amount: number; status?: string; display_amount?: number }[] = []
 
   for (const r of (pendingReceivables || [])) {
     const client = r.client as unknown as { name: string } | null
     events.push({
+      id: r.id,
       date: r.due_date,
       type: 'receita',
+      status: 'pendente',
       description: r.description,
       subtitle: client?.name ?? null,
       amount: Number(r.amount),
     })
   }
 
+  // Received receivables within window: shown in timeline but don't affect running balance (already in currentBalance)
+  for (const r of (receivedInWindow || [])) {
+    const client = r.client as unknown as { name: string } | null
+    events.push({
+      id: r.id,
+      date: r.due_date,
+      type: 'receita',
+      status: 'recebido',
+      description: r.description,
+      subtitle: client?.name ?? null,
+      amount: 0,
+      display_amount: Number(r.amount),
+    })
+  }
+
   for (const e of (futureExpenses || [])) {
     events.push({
+      id: e.id,
       date: e.date,
       type: 'despesa',
       description: e.description,
