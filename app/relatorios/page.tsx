@@ -223,7 +223,7 @@ export default function RelatoriosPage() {
   return (
     <AppShell>
       <div className="px-4 pt-6 pb-10 max-w-2xl mx-auto">
-        <h1 className="text-xl font-bold text-slate-900 mb-5">Relatórios</h1>
+        <h1 style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontWeight: 800, fontSize: 22, color: '#1A1A1D', letterSpacing: '-0.3px', paddingLeft: 11, borderLeft: '3px solid #FF8A00', marginBottom: 20 }}>Relatórios</h1>
 
         {/* Chart card */}
         <div style={{

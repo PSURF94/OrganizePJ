@@ -88,7 +88,7 @@ export default function ConfiguracoesPage() {
   return (
     <AppShell>
       <div className="px-4 pt-6 max-w-lg mx-auto pb-10">
-        <h1 className="text-xl font-bold text-slate-900 mb-4">Configurações</h1>
+        <h1 style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontWeight: 800, fontSize: 22, color: '#1A1A1D', letterSpacing: '-0.3px', paddingLeft: 11, borderLeft: '3px solid #FF8A00', marginBottom: 16 }}>Configurações</h1>
 
         {/* PRO: Multi-empresa */}
         <a href="/em-breve?f=multi-empresa" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16, border: '1.5px dashed rgba(255,138,0,0.35)', borderRadius: 16, padding: '14px 18px', textDecoration: 'none', background: 'rgba(255,138,0,0.03)' }}>

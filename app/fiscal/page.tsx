@@ -86,7 +86,7 @@ export default function FiscalPage() {
   return (
     <AppShell>
       <div className="px-4 pt-6 max-w-lg mx-auto pb-10">
-        <h1 className="text-xl font-bold text-slate-900 mb-1">Fiscal &amp; Retiradas</h1>
+        <h1 style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontWeight: 800, fontSize: 22, color: '#1A1A1D', letterSpacing: '-0.3px', paddingLeft: 11, borderLeft: '3px solid #FF8A00', marginBottom: 4 }}>Fiscal &amp; Retiradas</h1>
         <p className="text-sm text-slate-400 mb-4">Diagnóstico tributário e estratégia de retiradas do sócio.</p>
 
         {/* PRO: NF-e */}

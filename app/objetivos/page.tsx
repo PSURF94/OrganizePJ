@@ -55,7 +55,7 @@ export default function ObjetivosPage() {
       <div className="px-4 pt-6 pb-10 max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-xl font-bold text-slate-900">Metas e Reservas</h1>
+            <h1 style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontWeight: 800, fontSize: 22, color: '#1A1A1D', letterSpacing: '-0.3px', paddingLeft: 11, borderLeft: '3px solid #FF8A00' }}>Metas e Reservas</h1>
             <p className="text-sm text-slate-400">Construindo o futuro da empresa</p>
           </div>
           <Link href="/objetivos/novo"

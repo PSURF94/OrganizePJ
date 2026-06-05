@@ -62,7 +62,7 @@ export default function DespesasPage() {
     <AppShell>
       <div className="px-4 pt-6 max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-xl font-bold text-slate-900">Despesas</h1>
+          <h1 style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontWeight: 800, fontSize: 22, color: '#1A1A1D', letterSpacing: '-0.3px', paddingLeft: 11, borderLeft: '3px solid #FF8A00' }}>Despesas</h1>
           <Link href="/despesas/nova" className="bg-[#FF8A00] text-white text-sm font-semibold px-4 py-2 rounded-xl">
             + Nova
           </Link>

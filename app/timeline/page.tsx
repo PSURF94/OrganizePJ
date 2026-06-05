@@ -146,9 +146,10 @@ export default function TimelinePage() {
                       {dayGroups.map((group, gi) => {
                         const lastEv = group.events[group.events.length - 1]
                         const nextGroup = dayGroups[gi + 1]
-                        const balColor = lastEv.running_balance < 0 ? '#E50914'
-                          : lastEv.alert === 'warning' ? '#d97706'
-                          : 'rgba(255,255,255,0.28)'
+                        const balColor =
+                          lastEv.running_balance > 0 ? '#10b981' :
+                          lastEv.running_balance < 0 ? '#E50914' :
+                          'rgba(255,255,255,0.35)'
                         const isAnySelected = selected?.gi === gi
 
                         if (group.events.length === 1) {
@@ -205,10 +206,10 @@ export default function TimelinePage() {
                                   </div>
                                 </button>
 
-                                <div style={{ width: 2, height: 16, background: t.color, opacity: 0.5 }} />
+                                <div style={{ width: 2, height: 16, background: 'rgba(255,255,255,0.12)' }} />
                                 <div style={{
-                                  width: 15, height: 15, borderRadius: '50%',
-                                  background: t.color, boxShadow: `0 0 8px ${t.color}, 0 0 16px ${t.color}50`,
+                                  width: 13, height: 13, borderRadius: '50%',
+                                  background: balColor,
                                   border: `2.5px solid ${DARK}`, zIndex: 10, flexShrink: 0,
                                 }} />
                                 <div style={{ display: 'flex', width: '100%', height: 3, alignItems: 'center' }}>
@@ -327,11 +328,11 @@ export default function TimelinePage() {
                                 )}
                               </div>
 
-                              {/* Conector + dot + linha — idêntico ao card simples */}
-                              <div style={{ width: 2, height: 16, background: dotColor, opacity: 0.5 }} />
+                              {/* Conector + dot + linha */}
+                              <div style={{ width: 2, height: 16, background: 'rgba(255,255,255,0.12)' }} />
                               <div style={{
-                                width: 15, height: 15, borderRadius: '50%',
-                                background: dotColor, boxShadow: `0 0 8px ${dotColor}, 0 0 16px ${dotColor}50`,
+                                width: 13, height: 13, borderRadius: '50%',
+                                background: balColor,
                                 border: `2.5px solid ${DARK}`, zIndex: 10, flexShrink: 0,
                               }} />
                               <div style={{ display: 'flex', width: '100%', height: 3, alignItems: 'center' }}>
