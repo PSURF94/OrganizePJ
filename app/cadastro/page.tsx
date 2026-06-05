@@ -359,7 +359,7 @@ export default function CadastroPage() {
                 <div>
                   <label style={LABEL}>Tipo de serviço</label>
                   <select value={serviceCategory} onChange={(e) => setServiceCategory(e.target.value)}
-                    style={{ ...INPUT, appearance:'none' as const }}>
+                    style={{ ...INPUT, appearance:'none' as const, background:'#1A1A1D', colorScheme:'dark' }}>
                     <option value="">Selecione...</option>
                     {SERVICE_CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
                   </select>
@@ -452,7 +452,7 @@ export default function CadastroPage() {
                 <div>
                   <label style={LABEL}>Como você controla suas finanças hoje?</label>
                   <select value={controleAtual} onChange={(e) => setControleAtual(e.target.value)}
-                    style={{ ...INPUT, appearance:'none' as const }}>
+                    style={{ ...INPUT, appearance:'none' as const, background:'#1A1A1D', colorScheme:'dark' }}>
                     <option value="">Selecione...</option>
                     {CONTROLE_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                   </select>
