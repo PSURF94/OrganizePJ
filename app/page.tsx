@@ -226,7 +226,7 @@ function Comparison() {
           {/* Header */}
           <div style={{ display:'grid', gridTemplateColumns:'1fr 120px 120px 140px', gap:0, padding:'16px 24px', borderBottom:'1px solid rgba(255,255,255,0.07)', background:'rgba(255,255,255,0.03)' }}>
             <div />
-            {['Planilha', 'Conta Azul / Omie', 'OrganizePJ'].map((h, i) => (
+            {['Planilha', 'Software de Gestão', 'OrganizePJ'].map((h, i) => (
               <div key={h} style={{ textAlign:'center' }}>
                 <span style={{ fontSize:12, fontWeight:700, color: i === 2 ? C.orange : '#475569', textTransform:'uppercase', letterSpacing:'0.08em' }}>{h}</span>
               </div>
