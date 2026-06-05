@@ -80,9 +80,8 @@ export default function ClientesPage() {
                     Excluir
                   </button>
                   <Link href="/em-breve?f=proposta-comercial"
-                    className="text-xs font-bold px-2 py-1 rounded-full"
-                    style={{ background: 'linear-gradient(135deg,#FF8A00,#FF3B30)', color: 'white', textDecoration: 'none', fontSize: 9, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                    PRO: Proposta
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#94a3b8', textDecoration: 'none', fontSize: 12, padding: '4px 8px', borderRadius: 8 }}>
+                    Proposta <span style={{ fontSize: 9, background: 'rgba(255,138,0,0.1)', color: '#FF8A00', borderRadius: 4, padding: '1px 5px', fontWeight: 700 }}>PRO</span>
                   </Link>
                 </div>
               </div>

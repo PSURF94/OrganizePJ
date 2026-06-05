@@ -87,7 +87,18 @@ export default function FiscalPage() {
     <AppShell>
       <div className="px-4 pt-6 max-w-lg mx-auto pb-10">
         <h1 className="text-xl font-bold text-slate-900 mb-1">Fiscal &amp; Retiradas</h1>
-        <p className="text-sm text-slate-400 mb-6">Diagnóstico tributário e estratégia de retiradas do sócio.</p>
+        <p className="text-sm text-slate-400 mb-4">Diagnóstico tributário e estratégia de retiradas do sócio.</p>
+
+        {/* PRO: NF-e */}
+        <a href="/em-breve?f=nfe" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16, border: '1.5px dashed rgba(255,138,0,0.35)', borderRadius: 16, padding: '14px 18px', textDecoration: 'none', background: 'rgba(255,138,0,0.03)' }}>
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1D', marginBottom: 2 }}>Emissão de NF-e</p>
+            <p style={{ fontSize: 11, color: '#94a3b8' }}>Emita notas fiscais direto pela plataforma, integrado com a prefeitura</p>
+          </div>
+          <span style={{ flexShrink: 0, background: 'linear-gradient(135deg,#FF8A00,#FF3B30)', borderRadius: 100, padding: '5px 12px', color: 'white', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+            USE NO PRO
+          </span>
+        </a>
 
         <form onSubmit={handleSave} className="space-y-4">
 
@@ -275,17 +286,6 @@ export default function FiscalPage() {
             {saved ? 'Salvo!' : saving ? 'Salvando...' : 'Salvar Parâmetros Fiscais'}
           </button>
         </form>
-
-        {/* PRO: NF-e */}
-        <a href="/em-breve?f=nfe" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 8, border: '1.5px dashed rgba(255,138,0,0.35)', borderRadius: 16, padding: '14px 18px', textDecoration: 'none', background: 'rgba(255,138,0,0.03)' }}>
-          <div>
-            <p style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1D', marginBottom: 2 }}>Emissão de NF-e</p>
-            <p style={{ fontSize: 11, color: '#94a3b8' }}>Emita notas fiscais direto pela plataforma, integrado com a prefeitura</p>
-          </div>
-          <span style={{ flexShrink: 0, background: 'linear-gradient(135deg,#FF8A00,#FF3B30)', borderRadius: 100, padding: '5px 12px', color: 'white', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
-            USE NO PRO
-          </span>
-        </a>
       </div>
     </AppShell>
   )
