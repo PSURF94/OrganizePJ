@@ -16,12 +16,6 @@ const STEP_LABELS: Record<Step, string> = {
   situacao: 'Situação atual',
 }
 
-const PROFISSOES = [
-  'Advogado', 'Arquiteto', 'Consultor', 'Contador', 'Designer',
-  'Engenheiro', 'Fotógrafo', 'Médico', 'Professor', 'Programador',
-  'Psicólogo', 'Terapeuta', 'Veterinário', 'Outro',
-]
-
 const CONTROLE_OPTIONS = [
   'Planilha (Excel ou Google Sheets)',
   'Caderno ou papel',
@@ -34,6 +28,26 @@ function parseCurrencyInput(value: string): number {
   const digits = value.replace(/\D/g, '')
   if (!digits) return 0
   return Number(digits) / 100
+}
+
+function formatCNPJ(value: string): string {
+  const d = value.replace(/\D/g, '').slice(0, 14)
+  if (d.length <= 2) return d
+  if (d.length <= 5) return `${d.slice(0,2)}.${d.slice(2)}`
+  if (d.length <= 8) return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5)}`
+  if (d.length <= 12) return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5,8)}/${d.slice(8)}`
+  return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5,8)}/${d.slice(8,12)}-${d.slice(12)}`
+}
+
+function validateCNPJ(cnpj: string): boolean {
+  const n = cnpj.replace(/\D/g, '')
+  if (n.length !== 14 || /^(\d)\1+$/.test(n)) return false
+  const calc = (s: string, l: number) => {
+    let sum = 0, pos = l - 7
+    for (let i = l; i >= 1; i--) { sum += +s[l - i] * pos--; if (pos < 2) pos = 9 }
+    return sum % 11 < 2 ? 0 : 11 - (sum % 11)
+  }
+  return calc(n, 12) === +n[12] && calc(n, 13) === +n[13]
 }
 
 function formatCurrencyInput(value: string): string {
@@ -78,7 +92,10 @@ export default function CadastroPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [companyName, setCompanyName] = useState('')
-  const [profissao, setProfissao] = useState('')
+  const [cnpj, setCnpj] = useState('')
+  const [cnpjFetching, setCnpjFetching] = useState(false)
+  const [cnpjFetched, setCnpjFetched] = useState(false)
+  const [cnpjError, setCnpjError] = useState('')
   const [sozinho, setSozinho] = useState<boolean | null>(null)
   const [numFuncionarios, setNumFuncionarios] = useState('')
   const [folhaMensal, setFolhaMensal] = useState('')
@@ -96,6 +113,29 @@ export default function CadastroPage() {
   function goNext() {
     const next = STEPS[stepIndex + 1]
     if (next) { setError(''); setStep(next) }
+  }
+
+  async function handleCNPJChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const formatted = formatCNPJ(e.target.value)
+    setCnpj(formatted)
+    setCnpjFetched(false)
+    setCnpjError('')
+    const digits = formatted.replace(/\D/g, '')
+    if (digits.length !== 14) return
+    if (!validateCNPJ(formatted)) { setCnpjError('CNPJ inválido.'); return }
+    setCnpjFetching(true)
+    try {
+      const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${digits}`)
+      if (!res.ok) throw new Error('não encontrado')
+      const data = await res.json()
+      const nome = data.nome_fantasia?.trim() || data.razao_social?.trim() || ''
+      if (nome) setCompanyName(nome)
+      setCnpjFetched(true)
+    } catch {
+      setCnpjError('CNPJ não encontrado. Preencha o nome manualmente.')
+    } finally {
+      setCnpjFetching(false)
+    }
   }
 
   function handleConta(e: React.FormEvent) {
@@ -147,6 +187,7 @@ export default function CadastroPage() {
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${data.session.access_token}` },
         body: JSON.stringify({
           name: companyName.trim(),
+          cnpj: cnpj.replace(/\D/g, '') || null,
           tax_regime: rec.regime,
           simples_rate: rec.rate,
           das_fixo_mensal: rec.das_fixo_mensal ?? null,
@@ -154,7 +195,6 @@ export default function CadastroPage() {
           folha_mensal: folha || null,
           trial_ends_at: trialEnds.toISOString(),
           status: 'trial',
-          profissao: profissao.trim() || null,
           tem_funcionarios: !sozinho,
           num_funcionarios: nFunc,
           faturamento_mensal: mensal,
@@ -274,18 +314,31 @@ export default function CadastroPage() {
               <p style={{ color:'#475569', fontSize:14, marginBottom:24 }}>Vamos personalizar sua experiência</p>
               <form onSubmit={handlePerfil} style={{ display:'flex', flexDirection:'column', gap:16 }}>
                 <div>
+                  <label style={LABEL}>CNPJ <span style={{ fontWeight:400, opacity:0.5 }}>(opcional)</span></label>
+                  <div style={{ position:'relative' }}>
+                    <input type="text" inputMode="numeric" value={cnpj}
+                      onChange={handleCNPJChange}
+                      style={INPUT} placeholder="00.000.000/0000-00" />
+                    {cnpjFetching && (
+                      <span style={{ position:'absolute', right:14, top:'50%', transform:'translateY(-50%)', color:'rgba(255,255,255,0.35)', fontSize:12, pointerEvents:'none' }}>
+                        Buscando...
+                      </span>
+                    )}
+                    {cnpjFetched && !cnpjFetching && (
+                      <span style={{ position:'absolute', right:14, top:'50%', transform:'translateY(-50%)', color:'#22c55e', fontSize:13, pointerEvents:'none' }}>
+                        ✓
+                      </span>
+                    )}
+                  </div>
+                  {cnpjError
+                    ? <p style={{ ...HINT, color:'#f87171' }}>{cnpjError}</p>
+                    : <p style={HINT}>Preenchemos o nome da empresa automaticamente</p>
+                  }
+                </div>
+                <div>
                   <label style={LABEL}>Nome da empresa ou seu nome</label>
                   <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} required
                     style={INPUT} placeholder="Ex: João Silva Engenharia" />
-                </div>
-                <div>
-                  <label style={LABEL}>Qual é sua profissão?</label>
-                  <input list="profissoes-list" type="text" value={profissao}
-                    onChange={(e) => setProfissao(e.target.value)}
-                    style={INPUT} placeholder="Ex: Engenheiro, Arquiteto..." />
-                  <datalist id="profissoes-list">
-                    {PROFISSOES.map((p) => <option key={p} value={p} />)}
-                  </datalist>
                 </div>
                 {error && <p style={{ color:'#f87171', fontSize:13, background:'rgba(248,113,113,0.1)', padding:'10px 14px', borderRadius:10 }}>{error}</p>}
                 <button type="submit"
