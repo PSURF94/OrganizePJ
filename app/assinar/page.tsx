@@ -237,15 +237,16 @@ export default function AssinarPage() {
           {/* Pro */}
           <div style={{ background: '#222226', borderRadius: 20, padding: '24px 20px', border: `2px solid rgba(255,138,0,0.4)`, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             <div style={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, background: 'radial-gradient(circle, rgba(255,138,0,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', top: 14, right: 14, background: `linear-gradient(135deg,${C.orange},${C.red})`, borderRadius: 100, padding: '3px 10px' }}>
-              <span style={{ color: 'white', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Em breve</span>
+            <div style={{ position: 'absolute', top: 14, right: 14, background: C.orange, borderRadius: 100, padding: '3px 10px' }}>
+              <span style={{ color: 'white', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Fundadores</span>
             </div>
             <p style={{ fontSize: 11, fontWeight: 700, color: C.orange, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Pro</p>
             <div style={{ marginBottom: 4 }}>
               <span style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontSize: 34, fontWeight: 800, color: 'white' }}>R$&nbsp;497</span>
               <span style={{ color: '#475569', fontSize: 13 }}>/ano</span>
             </div>
-            <p style={{ color: '#FF8A00', fontSize: 12, fontWeight: 600, marginBottom: 20 }}>Preço vitalício para parceiros fundadores</p>
+            <p style={{ color: '#FF8A00', fontSize: 12, fontWeight: 600, marginBottom: 6 }}>R$497/ano · preço garantido para fundadores</p>
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12, lineHeight: 1.6, marginBottom: 20 }}>Seu preço anual não muda com reajustes futuros. É como reconhecemos quem acredita no projeto.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24, flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <CheckCircle size={13} color="#475569" style={{ flexShrink: 0 }} />
