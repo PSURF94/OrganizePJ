@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 import { calcTaxRecommendation, SERVICE_CATEGORIES } from '@/lib/tax-engine'
+import { capFirst } from '@/lib/utils'
 import Link from 'next/link'
 import BrandIcon from '@/components/BrandIcon'
 import { ArrowRight } from 'lucide-react'

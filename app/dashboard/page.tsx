@@ -184,40 +184,50 @@ export default function DashboardPage() {
               ))}
             </div>
 
-            {/* ── A receber ── */}
-            {data.receivable_30d > 0 && (
-              <div className="bg-white rounded-2xl overflow-hidden mb-3"
-                style={{ border: '1px solid #eef0f3', borderTop: '4px solid #10b981' }}>
-                <div className="px-5 py-4 flex items-center justify-between">
-                  <Link href="/receitas?filter=pendente" className="flex items-center gap-3 flex-1">
-                    <div style={{ width: 32, height: 32, borderRadius: 9, background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <TrendingUp size={17} color="#10b981" />
-                    </div>
-                    <div>
-                      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#94a3b8', marginBottom: 4 }}>
-                        A receber (30 dias)
-                      </p>
-                      <p style={{ fontFamily: 'var(--font-poppins, sans-serif)', fontSize: 22, fontWeight: 700, color: '#10b981', lineHeight: 1 }}>
-                        {formatCurrency(data.receivable_30d)}
-                      </p>
-                    </div>
-                  </Link>
-                  {data.receivables_overdue > 0 && (
-                    <Link href="/receitas?filter=atrasado" className="text-right block ml-3">
-                      <div className="flex items-center gap-1 justify-end mb-1">
-                        <AlertTriangle size={11} color={C.red} />
-                        <p style={{ fontSize: 10, fontWeight: 700, color: C.red, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Em atraso</p>
-                      </div>
-                      <p style={{ fontFamily: 'var(--font-poppins, sans-serif)', fontSize: 16, fontWeight: 700, color: C.red }}>
-                        {formatCurrency(data.receivables_overdue)}
-                      </p>
-                      <p style={{ fontSize: 10, color: C.red, opacity: 0.65, marginTop: 2 }}>
-                        {data.receivables_overdue_count} recebimento{data.receivables_overdue_count !== 1 ? 's' : ''} · ver →
-                      </p>
-                    </Link>
-                  )}
+            {/* ── Em atraso — card dedicado, sempre visível quando houver ── */}
+            {data.receivables_overdue > 0 && (
+              <Link href="/receitas?filter=atrasado"
+                className="flex items-center justify-between rounded-2xl overflow-hidden mb-3 hover:shadow-md transition-shadow"
+                style={{ background: '#fff1f2', border: '1px solid rgba(229,9,20,0.15)', borderLeft: `4px solid ${C.red}`, padding: '14px 18px', textDecoration: 'none' }}>
+                <div className="flex items-center gap-3">
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(229,9,20,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <AlertTriangle size={18} color={C.red} />
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.red, marginBottom: 3 }}>
+                      Recebimentos em atraso
+                    </p>
+                    <p style={{ fontFamily: 'var(--font-poppins, sans-serif)', fontSize: 22, fontWeight: 800, color: C.red, lineHeight: 1 }}>
+                      {formatCurrency(data.receivables_overdue)}
+                    </p>
+                    <p style={{ fontSize: 11, color: 'rgba(229,9,20,0.6)', marginTop: 3 }}>
+                      {data.receivables_overdue_count} recebimento{data.receivables_overdue_count !== 1 ? 's' : ''} pendente{data.receivables_overdue_count !== 1 ? 's' : ''} vencido{data.receivables_overdue_count !== 1 ? 's' : ''}
+                    </p>
+                  </div>
                 </div>
-              </div>
+                <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: C.red }}>Cobrar →</p>
+                </div>
+              </Link>
+            )}
+
+            {/* ── A receber (próximos 30 dias) ── */}
+            {data.receivable_30d > 0 && (
+              <Link href="/receitas?filter=pendente"
+                className="flex items-center gap-3 bg-white rounded-2xl overflow-hidden mb-3 px-5 py-4 hover:shadow-md transition-shadow"
+                style={{ border: '1px solid #eef0f3', borderTop: '4px solid #10b981', textDecoration: 'none' }}>
+                <div style={{ width: 32, height: 32, borderRadius: 9, background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <TrendingUp size={17} color="#10b981" />
+                </div>
+                <div>
+                  <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#94a3b8', marginBottom: 4 }}>
+                    A receber (30 dias)
+                  </p>
+                  <p style={{ fontFamily: 'var(--font-poppins, sans-serif)', fontSize: 22, fontWeight: 700, color: '#10b981', lineHeight: 1 }}>
+                    {formatCurrency(data.receivable_30d)}
+                  </p>
+                </div>
+              </Link>
             )}
 
             {/* ── Metas e Reservas ── */}

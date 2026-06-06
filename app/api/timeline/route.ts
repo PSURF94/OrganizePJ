@@ -25,6 +25,8 @@ export async function GET() {
   const dasFixo = isMei ? Number(company.das_fixo_mensal || 80.90) : 0
 
   // Current disponível (cumulative all-time)
+  const currentMonthPrefix = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
+
   const [
     { data: allReceived },
     { data: allExpenses },
@@ -32,6 +34,7 @@ export async function GET() {
     { data: pendingReceivables },
     { data: futureExpenses },
     { data: thisMonthReceived },
+    { data: tributosExpenses },
   ] = await Promise.all([
     supabase.from('receivables').select('amount').eq('company_id', company.id).not('received_date', 'is', null),
     supabase.from('expenses').select('amount').eq('company_id', company.id),
@@ -53,7 +56,12 @@ export async function GET() {
       .select('amount')
       .eq('company_id', company.id)
       .not('received_date', 'is', null)
-      .gte('received_date', `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-01`),
+      .gte('received_date', `${currentMonthPrefix}-01`),
+    // Pagamentos de tributos já registrados — para abater do DAS projetado
+    supabase.from('expenses')
+      .select('amount, date')
+      .eq('company_id', company.id)
+      .eq('category', 'Tributos'),
   ])
 
   const currentBalance =
@@ -89,25 +97,39 @@ export async function GET() {
     })
   }
 
+  // Pagamentos Tributos já registrados — abate do DAS projetado por mês de pagamento
+  const paidTributosByMonth = (tributosExpenses || []).reduce<Record<string, number>>((acc, e) => {
+    const prefix = e.date.slice(0, 7) // "YYYY-MM"
+    acc[prefix] = (acc[prefix] ?? 0) + Number(e.amount)
+    return acc
+  }, {})
+
   // Tax events: DAS on 20th of next month
   if (isMei) {
     // MEI: DAS fixo mensal — um evento por mês no dia 20 do mês seguinte
     for (let offset = 0; offset <= 2; offset++) {
       const refMonth = new Date(today.getFullYear(), today.getMonth() + offset, 1)
+      const refPrefix = `${refMonth.getFullYear()}-${String(refMonth.getMonth() + 1).padStart(2, '0')}`
       const dasDate = new Date(refMonth.getFullYear(), refMonth.getMonth() + 1, 20)
-      if (dasDate.toISOString().split('T')[0] >= todayStr && dasDate.toISOString().split('T')[0] <= endStr) {
-        events.push({
-          date: dasDate.toISOString().split('T')[0],
-          type: 'imposto',
-          description: 'Pagamento DAS (MEI)',
-          subtitle: `DAS fixo de ${refMonth.toLocaleDateString('pt-BR', { month: 'long' })}`,
-          amount: -Math.round(dasFixo * 100) / 100,
-        })
+      const dasDateStr = dasDate.toISOString().split('T')[0]
+      if (dasDateStr >= todayStr && dasDateStr <= endStr) {
+        // Abate tributos pagos no mês de referência E no mês de vencimento
+        const dasMonthPrefix = dasDateStr.slice(0, 7)
+        const alreadyPaid = (paidTributosByMonth[refPrefix] ?? 0) + (paidTributosByMonth[dasMonthPrefix] ?? 0)
+        const remaining = Math.max(0, dasFixo - alreadyPaid)
+        if (remaining > 0.01) {
+          events.push({
+            date: dasDateStr,
+            type: 'imposto',
+            description: 'Pagamento DAS (MEI)',
+            subtitle: `DAS fixo de ${refMonth.toLocaleDateString('pt-BR', { month: 'long' })}${alreadyPaid > 0 ? ` · já pago R$ ${alreadyPaid.toFixed(2).replace('.', ',')}` : ''}`,
+            amount: -Math.round(remaining * 100) / 100,
+          })
+        }
       }
     }
   } else {
     // Simples / Presumido: DAS proporcional às receitas do mês
-    const currentMonthPrefix = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
     const currentMonthPending = (pendingReceivables || [])
       .filter((r) => r.due_date.startsWith(currentMonthPrefix))
       .reduce((s, r) => s + Number(r.amount), 0)
@@ -116,13 +138,20 @@ export async function GET() {
 
     if (currentMonthTax > 0.01) {
       const dasDate = new Date(today.getFullYear(), today.getMonth() + 1, 20)
-      events.push({
-        date: dasDate.toISOString().split('T')[0],
-        type: 'imposto',
-        description: 'Pagamento DAS',
-        subtitle: `${company.simples_rate}% sobre receitas de ${today.toLocaleDateString('pt-BR', { month: 'long' })}`,
-        amount: -Math.round(currentMonthTax * 100) / 100,
-      })
+      const dasDateStr = dasDate.toISOString().split('T')[0]
+      const dasMonthPrefix = dasDateStr.slice(0, 7)
+      // Abate tributos pagos no mês da competência E no mês do vencimento
+      const alreadyPaid = (paidTributosByMonth[currentMonthPrefix] ?? 0) + (paidTributosByMonth[dasMonthPrefix] ?? 0)
+      const remaining = Math.max(0, currentMonthTax - alreadyPaid)
+      if (remaining > 0.01) {
+        events.push({
+          date: dasDateStr,
+          type: 'imposto',
+          description: 'Pagamento DAS',
+          subtitle: `${company.simples_rate}% sobre receitas de ${today.toLocaleDateString('pt-BR', { month: 'long' })}${alreadyPaid > 0 ? ` · já pago R$ ${alreadyPaid.toFixed(2).replace('.', ',')}` : ''}`,
+          amount: -Math.round(remaining * 100) / 100,
+        })
+      }
     }
 
     const nextMonthDate = new Date(today.getFullYear(), today.getMonth() + 1, 1)

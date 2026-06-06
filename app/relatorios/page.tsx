@@ -25,7 +25,7 @@ const PALETTE = ['#FF8A00', '#3b82f6', '#10b981', '#8b5cf6', '#f43f5e', '#14b8a6
 const OPTIONS: { key: ChartType; label: string; icon: ElementType }[] = [
   { key: 'fluxo',      label: 'Fluxo de caixa',     icon: TrendingUp },
   { key: 'mensal',     label: 'Rec. × Desp.',        icon: BarChart3  },
-  { key: 'categorias', label: 'Por categoria',       icon: PieIcon    },
+  { key: 'categorias', label: 'Desp./categoria',     icon: PieIcon    },
   { key: 'metas',      label: 'Metas',               icon: Target     },
 ]
 
