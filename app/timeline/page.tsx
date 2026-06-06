@@ -28,7 +28,12 @@ const TYPE = {
 
 function fmtDate(iso: string) {
   const [y, m, d] = iso.split('-').map(Number)
-  return new Date(y, m - 1, d).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' })
+  const date    = new Date(y, m - 1, d)
+  const weekday = date.toLocaleDateString('pt-BR', { weekday: 'long' })
+  const wCap    = weekday.charAt(0).toUpperCase() + weekday.slice(1)
+  const dd      = String(d).padStart(2, '0')
+  const mm      = String(m).padStart(2, '0')
+  return `${wCap} · ${dd}/${mm}`
 }
 
 function groupByDate(events: TimelineEvent[]): DayGroup[] {
@@ -191,10 +196,13 @@ export default function TimelinePage() {
 
                         {/* Saldo projetado do dia — UMA VEZ, com destaque */}
                         <div style={{
-                          display: 'inline-flex', alignItems: 'baseline', gap: 5,
+                          display: 'inline-flex', alignItems: 'baseline', gap: 6,
                           marginBottom: 10,
                         }}>
-                          <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500 }}>saldo</span>
+                          <span style={{
+                            fontSize: 12, fontWeight: 700, letterSpacing: '0.04em',
+                            textTransform: 'uppercase', color: balColor, opacity: 0.55,
+                          }}>saldo</span>
                           <span style={{
                             fontFamily: 'var(--font-poppins,sans-serif)',
                             fontSize: 20, fontWeight: 800, letterSpacing: '-0.5px',
@@ -314,13 +322,37 @@ export default function TimelinePage() {
                   )
                 })}
 
-                {/* Ponta do trilho */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-                  <div style={{ width: 16, display: 'flex', justifyContent: 'center' }}>
-                    <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#e2e8f0' }} />
-                  </div>
-                  <span style={{ fontSize: 10, color: '#cbd5e1', fontWeight: 500 }}>90 dias</span>
-                </div>
+                {/* Ponta do trilho — marcador final */}
+                {(() => {
+                  const finalEv    = dayGroups[dayGroups.length - 1]?.events.slice(-1)[0]
+                  const finalBal   = finalEv?.running_balance ?? 0
+                  const finalColor = finalBal < 0 ? '#E50914' : finalEv?.alert === 'warning' ? '#d97706' : '#10b981'
+                  return (
+                    <div style={{ display: 'flex', gap: 18, alignItems: 'flex-start', paddingTop: 4 }}>
+                      <div style={{ width: 16, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, paddingTop: 3 }}>
+                        <div style={{
+                          width: 10, height: 10, borderRadius: '50%',
+                          background: 'transparent',
+                          border: `2px solid ${finalColor}`,
+                          opacity: 0.45,
+                        }} />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                          fim da projeção · 90 dias
+                        </span>
+                        <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: 5 }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: finalColor, opacity: 0.55 }}>
+                            saldo final
+                          </span>
+                          <span style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontSize: 16, fontWeight: 800, letterSpacing: '-0.4px', color: finalColor }}>
+                            {formatCurrency(finalBal)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })()}
               </div>
             )}
           </>
