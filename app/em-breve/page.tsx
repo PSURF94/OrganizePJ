@@ -96,10 +96,10 @@ export default async function EmBreve({
           <div style={{ background: 'white', borderRadius: 20, padding: '28px 24px', border: '1px solid #eef0f3' }}>
             <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Basic</p>
             <div style={{ marginBottom: 4 }}>
-              <span style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontSize: 32, fontWeight: 800, color: '#1A1A1D' }}>R$&nbsp;100</span>
+              <span style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontSize: 32, fontWeight: 800, color: '#1A1A1D' }}>R$&nbsp;197</span>
               <span style={{ color: '#94a3b8', fontSize: 13 }}>/ano</span>
             </div>
-            <p style={{ color: '#94a3b8', fontSize: 12, marginBottom: 20 }}>Preço de lançamento</p>
+            <p style={{ color: '#94a3b8', fontSize: 12, marginBottom: 20 }}>Menos de R$&nbsp;17/mês</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {BASIC_FEATURES.map((f) => (
                 <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
@@ -118,10 +118,10 @@ export default async function EmBreve({
             </div>
             <p style={{ fontSize: 11, fontWeight: 700, color: '#FF8A00', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Pro</p>
             <div style={{ marginBottom: 4 }}>
-              <span style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontSize: 32, fontWeight: 800, color: 'white' }}>R$&nbsp;500</span>
+              <span style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontSize: 32, fontWeight: 800, color: 'white' }}>R$&nbsp;497</span>
               <span style={{ color: '#475569', fontSize: 13 }}>/ano</span>
             </div>
-            <p style={{ color: '#475569', fontSize: 12, marginBottom: 20 }}>Preço de lançamento vitalício</p>
+            <p style={{ color: '#FF8A00', fontSize: 12, fontWeight: 600, marginBottom: 20 }}>Preço vitalício para parceiros fundadores</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {PRO_FEATURES.map((f) => (
                 <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>

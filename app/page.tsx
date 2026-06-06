@@ -509,14 +509,21 @@ function FinalCTA() {
 function Footer() {
   return (
     <footer style={{ background:'#111113', borderTop:'1px solid rgba(255,255,255,0.05)' }} className="py-10">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <Logo />
-        <p style={{ color:'#1e293b', fontSize:13 }}>
-          Clareza para decidir. Lucro real. · © 2026 organizepj.com.br
-        </p>
-        <div className="flex gap-5">
-          <Link href="/login"  style={{ color:'#334155', fontSize:13 }}>Entrar</Link>
-          <Link href="/cadastro" style={{ color:C.orange, fontSize:13, fontWeight:600 }}>Começar grátis</Link>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-5">
+          <Logo />
+          <p style={{ color:'rgba(255,255,255,0.18)', fontSize:13 }}>
+            Clareza para decidir. Lucro real. · © 2026 organizepj.com.br
+          </p>
+          <div className="flex gap-5">
+            <Link href="/login"  style={{ color:'rgba(255,255,255,0.3)', fontSize:13 }}>Entrar</Link>
+            <Link href="/cadastro" style={{ color:C.orange, fontSize:13, fontWeight:600 }}>Começar grátis</Link>
+          </div>
+        </div>
+        <div style={{ borderTop:'1px solid rgba(255,255,255,0.05)', paddingTop:16, display:'flex', justifyContent:'center', gap:24 }}>
+          <Link href="/privacidade" style={{ color:'rgba(255,255,255,0.22)', fontSize:12 }}>Política de Privacidade</Link>
+          <Link href="/termos"      style={{ color:'rgba(255,255,255,0.22)', fontSize:12 }}>Termos de Uso</Link>
+          <a href="mailto:contato@organizepj.com.br" style={{ color:'rgba(255,255,255,0.22)', fontSize:12 }}>Contato</a>
         </div>
       </div>
     </footer>

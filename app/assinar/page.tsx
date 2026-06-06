@@ -214,10 +214,10 @@ export default function AssinarPage() {
           <div style={{ background: '#222226', borderRadius: 20, padding: '24px 20px', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column' }}>
             <p style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Basic</p>
             <div style={{ marginBottom: 4 }}>
-              <span style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontSize: 34, fontWeight: 800, color: 'white' }}>R$&nbsp;100</span>
+              <span style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontSize: 34, fontWeight: 800, color: 'white' }}>R$&nbsp;197</span>
               <span style={{ color: '#475569', fontSize: 13 }}>/ano</span>
             </div>
-            <p style={{ color: '#475569', fontSize: 12, marginBottom: 20 }}>Preço de lançamento</p>
+            <p style={{ color: '#475569', fontSize: 12, marginBottom: 20 }}>Menos de R$&nbsp;17/mês</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24, flex: 1 }}>
               {BASIC_FEATURES.map((f) => (
                 <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
@@ -230,7 +230,7 @@ export default function AssinarPage() {
               onClick={() => handleCheckout('basic')}
               disabled={loading !== null || cnpjNeeded || configLoading}
               style={{ width: '100%', background: C.orange, color: 'white', fontWeight: 700, fontSize: 14, padding: '13px', borderRadius: 12, border: 'none', cursor: loading !== null || cnpjNeeded || configLoading ? 'not-allowed' : 'pointer', opacity: loading !== null || cnpjNeeded || configLoading ? 0.5 : 1, transition: 'opacity 0.15s' }}>
-              {loading === 'basic' ? 'Aguarde...' : 'Assinar Basic — R$ 100/ano'}
+              {loading === 'basic' ? 'Aguarde...' : 'Assinar Basic — R$ 197/ano'}
             </button>
           </div>
 
@@ -242,10 +242,10 @@ export default function AssinarPage() {
             </div>
             <p style={{ fontSize: 11, fontWeight: 700, color: C.orange, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Pro</p>
             <div style={{ marginBottom: 4 }}>
-              <span style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontSize: 34, fontWeight: 800, color: 'white' }}>R$&nbsp;500</span>
+              <span style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontSize: 34, fontWeight: 800, color: 'white' }}>R$&nbsp;497</span>
               <span style={{ color: '#475569', fontSize: 13 }}>/ano</span>
             </div>
-            <p style={{ color: '#475569', fontSize: 12, marginBottom: 20 }}>Preço de lançamento vitalício</p>
+            <p style={{ color: '#FF8A00', fontSize: 12, fontWeight: 600, marginBottom: 20 }}>Preço vitalício para parceiros fundadores</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24, flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <CheckCircle size={13} color="#475569" style={{ flexShrink: 0 }} />
@@ -276,6 +276,11 @@ export default function AssinarPage() {
             onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.35)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}>
             Sair da conta
           </button>
+        </div>
+
+        <div style={{ textAlign: 'center', marginTop: 24, display: 'flex', justifyContent: 'center', gap: 20 }}>
+          <a href="/privacidade" style={{ color: 'rgba(255,255,255,0.18)', fontSize: 12 }}>Política de Privacidade</a>
+          <a href="/termos"      style={{ color: 'rgba(255,255,255,0.18)', fontSize: 12 }}>Termos de Uso</a>
         </div>
       </div>
     </div>
