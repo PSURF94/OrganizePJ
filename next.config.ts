@@ -4,11 +4,8 @@ import { withSentryConfig } from '@sentry/nextjs'
 const nextConfig: NextConfig = {}
 
 export default withSentryConfig(nextConfig, {
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-  silent: true,           // sem logs no build
-  widenClientFileUpload: true,
-  hideSourceMaps: true,   // source maps não chegam ao browser
+  silent: true,
+  hideSourceMaps: true,
   disableLogger: true,
   automaticVercelMonitors: false,
 })
