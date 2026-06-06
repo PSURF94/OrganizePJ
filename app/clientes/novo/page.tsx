@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import AppShell from '@/components/AppShell'
 import Link from 'next/link'
+import { capFirst } from '@/lib/utils'
 
 export default function NovoClientePage() {
   const router = useRouter()
@@ -39,7 +40,8 @@ export default function NovoClientePage() {
             <input
               required
               value={form.name}
-              onChange={(e) => set('name', e.target.value)}
+              onChange={(e) => set('name', capFirst(e.target.value))}
+              autoCapitalize="words"
               placeholder="Nome completo ou razão social"
               className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
             />

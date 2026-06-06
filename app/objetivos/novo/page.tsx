@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import AppShell from '@/components/AppShell'
+import { capFirst } from '@/lib/utils'
 
 const SUGESTOES = [
   'Comprar drone',
@@ -64,7 +65,8 @@ export default function NovoObjetivoPage() {
               list="sugestoes-list"
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => setName(capFirst(e.target.value))}
+              autoCapitalize="sentences"
               required
               className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
               placeholder="Ex: Comprar drone, Capital de giro..."

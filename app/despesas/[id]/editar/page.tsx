@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import AppShell from '@/components/AppShell'
+import { capFirst } from '@/lib/utils'
 
 const CATEGORIAS = ['Combustível', 'Equipamentos', 'Software', 'Marketing', 'Tributos', 'Terceiros', 'Alimentação', 'Hospedagem', 'Outras']
 
@@ -61,7 +62,8 @@ export default function EditarDespesaPage() {
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">Descrição *</label>
-            <input required value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+            <input required value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: capFirst(e.target.value) }))}
+              autoCapitalize="sentences"
               className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
           </div>
           <div>

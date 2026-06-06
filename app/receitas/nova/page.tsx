@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import AppShell from '@/components/AppShell'
 import type { Client, Service } from '@/lib/constants'
-import { todayISO, formatCurrency, formatDate } from '@/lib/utils'
+import { todayISO, formatCurrency, formatDate, capFirst } from '@/lib/utils'
 import Link from 'next/link'
 import { Plus, Trash2 } from 'lucide-react'
 
@@ -159,8 +159,9 @@ export default function NovaReceitaPage() {
           <div className="bg-white rounded-2xl p-5 space-y-4">
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">Descrição *</label>
-              <input required value={form.description} onChange={(e) => set('description', e.target.value)}
+              <input required value={form.description} onChange={(e) => set('description', capFirst(e.target.value))}
                 placeholder="Ex: Honorários — Projeto X"
+                autoCapitalize="sentences"
                 className={inputCls} />
             </div>
             <div>

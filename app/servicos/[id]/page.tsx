@@ -4,7 +4,7 @@ import { useRouter, useParams } from 'next/navigation'
 import AppShell from '@/components/AppShell'
 import type { Service, Client, ServiceStatus } from '@/lib/constants'
 import { SERVICE_STATUSES, SERVICE_STATUS_COLORS } from '@/lib/constants'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, capFirst } from '@/lib/utils'
 import Link from 'next/link'
 
 const STATUS_ORDER: ServiceStatus[] = ['orcamento', 'aprovado', 'em_execucao', 'concluido', 'faturado', 'recebido']
@@ -102,7 +102,8 @@ export default function ServicoDetailPage() {
         <form onSubmit={handleSave} className="bg-white rounded-2xl p-5 space-y-4">
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">Título *</label>
-            <input required value={form.title} onChange={(e) => set('title', e.target.value)}
+            <input required value={form.title} onChange={(e) => set('title', capFirst(e.target.value))}
+              autoCapitalize="sentences"
               className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
           </div>
           <div>
@@ -133,7 +134,8 @@ export default function ServicoDetailPage() {
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">Descrição</label>
-            <textarea value={form.description} onChange={(e) => set('description', e.target.value)}
+            <textarea value={form.description} onChange={(e) => set('description', capFirst(e.target.value))}
+              autoCapitalize="sentences"
               rows={3}
               className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00] resize-none" />
           </div>

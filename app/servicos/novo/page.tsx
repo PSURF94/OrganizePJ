@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import AppShell from '@/components/AppShell'
 import type { Client } from '@/lib/constants'
-import { todayISO } from '@/lib/utils'
+import { todayISO, capFirst } from '@/lib/utils'
 import Link from 'next/link'
 
 export default function NovoServicoPage() {
@@ -50,7 +50,8 @@ export default function NovoServicoPage() {
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-5 space-y-4">
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">Título *</label>
-            <input required value={form.title} onChange={(e) => set('title', e.target.value)}
+            <input required value={form.title} onChange={(e) => set('title', capFirst(e.target.value))}
+              autoCapitalize="sentences"
               placeholder="Ex: Consultoria de TI — Empresa X"
               className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
           </div>
@@ -88,8 +89,9 @@ export default function NovoServicoPage() {
 
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">Descrição</label>
-            <textarea value={form.description} onChange={(e) => set('description', e.target.value)}
+            <textarea value={form.description} onChange={(e) => set('description', capFirst(e.target.value))}
               rows={3} placeholder="Detalhes do serviço..."
+              autoCapitalize="sentences"
               className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00] resize-none" />
           </div>
 

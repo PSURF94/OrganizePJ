@@ -4,6 +4,7 @@ import { useRouter, useParams } from 'next/navigation'
 import AppShell from '@/components/AppShell'
 import type { Client } from '@/lib/constants'
 import Link from 'next/link'
+import { capFirst } from '@/lib/utils'
 
 export default function ClienteDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -60,7 +61,8 @@ export default function ClienteDetailPage() {
         <form onSubmit={handleSave} className="bg-white rounded-2xl p-5 space-y-4">
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">Nome *</label>
-            <input required value={form.name} onChange={(e) => set('name', e.target.value)}
+            <input required value={form.name} onChange={(e) => set('name', capFirst(e.target.value))}
+              autoCapitalize="words"
               className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
           </div>
           <div>

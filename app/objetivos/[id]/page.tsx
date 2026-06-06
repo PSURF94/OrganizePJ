@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import AppShell from '@/components/AppShell'
-import { formatCurrency, formatDate, todayISO } from '@/lib/utils'
+import { formatCurrency, formatDate, todayISO, capFirst } from '@/lib/utils'
 
 type Contribution = { id: string; amount: number; date: string; note: string | null; receivable_id: string | null }
 type Goal = {
@@ -150,7 +150,8 @@ export default function ObjetivoDetailPage() {
             <div>
               <label className="text-xs font-medium text-slate-600 block mb-1">Observação (opcional)</label>
               <input
-                type="text" value={manualNote} onChange={(e) => setManualNote(e.target.value)}
+                type="text" value={manualNote} onChange={(e) => setManualNote(capFirst(e.target.value))}
+              autoCapitalize="sentences"
                 className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
                 placeholder="Ex: Saldo extra de maio"
               />

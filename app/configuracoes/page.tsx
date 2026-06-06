@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import AppShell from '@/components/AppShell'
 import type { Company } from '@/lib/constants'
+import { capFirst } from '@/lib/utils'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 import Link from 'next/link'
 
@@ -108,7 +109,8 @@ export default function ConfiguracoesPage() {
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Empresa</p>
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">Nome da empresa *</label>
-              <input required value={form.name} onChange={(e) => set('name', e.target.value)}
+              <input required value={form.name} onChange={(e) => set('name', capFirst(e.target.value))}
+                autoCapitalize="words"
                 className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
             </div>
             <div>

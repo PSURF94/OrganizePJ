@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import AppShell from '@/components/AppShell'
 import { EXPENSE_CATEGORIES } from '@/lib/constants'
-import { todayISO, formatCurrency, formatDate } from '@/lib/utils'
+import { todayISO, formatCurrency, formatDate, capFirst } from '@/lib/utils'
 import Link from 'next/link'
 import { Plus, Trash2 } from 'lucide-react'
 
@@ -108,8 +108,9 @@ export default function NovaDespesaPage() {
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">Descrição *</label>
-              <input required value={form.description} onChange={(e) => set('description', e.target.value)}
+              <input required value={form.description} onChange={(e) => set('description', capFirst(e.target.value))}
                 placeholder="Ex: Assinatura Adobe CC"
+                autoCapitalize="sentences"
                 className={inputCls} />
             </div>
           </div>

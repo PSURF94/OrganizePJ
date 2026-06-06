@@ -337,7 +337,8 @@ export default function CadastroPage() {
                 </div>
                 <div>
                   <label style={LABEL}>Nome da empresa ou seu nome</label>
-                  <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} required
+                  <input type="text" value={companyName} onChange={(e) => setCompanyName(capFirst(e.target.value))} required
+                    autoCapitalize="words"
                     style={INPUT} placeholder="Ex: João Silva Engenharia" />
                 </div>
                 {error && <p style={{ color:'#f87171', fontSize:13, background:'rgba(248,113,113,0.1)', padding:'10px 14px', borderRadius:10 }}>{error}</p>}
