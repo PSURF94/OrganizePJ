@@ -2,18 +2,57 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const PUBLIC_PATHS = ['/', '/login', '/cadastro', '/assinar', '/esqueci-senha', '/redefinir-senha', '/api/auth']
+const PUBLIC_PATHS = ['/', '/login', '/cadastro', '/assinar', '/esqueci-senha', '/redefinir-senha',
+  '/privacidade', '/termos', '/api/auth']
+
+// ── Rate limiter in-memory (por instância Edge) ──────────────────────────────
+const rl = new Map<string, { count: number; resetAt: number }>()
+
+function isRateLimited(key: string, limit: number, windowMs: number): boolean {
+  const now = Date.now()
+  const rec = rl.get(key)
+  if (!rec || now > rec.resetAt) {
+    rl.set(key, { count: 1, resetAt: now + windowMs })
+    return false
+  }
+  if (rec.count >= limit) return true
+  rec.count++
+  return false
+}
+
+// Rotas protegidas por rate limit: [path, limite, janela em ms]
+const RATE_RULES: [string, number, number][] = [
+  ['/api/setup-company',       5,  60 * 60 * 1000],  // 5 cadastros / hora
+  ['/api/auth/reset-password', 3,  60 * 60 * 1000],  // 3 resets / hora
+  ['/api/checkout',            5,  60 * 60 * 1000],  // 5 checkouts / hora
+]
 
 export async function proxy(req: NextRequest) {
   const res = NextResponse.next()
   const pathname = req.nextUrl.pathname
 
+  // Rate limiting — antes de qualquer outra verificação
+  if (req.method === 'POST') {
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+    for (const [path, limit, window] of RATE_RULES) {
+      if (pathname.startsWith(path)) {
+        if (isRateLimited(`${ip}:${path}`, limit, window)) {
+          return NextResponse.json(
+            { error: 'Muitas tentativas. Aguarde alguns minutos e tente novamente.' },
+            { status: 429 }
+          )
+        }
+        break
+      }
+    }
+  }
+
   if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) return res
 
   try {
     const supabase = createServerClient(
-      'https://ylasrgswpybznngjhrmc.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsYXNyZ3N3cHliem5uZ2pocm1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NTE4NDMsImV4cCI6MjA5NjAyNzg0M30.huqPr3ZDyHQC6F0Ef_1cUKiPFkRXPB2NfaIZiwASZGQ',
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
           getAll: () => req.cookies.getAll(),
@@ -30,7 +69,6 @@ export async function proxy(req: NextRequest) {
       return NextResponse.redirect(new URL('/login', req.url))
     }
 
-    // Verifica licença apenas em rotas de página (não em /api/*)
     if (!pathname.startsWith('/api/')) {
       const { data: company } = await supabase
         .from('companies')
