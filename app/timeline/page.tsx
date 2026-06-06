@@ -90,9 +90,7 @@ export default function TimelinePage() {
 
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {[1, 2, 3].map(i => (
-              <div key={i} style={{ height: 72, borderRadius: 16, background: '#f1f5f9' }} />
-            ))}
+            {[1, 2, 3].map(i => <div key={i} style={{ height: 90, borderRadius: 16, background: '#f1f5f9' }} />)}
           </div>
         ) : !data ? (
           <p style={{ textAlign: 'center', color: '#94a3b8', paddingTop: 60 }}>Erro ao carregar.</p>
@@ -126,75 +124,91 @@ export default function TimelinePage() {
                 Nenhum evento nos próximos 90 dias.
               </p>
             ) : (
-              /* ── Trilho vertical ── */
-              <div style={{ position: 'relative' }}>
-
-                {/* Linha do trilho */}
-                <div style={{
-                  position: 'absolute',
-                  left: 7, top: 8, bottom: 0,
-                  width: 2,
-                  background: 'linear-gradient(to bottom, #e2e8f0 0%, #f8fafc 100%)',
-                  borderRadius: 1,
-                }} />
-
+              <div>
                 {dayGroups.map((group, gi) => {
                   const lastEv   = group.events[group.events.length - 1]
                   const prevBal  = gi === 0
                     ? data.current_balance
                     : dayGroups[gi - 1].events[dayGroups[gi - 1].events.length - 1].running_balance
                   const dayDelta = lastEv.running_balance - prevBal
+                  const isLast   = gi === dayGroups.length - 1
+
+                  // Dot color reflects health of projected balance after this day
                   const dotColor =
-                    lastEv.running_balance < 0      ? '#E50914' :
-                    lastEv.alert === 'warning'       ? '#d97706' :
-                    dayDelta >= 0                    ? '#10b981' : '#E50914'
-                  const isLast = gi === dayGroups.length - 1
+                    lastEv.running_balance < 0 ? '#E50914' :
+                    lastEv.alert === 'warning'  ? '#d97706' :
+                    '#10b981'
+
+                  // Balance label color
+                  const balColor =
+                    lastEv.running_balance < 0 ? '#E50914' :
+                    lastEv.alert === 'warning'  ? '#d97706' :
+                    '#FF8A00'
 
                   return (
-                    <div key={gi} style={{
-                      display: 'flex', gap: 20,
-                      marginBottom: isLast ? 0 : 32,
-                      position: 'relative',
-                    }}>
+                    <div key={gi} style={{ display: 'flex', gap: 18 }}>
 
-                      {/* Coluna esquerda: nó */}
-                      <div style={{ flexShrink: 0, width: 16, paddingTop: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      {/* ── Coluna esquerda: nó + segmento de trilho ── */}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, width: 16 }}>
+                        {/* Nó */}
                         <div style={{
                           width: 14, height: 14, borderRadius: '50%',
                           background: dotColor,
                           border: '2.5px solid white',
-                          boxShadow: `0 0 0 2px ${dotColor}40, 0 0 8px ${dotColor}30`,
-                          flexShrink: 0,
-                          position: 'relative', zIndex: 1,
+                          boxShadow: `0 0 0 2.5px ${dotColor}35, 0 0 10px ${dotColor}25`,
+                          flexShrink: 0, zIndex: 1,
+                          marginTop: 3,
                         }} />
+                        {/* Segmento do trilho — cor do nó deste dia, estica até o próximo nó */}
+                        {!isLast && (
+                          <div style={{
+                            flex: 1,
+                            width: 2,
+                            background: dotColor,
+                            opacity: 0.2,
+                            borderRadius: 1,
+                            marginTop: 5,
+                            marginBottom: 0,
+                          }} />
+                        )}
                       </div>
 
-                      {/* Coluna direita: data + cards */}
-                      <div style={{ flex: 1, minWidth: 0 }}>
+                      {/* ── Coluna direita: conteúdo do dia ── */}
+                      <div style={{ flex: 1, minWidth: 0, paddingBottom: isLast ? 0 : 28 }}>
 
-                        {/* Cabeçalho do dia */}
-                        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10 }}>
-                          <div>
-                            <span style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'capitalize' }}>
-                              {fmtDate(group.date)}
-                            </span>
+                        {/* Cabeçalho: data + delta */}
+                        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'capitalize' }}>
+                            {fmtDate(group.date)}
                             {group.events.length > 1 && (
-                              <span style={{ fontSize: 11, color: '#94a3b8', marginLeft: 6 }}>
-                                · {group.events.length} eventos
-                              </span>
+                              <span style={{ fontWeight: 400, color: '#94a3b8', fontSize: 11 }}> · {group.events.length} eventos</span>
                             )}
-                          </div>
-                          {/* Delta do dia */}
-                          <span style={{
-                            fontSize: 11, fontWeight: 700,
-                            color: dayDelta >= 0 ? '#10b981' : '#E50914',
-                          }}>
+                          </span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: dayDelta >= 0 ? '#10b981' : '#E50914' }}>
                             {dayDelta >= 0 ? '+' : ''}{formatCurrency(dayDelta)}
                           </span>
                         </div>
 
-                        {/* Cards do dia */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {/* Saldo projetado do dia — UMA VEZ, com destaque */}
+                        <div style={{
+                          display: 'inline-flex', alignItems: 'baseline', gap: 5,
+                          marginBottom: 10,
+                        }}>
+                          <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500 }}>saldo</span>
+                          <span style={{
+                            fontFamily: 'var(--font-poppins,sans-serif)',
+                            fontSize: 20, fontWeight: 800, letterSpacing: '-0.5px',
+                            color: balColor, lineHeight: 1,
+                          }}>
+                            {formatCurrency(lastEv.running_balance)}
+                          </span>
+                          {lastEv.alert !== 'ok' && (
+                            <AlertTriangle size={12} color={balColor} style={{ marginBottom: 1 }} />
+                          )}
+                        </div>
+
+                        {/* Cards dos eventos — sem saldo por evento */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                           {group.events.map((ev, ei) => {
                             const t          = TYPE[ev.type]
                             const Icon       = t.icon
@@ -202,9 +216,6 @@ export default function TimelinePage() {
                             const isOpen     = expanded === key
                             const isRecebido = ev.status === 'recebido'
                             const displayAmt = ev.display_amount ?? Math.abs(ev.amount)
-                            const balColor   =
-                              ev.running_balance < 0   ? '#E50914' :
-                              ev.alert === 'warning'   ? '#d97706' : '#94a3b8'
 
                             return (
                               <div key={ei}>
@@ -212,41 +223,30 @@ export default function TimelinePage() {
                                   onClick={() => setExpanded(isOpen ? null : key)}
                                   style={{
                                     width: '100%', textAlign: 'left', cursor: 'pointer',
-                                    background: isOpen ? 'white' : 'white',
-                                    borderRadius: isOpen ? '12px 12px 0 0' : 12,
+                                    background: 'white',
+                                    borderRadius: isOpen ? '11px 11px 0 0' : 11,
                                     border: '1px solid #f1f5f9',
                                     borderLeft: `3px solid ${isRecebido ? '#10b981' : t.color}`,
-                                    borderBottom: isOpen ? '1px solid #f8fafc' : '1px solid #f1f5f9',
-                                    padding: '11px 14px',
+                                    borderBottom: isOpen ? '1px solid #f8fafc' : undefined,
+                                    padding: '10px 13px',
                                     opacity: isRecebido ? 0.65 : 1,
-                                    boxShadow: isOpen
-                                      ? `0 4px 16px rgba(0,0,0,0.07)`
-                                      : '0 1px 3px rgba(0,0,0,0.04)',
+                                    boxShadow: isOpen ? '0 4px 14px rgba(0,0,0,0.06)' : '0 1px 3px rgba(0,0,0,0.04)',
                                     transition: 'box-shadow 0.15s',
                                   }}
                                 >
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                    {/* Icon */}
                                     <div style={{
-                                      width: 30, height: 30, borderRadius: 8, flexShrink: 0,
+                                      width: 28, height: 28, borderRadius: 7, flexShrink: 0,
                                       background: isRecebido ? 'rgba(16,185,129,0.08)' : t.bg,
                                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     }}>
-                                      <Icon size={13} color={isRecebido ? '#10b981' : t.color} strokeWidth={2.2} />
+                                      <Icon size={12} color={isRecebido ? '#10b981' : t.color} strokeWidth={2.2} />
                                     </div>
-
-                                    {/* Texto */}
                                     <div style={{ flex: 1, minWidth: 0 }}>
-                                      <span style={{
-                                        fontSize: 9, fontWeight: 700, textTransform: 'uppercase',
-                                        letterSpacing: '0.1em', color: isRecebido ? '#10b981' : t.color,
-                                      }}>
+                                      <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: isRecebido ? '#10b981' : t.color }}>
                                         {isRecebido ? '✓ Recebido' : t.label}
                                       </span>
-                                      <p style={{
-                                        fontSize: 13, fontWeight: 600, color: '#1A1A1D', margin: '1px 0 0',
-                                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                                      }}>
+                                      <p style={{ fontSize: 13, fontWeight: 600, color: '#1A1A1D', margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                         {ev.description}
                                       </p>
                                       {ev.subtitle && (
@@ -255,36 +255,24 @@ export default function TimelinePage() {
                                         </p>
                                       )}
                                     </div>
-
-                                    {/* Valor + saldo */}
-                                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                                      <p style={{
-                                        fontFamily: 'var(--font-poppins,sans-serif)',
-                                        fontSize: 14, fontWeight: 700, lineHeight: 1,
-                                        color: isRecebido ? '#10b981' : t.color,
-                                      }}>
-                                        {t.sign}{formatCurrency(displayAmt)}
-                                      </p>
-                                      {isRecebido ? (
-                                        <p style={{ fontSize: 10, color: '#10b981', marginTop: 3, opacity: 0.6 }}>já no saldo</p>
-                                      ) : (
-                                        <p style={{ fontSize: 10, color: balColor, marginTop: 3, display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'flex-end' }}>
-                                          {ev.alert !== 'ok' && <AlertTriangle size={8} color={balColor} />}
-                                          ↳ {formatCurrency(ev.running_balance)}
-                                        </p>
-                                      )}
-                                    </div>
+                                    {/* Apenas o valor do evento — sem saldo repetido */}
+                                    <p style={{
+                                      fontFamily: 'var(--font-poppins,sans-serif)',
+                                      fontSize: 14, fontWeight: 700, lineHeight: 1, flexShrink: 0,
+                                      color: isRecebido ? '#10b981' : t.color,
+                                    }}>
+                                      {t.sign}{formatCurrency(displayAmt)}
+                                    </p>
                                   </div>
                                 </button>
 
-                                {/* Painel de ação */}
                                 {isOpen && (
                                   <div style={{
                                     background: '#fafafa',
                                     border: '1px solid #f1f5f9', borderTop: 'none',
                                     borderLeft: `3px solid ${isRecebido ? '#10b981' : t.color}`,
-                                    borderRadius: '0 0 12px 12px',
-                                    padding: '10px 14px',
+                                    borderRadius: '0 0 11px 11px',
+                                    padding: '9px 13px',
                                   }}>
                                     {ev.type === 'receita' && ev.id ? (
                                       !isRecebido ? (
@@ -293,11 +281,9 @@ export default function TimelinePage() {
                                           disabled={actionLoading}
                                           style={{
                                             fontSize: 12, fontWeight: 700, color: '#10b981',
-                                            background: 'rgba(16,185,129,0.08)',
-                                            border: '1px solid rgba(16,185,129,0.2)',
+                                            background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)',
                                             borderRadius: 8, padding: '7px 14px',
-                                            cursor: actionLoading ? 'not-allowed' : 'pointer',
-                                            opacity: actionLoading ? 0.5 : 1,
+                                            cursor: actionLoading ? 'not-allowed' : 'pointer', opacity: actionLoading ? 0.5 : 1,
                                           }}>
                                           {actionLoading ? 'Salvando…' : '✓ Marcar como recebido'}
                                         </button>
@@ -309,8 +295,7 @@ export default function TimelinePage() {
                                             fontSize: 12, fontWeight: 700, color: '#64748b',
                                             background: 'white', border: '1px solid #e2e8f0',
                                             borderRadius: 8, padding: '7px 14px',
-                                            cursor: actionLoading ? 'not-allowed' : 'pointer',
-                                            opacity: actionLoading ? 0.5 : 1,
+                                            cursor: actionLoading ? 'not-allowed' : 'pointer', opacity: actionLoading ? 0.5 : 1,
                                           }}>
                                           {actionLoading ? 'Salvando…' : '↩ Desfazer recebimento'}
                                         </button>
@@ -324,31 +309,18 @@ export default function TimelinePage() {
                             )
                           })}
                         </div>
-
-                        {/* Saldo projetado ao fim do dia */}
-                        <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 2 }}>
-                          <div style={{ width: 16, height: 1, background: '#e2e8f0' }} />
-                          <span style={{
-                            fontSize: 10, color: lastEv.running_balance < 0 ? '#E50914' : '#94a3b8',
-                            fontWeight: 600,
-                          }}>
-                            saldo: {formatCurrency(lastEv.running_balance)}
-                          </span>
-                        </div>
-
                       </div>
                     </div>
                   )
                 })}
 
                 {/* Ponta do trilho */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
                   <div style={{ width: 16, display: 'flex', justifyContent: 'center' }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#e2e8f0' }} />
+                    <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#e2e8f0' }} />
                   </div>
-                  <span style={{ fontSize: 10, color: '#cbd5e1' }}>90 dias</span>
+                  <span style={{ fontSize: 10, color: '#cbd5e1', fontWeight: 500 }}>90 dias</span>
                 </div>
-
               </div>
             )}
           </>
