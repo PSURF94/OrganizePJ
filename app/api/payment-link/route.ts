@@ -36,7 +36,9 @@ export async function POST(req: NextRequest) {
   if (!receivable) return NextResponse.json({ error: 'Recebível não encontrado' }, { status: 404 })
   if (receivable.status === 'recebido') return NextResponse.json({ error: 'Este recebível já foi marcado como recebido' }, { status: 400 })
 
-  const client = receivable.clients as { name: string; email: string | null; cpf_cnpj: string | null } | null
+  type ClientRow = { name: string; email: string | null; cpf_cnpj: string | null }
+  const clientsRaw = receivable.clients as unknown as ClientRow | ClientRow[] | null
+  const client = Array.isArray(clientsRaw) ? (clientsRaw[0] ?? null) : clientsRaw
   if (!client?.email) {
     return NextResponse.json({
       error: 'Cadastre o e-mail do cliente antes de gerar o link de pagamento',
