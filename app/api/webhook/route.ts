@@ -27,13 +27,46 @@ export async function POST(req: NextRequest) {
 
   if (!isPaid && !isCanceled) return NextResponse.json({ ok: true })
 
-  const companyId = payment?.externalReference
-  if (!companyId) return NextResponse.json({ error: 'No externalReference' }, { status: 400 })
+  const ref: string | undefined = payment?.externalReference
+  if (!ref) return NextResponse.json({ error: 'No externalReference' }, { status: 400 })
 
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim()
   )
+
+  // Fatura de cliente gerada pelo link de pagamento (Pro): 'recv:<receivableId>'
+  if (ref.startsWith('recv:')) {
+    const receivableId = ref.slice(5)
+    if (isPaid) {
+      const { data: recv } = await supabaseAdmin
+        .from('receivables')
+        .select('amount')
+        .eq('id', receivableId)
+        .single()
+      if (!recv) {
+        console.error('[webhook] receivable não encontrado:', receivableId)
+        return NextResponse.json({ error: 'Receivable not found' }, { status: 404 })
+      }
+      if (Math.abs(Number(recv.amount) - Number(payment?.value ?? 0)) > 0.01) {
+        console.error('[webhook] valor pago difere do recebível:', payment?.value, 'esperado:', recv.amount, 'receivable:', receivableId)
+      }
+      const receivedDate = payment?.paymentDate || payment?.clientPaymentDate || new Date().toISOString().split('T')[0]
+      await supabaseAdmin
+        .from('receivables')
+        .update({ status: 'recebido', received_date: receivedDate })
+        .eq('id', receivableId)
+    } else if (isCanceled) {
+      await supabaseAdmin
+        .from('receivables')
+        .update({ status: 'pendente', received_date: null })
+        .eq('id', receivableId)
+    }
+    return NextResponse.json({ ok: true })
+  }
+
+  // Licença: 'license:<companyId>' (sem prefixo = cobrança criada antes desta versão)
+  const companyId = ref.startsWith('license:') ? ref.slice(8) : ref
 
   const PLAN_VALUES: Record<number, string> = { 197: 'basic', 497: 'pro' }
 

@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
       customerId,
       value: Number(receivable.amount),
       description: receivable.description,
-      externalReference: receivable.id,
+      externalReference: `recv:${receivable.id}`,
       dueDate,
     })
     return NextResponse.json({ invoiceUrl })

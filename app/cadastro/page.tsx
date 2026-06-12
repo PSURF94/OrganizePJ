@@ -180,8 +180,6 @@ export default function CadastroPage() {
       const nFunc     = sozinho ? 0 : (Number(numFuncionarios) || 1)
       const folha     = sozinho ? 0 : parseCurrencyInput(folhaMensal)
       const rec       = calcTaxRecommendation(mensal, nFunc, serviceCategory || null, folha)
-      const trialEnds = new Date()
-      trialEnds.setDate(trialEnds.getDate() + 7)
 
       const companyRes = await fetch('/api/setup-company', {
         method: 'POST',
@@ -194,8 +192,6 @@ export default function CadastroPage() {
           das_fixo_mensal: rec.das_fixo_mensal ?? null,
           service_category: serviceCategory || null,
           folha_mensal: folha || null,
-          trial_ends_at: trialEnds.toISOString(),
-          status: 'trial',
           tem_funcionarios: !sozinho,
           num_funcionarios: nFunc,
           faturamento_mensal: mensal,

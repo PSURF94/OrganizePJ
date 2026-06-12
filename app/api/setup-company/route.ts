@@ -25,17 +25,56 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json()
 
-  const { error } = await supabase.from('companies').insert([{
+  // Insert via service role: o role authenticated não tem mais INSERT em companies (migration v7)
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim()
+  )
+
+  // Uma empresa por conta — impede reset de trial criando company nova
+  const { data: existing } = await supabaseAdmin
+    .from('companies')
+    .select('id')
+    .eq('owner_id', user.id)
+    .limit(1)
+  if (existing && existing.length > 0) {
+    return NextResponse.json({ error: 'Esta conta já possui uma empresa cadastrada' }, { status: 409 })
+  }
+
+  const name = String(body.name ?? '').trim()
+  if (!name) return NextResponse.json({ error: 'Nome da empresa obrigatório' }, { status: 400 })
+
+  const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+
+  // Whitelist explícita: status, plan, trial_ends_at e license_expires_at são
+  // definidos pelo servidor — nunca aceitos do body (auditoria S2)
+  const { error } = await supabaseAdmin.from('companies').insert([{
     owner_id: user.id,
-    ...body,
+    name,
+    cnpj: body.cnpj || null,
+    tax_regime: body.tax_regime || 'simples',
+    simples_rate: Number(body.simples_rate) || 0,
+    das_fixo_mensal: body.das_fixo_mensal != null ? Number(body.das_fixo_mensal) : null,
+    service_category: body.service_category || null,
+    folha_mensal: body.folha_mensal != null ? Number(body.folha_mensal) : null,
+    tem_funcionarios: Boolean(body.tem_funcionarios),
+    num_funcionarios: Number(body.num_funcionarios) || 0,
+    faturamento_mensal: Number(body.faturamento_mensal) || 0,
+    faturamento_esperado_12m: Number(body.faturamento_esperado_12m) || 0,
+    emite_nf: Boolean(body.emite_nf),
+    tem_contador: Boolean(body.tem_contador),
+    controle_atual: body.controle_atual || null,
+    diagnostico_feito: Boolean(body.diagnostico_feito),
+    saldo_inicial: Number(body.saldo_inicial) || 0,
+    status: 'trial',
+    trial_ends_at: trialEndsAt.toISOString(),
   }])
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   // Email de boas-vindas — fire and forget
-  const companyName = (body.name as string | undefined) ?? 'sua empresa'
-  const trialEnds = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-    .toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })
+  const companyName = name
+  const trialEnds = trialEndsAt.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })
 
   resend.emails.send({
     from: 'OrganizePJ <oi@organizepj.com.br>',

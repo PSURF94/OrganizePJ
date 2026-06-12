@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 const PUBLIC_PATHS = ['/', '/login', '/cadastro', '/assinar', '/esqueci-senha', '/redefinir-senha',
-  '/privacidade', '/termos', '/api/auth', '/api/cron']
+  '/privacidade', '/termos', '/api/auth', '/api/cron', '/api/admin']
 
 // ── Rate limiter in-memory (por instância Edge) ──────────────────────────────
 const rl = new Map<string, { count: number; resetAt: number }>()
@@ -65,28 +65,37 @@ export async function proxy(req: NextRequest) {
       }
     )
 
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
+    // getUser() valida o JWT no servidor Supabase (getSession só decodifica o cookie)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
       if (pathname.startsWith('/api/')) {
         return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
       }
       return NextResponse.redirect(new URL('/login', req.url))
     }
 
-    // Rotas de API que precisam funcionar mesmo com licença expirada (fluxo de pagamento)
-    const LICENSE_EXEMPT = ['/api/checkout', '/api/configuracoes']
+    // Rotas de API que precisam funcionar mesmo com licença expirada ou empresa ainda não criada
+    const LICENSE_EXEMPT = ['/api/checkout', '/api/configuracoes', '/api/setup-company']
     if (!LICENSE_EXEMPT.some((p) => pathname.startsWith(p))) {
       const { data: company } = await supabase
         .from('companies')
         .select('status, trial_ends_at, license_expires_at')
-        .eq('owner_id', session.user.id)
+        .eq('owner_id', user.id)
         .single()
+
+      // Sem company não há licença a validar — bloqueia em vez de liberar
+      if (!company) {
+        if (pathname.startsWith('/api/')) {
+          return NextResponse.json({ error: 'Cadastro incompleto' }, { status: 403 })
+        }
+        return NextResponse.redirect(new URL('/cadastro', req.url))
+      }
 
       const now = new Date()
       const isExpired =
-        company?.status === 'expired' ||
-        (company?.status === 'trial' && company?.trial_ends_at && new Date(company.trial_ends_at) < now) ||
-        (company?.status === 'active' && company?.license_expires_at && new Date(company.license_expires_at) < now)
+        company.status === 'expired' ||
+        (company.status === 'trial' && company.trial_ends_at && new Date(company.trial_ends_at) < now) ||
+        (company.status === 'active' && company.license_expires_at && new Date(company.license_expires_at) < now)
 
       if (isExpired) {
         if (pathname.startsWith('/api/')) {
@@ -96,6 +105,9 @@ export async function proxy(req: NextRequest) {
       }
     }
   } catch {
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+    }
     return NextResponse.redirect(new URL('/login', req.url))
   }
 

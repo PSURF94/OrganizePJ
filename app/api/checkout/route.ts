@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       customerId,
       value: planConfig.value,
       description: planConfig.description,
-      externalReference: company.id,
+      externalReference: `license:${company.id}`,
       dueDate: dueDateStr,
     })
     return NextResponse.json({ invoiceUrl })
