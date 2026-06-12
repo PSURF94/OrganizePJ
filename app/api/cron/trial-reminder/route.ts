@@ -42,6 +42,7 @@ export async function GET(req: NextRequest) {
     .eq('status', 'trial')
     .gte('trial_ends_at', tomorrowStart.toISOString())
     .lte('trial_ends_at', tomorrowEnd.toISOString())
+    .is('trial_reminder_sent_at', null)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
@@ -133,6 +134,7 @@ export async function GET(req: NextRequest) {
 </td></tr></table>
 </body></html>`,
       })
+      await supabase.from('companies').update({ trial_reminder_sent_at: new Date().toISOString() }).eq('id', company.id)
       results.push({ id: company.id, sent: true })
     } catch (e) {
       results.push({ id: company.id, sent: false, error: String(e) })

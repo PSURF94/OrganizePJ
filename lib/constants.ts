@@ -121,6 +121,7 @@ export interface Receivable {
   installment_group_id?: string | null
   installment_number: number
   installment_total: number
+  paid_via_link?: boolean
 }
 
 export interface Expense {

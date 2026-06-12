@@ -151,6 +151,9 @@ export default function ReceitasPage() {
                     <span className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${STATUS_STYLE[effectiveStatus(r)]}`}>
                       {STATUS_LABEL[effectiveStatus(r)]}
                     </span>
+                    {r.paid_via_link && effectiveStatus(r) === 'recebido' && (
+                      <span style={{ display: 'block', fontSize: 9, color: '#64748b', marginTop: 2 }}>via Asaas</span>
+                    )}
                   </div>
                 </div>
                 <div className="flex gap-2 mt-3 pt-3 border-t border-slate-50 flex-wrap">
@@ -177,7 +180,7 @@ export default function ReceitasPage() {
                   {effectiveStatus(r) !== 'recebido' && (
                     <button
                       onClick={() => { setAdiando(r.id); setNovaData(r.due_date) }}
-                      className="text-xs text-blue-400 hover:text-blue-600 font-medium px-2 py-1 rounded-lg hover:bg-blue-50">
+                      className="text-xs text-slate-400 hover:text-slate-600 font-medium px-2 py-1 rounded-lg hover:bg-slate-50">
                       Adiar
                     </button>
                   )}
@@ -237,11 +240,11 @@ export default function ReceitasPage() {
                       type="date"
                       value={novaData}
                       onChange={(ev) => setNovaData(ev.target.value)}
-                      className="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      className="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
                     />
                     <button
                       onClick={() => handleAdiar(r.id)}
-                      className="text-xs bg-blue-500 text-white font-semibold px-3 py-1.5 rounded-lg hover:bg-blue-600">
+                      className="text-xs bg-[#FF8A00] text-white font-semibold px-3 py-1.5 rounded-lg">
                       Confirmar
                     </button>
                     <button

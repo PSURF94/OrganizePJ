@@ -54,12 +54,12 @@ export async function POST(req: NextRequest) {
       const receivedDate = payment?.paymentDate || payment?.clientPaymentDate || new Date().toISOString().split('T')[0]
       await supabaseAdmin
         .from('receivables')
-        .update({ status: 'recebido', received_date: receivedDate })
+        .update({ status: 'recebido', received_date: receivedDate, paid_via_link: true })
         .eq('id', receivableId)
     } else if (isCanceled) {
       await supabaseAdmin
         .from('receivables')
-        .update({ status: 'pendente', received_date: null })
+        .update({ status: 'pendente', received_date: null, paid_via_link: false })
         .eq('id', receivableId)
     }
     return NextResponse.json({ ok: true })
