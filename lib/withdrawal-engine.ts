@@ -1,7 +1,7 @@
 import type { TaxRegime } from './constants'
 
-const SALARIO_MINIMO = 1518.00
-const INSS_TETO = 7786.02
+const SALARIO_MINIMO = 1621.00
+const INSS_TETO = 8475.55
 const INSS_RATE = 0.11 // contribuinte individual — plano simplificado
 
 // Tabela IRPF 2024

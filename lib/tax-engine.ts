@@ -13,8 +13,8 @@ export type TaxRecommendation = {
   faixa_tributacao: string
 }
 
-// DAS MEI 2025 para prestador de serviço: INSS (5% × R$1.518) + ISS (R$5)
-export const MEI_DAS_MENSAL = 80.90
+// DAS MEI 2026 para prestador de serviço: INSS (5% × R$1.621) + ISS (R$5)
+export const MEI_DAS_MENSAL = 86.05
 
 export const SERVICE_CATEGORIES: { value: string; label: string; anexo: 'III' | 'V' }[] = [
   { value: 'tech', label: 'Tecnologia / Programação', anexo: 'V' },

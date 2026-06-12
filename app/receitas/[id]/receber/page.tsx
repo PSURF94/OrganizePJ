@@ -63,7 +63,7 @@ export default function ReceberPage() {
   const isMei = company?.tax_regime === 'mei'
   const taxRate = isMei ? 0 : Number(company?.simples_rate || 0)
   const imposto = isMei ? 0 : Math.round(amount * taxRate) / 100
-  const dasFixo = isMei ? Number(company?.das_fixo_mensal || 80.90) : 0
+  const dasFixo = isMei ? Number(company?.das_fixo_mensal || 86.05) : 0
   const disponivel = amount - totalGoals - imposto
 
   async function handleConfirm() {

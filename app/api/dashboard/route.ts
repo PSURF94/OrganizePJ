@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { data: company } = await supabase
-    .from('companies').select('id, simples_rate, saldo_inicial, tax_regime, prolabore_mensal, retirada_desejada_mensal, status, trial_ends_at, license_expires_at').eq('owner_id', session.user.id).single()
+    .from('companies').select('id, simples_rate, das_fixo_mensal, saldo_inicial, tax_regime, prolabore_mensal, retirada_desejada_mensal, status, trial_ends_at, license_expires_at').eq('owner_id', session.user.id).single()
   if (!company) return NextResponse.json({ error: 'Company not found' }, { status: 404 })
 
   const { searchParams } = new URL(req.url)
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
   ] = await Promise.all([
     supabase.from('receivables').select('amount, status, received_date, due_date').eq('company_id', company.id),
     supabase.from('expenses').select('amount').eq('company_id', company.id).gte('date', from).lte('date', to),
-    supabase.from('expenses').select('amount').eq('company_id', company.id),
+    supabase.from('expenses').select('amount').eq('company_id', company.id).lte('date', today),
     supabase.from('goals').select('id, name, target_amount, accumulated_amount, percentage_allocation, goal_contributions(amount, date)')
       .eq('company_id', company.id).eq('is_active', true).order('created_at', { ascending: true }),
     supabase.from('goal_contributions').select('amount').eq('company_id', company.id).gte('date', from).lte('date', to),
@@ -57,7 +57,9 @@ export async function GET(req: NextRequest) {
 
   const monthExpensesTotal  = (monthExpenses || []).reduce((s, e) => s + Number(e.amount), 0)
   const goalsThisMonth      = (monthGoalContribs || []).reduce((s, c) => s + Number(c.amount), 0)
-  const taxReserve          = Math.round(revenue * (company.simples_rate / 100) * 100) / 100
+  const taxReserve = company.tax_regime === 'mei'
+    ? Math.round(Number(company.das_fixo_mensal || 86.05) * 100) / 100
+    : Math.round(revenue * (company.simples_rate / 100) * 100) / 100
 
   // Disponível = saldo inicial + tudo que entrou − tudo que saiu − metas acumuladas
   const saldoInicial = Number(company.saldo_inicial) || 0
@@ -123,6 +125,7 @@ export async function GET(req: NextRequest) {
     receivables_overdue_count: overdue.length,
     goals: goalsData,
     recommendations,
+    simples_rate: Number(company.simples_rate),
     company_tax_regime: company.tax_regime,
     company_prolabore_mensal: company.prolabore_mensal ? Number(company.prolabore_mensal) : null,
     company_retirada_desejada_mensal: company.retirada_desejada_mensal ? Number(company.retirada_desejada_mensal) : null,
