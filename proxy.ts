@@ -66,10 +66,15 @@ export async function proxy(req: NextRequest) {
 
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) {
+      if (pathname.startsWith('/api/')) {
+        return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+      }
       return NextResponse.redirect(new URL('/login', req.url))
     }
 
-    if (!pathname.startsWith('/api/')) {
+    // Rotas de API que precisam funcionar mesmo com licença expirada (fluxo de pagamento)
+    const LICENSE_EXEMPT = ['/api/checkout', '/api/configuracoes']
+    if (!LICENSE_EXEMPT.some((p) => pathname.startsWith(p))) {
       const { data: company } = await supabase
         .from('companies')
         .select('status, trial_ends_at, license_expires_at')
@@ -83,6 +88,9 @@ export async function proxy(req: NextRequest) {
         (company?.status === 'active' && company?.license_expires_at && new Date(company.license_expires_at) < now)
 
       if (isExpired) {
+        if (pathname.startsWith('/api/')) {
+          return NextResponse.json({ error: 'Licença expirada' }, { status: 402 })
+        }
         return NextResponse.redirect(new URL('/assinar', req.url))
       }
     }

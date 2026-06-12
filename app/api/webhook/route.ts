@@ -28,12 +28,20 @@ export async function POST(req: NextRequest) {
     (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim()
   )
 
+  const PLAN_VALUES: Record<number, string> = { 197: 'basic', 497: 'pro' }
+
   if (isPaid) {
+    const value = Math.round(payment?.value ?? 0)
+    const plan = PLAN_VALUES[value]
+    if (!plan) {
+      console.error('[webhook] valor não reconhecido:', payment?.value, 'companyId:', companyId)
+      return NextResponse.json({ error: 'Valor de pagamento não reconhecido' }, { status: 400 })
+    }
     const expiresAt = new Date()
     expiresAt.setFullYear(expiresAt.getFullYear() + 1)
     await supabaseAdmin
       .from('companies')
-      .update({ status: 'active', license_expires_at: expiresAt.toISOString() })
+      .update({ status: 'active', license_expires_at: expiresAt.toISOString(), plan })
       .eq('id', companyId)
   } else if (isCanceled) {
     await supabaseAdmin
