@@ -2,18 +2,25 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { createHash, timingSafeEqual } from 'crypto'
+
+function safeEqual(a: string, b: string): boolean {
+  const ha = createHash('sha256').update(a).digest()
+  const hb = createHash('sha256').update(b).digest()
+  return timingSafeEqual(ha, hb)
+}
 
 export async function POST(req: NextRequest) {
   const ADMIN_TOKEN = process.env.ADMIN_TOKEN
   if (!ADMIN_TOKEN) return NextResponse.json({ error: 'Not configured' }, { status: 503 })
 
-  const token = req.headers.get('x-admin-token')
-  if (token !== ADMIN_TOKEN) {
+  const token = req.headers.get('x-admin-token') ?? ''
+  if (!safeEqual(token, ADMIN_TOKEN)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const supabaseAdmin = createClient(
-    'https://ylasrgswpybznngjhrmc.supabase.co',
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
     (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim()
   )
 
@@ -21,7 +28,7 @@ export async function POST(req: NextRequest) {
   const { email } = body
   if (!email) return NextResponse.json({ error: 'email required' }, { status: 400 })
 
-  const { data: users } = await supabaseAdmin.auth.admin.listUsers()
+  const { data: users } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 })
   const user = users?.users?.find((u) => u.email === email)
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 

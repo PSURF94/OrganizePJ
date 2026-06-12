@@ -2,13 +2,20 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { createHash, timingSafeEqual } from 'crypto'
+
+function safeEqual(a: string, b: string): boolean {
+  const ha = createHash('sha256').update(a).digest()
+  const hb = createHash('sha256').update(b).digest()
+  return timingSafeEqual(ha, hb)
+}
 
 export async function POST(req: NextRequest) {
   const ASAAS_WEBHOOK_TOKEN = process.env.ASAAS_WEBHOOK_TOKEN
   if (!ASAAS_WEBHOOK_TOKEN) return NextResponse.json({ error: 'Webhook not configured' }, { status: 503 })
 
-  const token = req.headers.get('asaas-access-token')
-  if (token !== ASAAS_WEBHOOK_TOKEN) {
+  const token = req.headers.get('asaas-access-token') ?? ''
+  if (!safeEqual(token, ASAAS_WEBHOOK_TOKEN)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -24,7 +31,7 @@ export async function POST(req: NextRequest) {
   if (!companyId) return NextResponse.json({ error: 'No externalReference' }, { status: 400 })
 
   const supabaseAdmin = createClient(
-    'https://ylasrgswpybznngjhrmc.supabase.co',
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
     (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim()
   )
 

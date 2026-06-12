@@ -45,8 +45,7 @@ export async function POST(req: NextRequest) {
     })
     return NextResponse.json({ invoiceUrl })
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e)
-    console.error('[checkout]', msg)
-    return NextResponse.json({ error: msg }, { status: 502 })
+    console.error('[checkout]', e instanceof Error ? e.message : String(e))
+    return NextResponse.json({ error: 'Erro ao processar pagamento. Tente novamente.' }, { status: 502 })
   }
 }

@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
-
-const SUPABASE_URL = 'https://ylasrgswpybznngjhrmc.supabase.co'
+import { randomInt } from 'crypto'
 
 function adminClient() {
-  return createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 }
 
 function generateTempPassword(): string {
   const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'
-  return Array.from({ length: 10 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
+  return Array.from({ length: 12 }, () => chars[randomInt(chars.length)]).join('')
 }
 
 export async function POST(req: NextRequest) {

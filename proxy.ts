@@ -25,6 +25,7 @@ const RATE_RULES: [string, number, number][] = [
   ['/api/setup-company',       5,  60 * 60 * 1000],  // 5 cadastros / hora
   ['/api/auth/reset-password', 3,  60 * 60 * 1000],  // 3 resets / hora
   ['/api/checkout',            5,  60 * 60 * 1000],  // 5 checkouts / hora
+  ['/api/payment-link',       10, 60 * 60 * 1000],  // 10 links / hora (cria recursos no Asaas)
 ]
 
 export async function proxy(req: NextRequest) {
@@ -47,7 +48,7 @@ export async function proxy(req: NextRequest) {
     }
   }
 
-  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) return res
+  if (PUBLIC_PATHS.some((p) => p === '/' ? pathname === '/' : pathname.startsWith(p))) return res
 
   try {
     const supabase = createServerClient(

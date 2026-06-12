@@ -59,8 +59,7 @@ export async function POST(req: NextRequest) {
     })
     return NextResponse.json({ invoiceUrl })
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e)
-    console.error('[payment-link]', msg)
-    return NextResponse.json({ error: msg }, { status: 502 })
+    console.error('[payment-link]', e instanceof Error ? e.message : String(e))
+    return NextResponse.json({ error: 'Erro ao gerar link de pagamento. Tente novamente.' }, { status: 502 })
   }
 }
