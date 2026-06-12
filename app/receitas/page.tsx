@@ -30,6 +30,9 @@ export default function ReceitasPage() {
   const [filter, setFilter] = useState('all')
   const [adiando, setAdiando] = useState<string | null>(null)
   const [novaData, setNovaData] = useState('')
+  const [linkLoading, setLinkLoading] = useState<string | null>(null)
+  const [generatedLinks, setGeneratedLinks] = useState<Record<string, string>>({})
+  const [linkError, setLinkError] = useState<{ id: string; msg: string } | null>(null)
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -54,6 +57,28 @@ export default function ReceitasPage() {
     if (!confirm('Excluir este recebível?')) return
     await fetch(`/api/receivables/${id}`, { method: 'DELETE' })
     setItems((prev) => prev.filter((r) => r.id !== id))
+  }
+
+  async function handlePaymentLink(id: string) {
+    setLinkLoading(id)
+    setLinkError(null)
+    try {
+      const res = await fetch('/api/payment-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receivable_id: id }),
+      })
+      const data = await res.json()
+      if (data.invoiceUrl) {
+        setGeneratedLinks((prev) => ({ ...prev, [id]: data.invoiceUrl }))
+      } else {
+        setLinkError({ id, msg: data.error || `Erro ${res.status}` })
+      }
+    } catch (e) {
+      setLinkError({ id, msg: e instanceof Error ? e.message : String(e) })
+    } finally {
+      setLinkLoading(null)
+    }
   }
 
   async function handleAdiar(id: string) {
@@ -164,15 +189,46 @@ export default function ReceitasPage() {
                     className="text-xs text-slate-300 hover:text-red-400 px-2 py-1 rounded-lg">
                     Excluir
                   </button>
-                  <Link href="/em-breve?f=link-pagamento"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#94a3b8', textDecoration: 'none', fontSize: 12, padding: '4px 8px', borderRadius: 8 }}>
-                    Link pgto <span style={{ fontSize: 9, background: 'rgba(255,138,0,0.1)', color: '#FF8A00', borderRadius: 4, padding: '1px 5px', fontWeight: 700 }}>PRO</span>
-                  </Link>
+                  <button
+                    onClick={() => handlePaymentLink(r.id)}
+                    disabled={linkLoading === r.id || effectiveStatus(r) === 'recebido'}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#94a3b8', background: 'none', border: 'none', cursor: linkLoading === r.id ? 'wait' : 'pointer', fontSize: 12, padding: '4px 8px', borderRadius: 8 }}>
+                    {linkLoading === r.id ? 'Gerando…' : 'Link pgto'}
+                    <span style={{ fontSize: 9, background: 'rgba(255,138,0,0.1)', color: '#FF8A00', borderRadius: 4, padding: '1px 5px', fontWeight: 700 }}>PRO</span>
+                  </button>
                   <Link href="/em-breve?f=cobranca-whatsapp"
                     style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#94a3b8', textDecoration: 'none', fontSize: 12, padding: '4px 8px', borderRadius: 8 }}>
                     WhatsApp <span style={{ fontSize: 9, background: 'rgba(255,138,0,0.1)', color: '#FF8A00', borderRadius: 4, padding: '1px 5px', fontWeight: 700 }}>PRO</span>
                   </Link>
                 </div>
+
+                {generatedLinks[r.id] && (
+                  <div className="mt-3 pt-3 border-t border-slate-100">
+                    <p className="text-xs text-slate-500 mb-2">Link de pagamento gerado:</p>
+                    <div className="flex items-center gap-2">
+                      <input
+                        readOnly
+                        value={generatedLinks[r.id]}
+                        className="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-slate-600 bg-slate-50 focus:outline-none"
+                      />
+                      <button
+                        onClick={() => { navigator.clipboard.writeText(generatedLinks[r.id]); }}
+                        className="text-xs bg-[#FF8A00] text-white font-semibold px-3 py-1.5 rounded-lg">
+                        Copiar
+                      </button>
+                      <a href={generatedLinks[r.id]} target="_blank" rel="noreferrer"
+                        className="text-xs text-[#FF8A00] font-semibold px-2 py-1.5 rounded-lg hover:bg-orange-50">
+                        Abrir
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {linkError?.id === r.id && (
+                  <div className="mt-2 pt-2 border-t border-slate-100">
+                    <p className="text-xs text-red-500">{linkError.msg}</p>
+                  </div>
+                )}
 
                 {adiando === r.id && (
                   <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2">

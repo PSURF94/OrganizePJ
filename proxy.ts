@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 const PUBLIC_PATHS = ['/', '/login', '/cadastro', '/assinar', '/esqueci-senha', '/redefinir-senha',
-  '/privacidade', '/termos', '/api/auth']
+  '/privacidade', '/termos', '/api/auth', '/api/cron']
 
 // ── Rate limiter in-memory (por instância Edge) ──────────────────────────────
 const rl = new Map<string, { count: number; resetAt: number }>()

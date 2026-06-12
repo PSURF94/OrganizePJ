@@ -259,10 +259,12 @@ export default function AssinarPage() {
                 </div>
               ))}
             </div>
-            <a href="mailto:contato@organizepj.com.br?subject=Interesse no Plano Pro&body=Olá! Tenho interesse no plano Pro do OrganizePJ."
-              style={{ display: 'block', textAlign: 'center', background: 'rgba(255,138,0,0.08)', color: C.orange, fontWeight: 700, fontSize: 14, padding: '13px', borderRadius: 12, border: `1px solid rgba(255,138,0,0.2)`, textDecoration: 'none' }}>
-              Quero ser parceiro Pro
-            </a>
+            <button
+              onClick={() => handleCheckout('pro')}
+              disabled={loading !== null || cnpjNeeded || configLoading}
+              style={{ width: '100%', background: C.orange, color: 'white', fontWeight: 700, fontSize: 14, padding: '13px', borderRadius: 12, border: 'none', cursor: loading !== null || cnpjNeeded || configLoading ? 'not-allowed' : 'pointer', opacity: loading !== null || cnpjNeeded || configLoading ? 0.5 : 1, transition: 'opacity 0.15s' }}>
+              {loading === 'pro' ? 'Aguarde...' : 'Assinar Pro — R$ 497/ano'}
+            </button>
           </div>
         </div>
 
