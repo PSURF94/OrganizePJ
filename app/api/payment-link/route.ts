@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
 
   const { data: receivable } = await supabase
     .from('receivables')
-    .select('id, description, amount, due_date, client_id, clients(name, email, cpf_cnpj)')
+    .select('id, description, amount, due_date, status, client_id, clients(name, email, cpf_cnpj)')
     .eq('id', receivable_id)
     .eq('company_id', company.id)
     .single()
