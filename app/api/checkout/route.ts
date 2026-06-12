@@ -3,8 +3,8 @@ import { getServerSupabase } from '@/lib/supabase-server'
 import { createOrFindCustomer, createPayment } from '@/lib/asaas'
 
 const PLANS = {
-  basic: { value: 100, description: 'OrganizePJ Basic — licença anual' },
-  pro:   { value: 500, description: 'OrganizePJ Pro — licença anual' },
+  basic: { value: 197, description: 'OrganizePJ Basic — licença anual' },
+  pro:   { value: 497, description: 'OrganizePJ Pro — licença anual' },
 } as const
 
 export async function POST(req: NextRequest) {
