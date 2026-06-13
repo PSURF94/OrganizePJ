@@ -9,6 +9,10 @@
 -- do Supabase com a anon key — ou seja, Pro grátis pelo console do navegador.
 -- Grants por coluna fecham isso sem mexer nas policies.
 
+-- Garante que service role tem acesso total (usado pelo /api/setup-company)
+-- Necessário quando a tabela foi criada via migration SQL (não pelo dashboard)
+GRANT ALL ON companies TO service_role;
+
 -- Remove toda escrita direta na tabela pelos roles públicos
 REVOKE INSERT, UPDATE, DELETE ON companies FROM anon, authenticated;
 
