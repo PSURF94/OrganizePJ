@@ -56,7 +56,7 @@ export default function FiscalPage() {
   const retiradaNum = parseCurrencyInput(form.retirada_desejada_mensal)
   const prolaboreNum = form.prolabore_mensal ? parseCurrencyInput(form.prolabore_mensal) : null
   const wRec = retiradaNum > 0
-    ? calcWithdrawalRecommendation(form.tax_regime, retiradaNum, prolaboreNum)
+    ? calcWithdrawalRecommendation(form.tax_regime, retiradaNum, prolaboreNum, form.service_category || null, mensal)
     : null
 
   async function handleSave(e: React.FormEvent) {
@@ -279,6 +279,13 @@ export default function FiscalPage() {
 
                 {wRec.alert && (
                   <p className="text-[11px] text-red-500 font-medium">{wRec.alert}</p>
+                )}
+
+                {wRec.fator_r_tip && (
+                  <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-2.5">
+                    <p className="text-[10px] font-semibold text-indigo-700 mb-0.5">Análise Fator R</p>
+                    <p className="text-[11px] text-indigo-600 leading-relaxed">{wRec.fator_r_tip}</p>
+                  </div>
                 )}
 
                 <p className="text-[11px] text-slate-400 italic">{wRec.tip}</p>

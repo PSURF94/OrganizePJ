@@ -16,18 +16,86 @@ export type TaxRecommendation = {
 // DAS MEI 2026 para prestador de serviço: INSS (5% × R$1.621) + ISS (R$5)
 export const MEI_DAS_MENSAL = 86.05
 
-export const SERVICE_CATEGORIES: { value: string; label: string; anexo: 'III' | 'V' }[] = [
-  { value: 'tech', label: 'Tecnologia / Programação', anexo: 'V' },
-  { value: 'consultoria', label: 'Consultoria / Gestão', anexo: 'V' },
-  { value: 'design', label: 'Design / Publicidade / Marketing', anexo: 'V' },
-  { value: 'saude', label: 'Saúde (médico, psicólogo, dentista)', anexo: 'V' },
-  { value: 'arquitetura', label: 'Arquitetura / Engenharia', anexo: 'V' },
-  { value: 'direito', label: 'Advocacia / Direito', anexo: 'V' },
-  { value: 'educacao', label: 'Educação / Treinamento / Aulas', anexo: 'III' },
-  { value: 'contabilidade', label: 'Contabilidade / Finanças', anexo: 'III' },
-  { value: 'reparacao', label: 'Reparação / Manutenção', anexo: 'III' },
-  { value: 'transporte', label: 'Transporte', anexo: 'III' },
-  { value: 'outro', label: 'Outro tipo de serviço', anexo: 'III' },
+export const SERVICE_CATEGORIES: {
+  value: string
+  label: string
+  anexo: 'III' | 'V'
+  mei_permitido: boolean
+  mei_motivo?: string
+}[] = [
+  {
+    value: 'tech',
+    label: 'Tecnologia / Programação',
+    anexo: 'V',
+    mei_permitido: false,
+    mei_motivo: 'Atividades de TI e programação frequentemente superam o limite anual do MEI (R$ 81.000) e têm restrições de CNAE. Simples Nacional Anexo V é o regime mais adequado.',
+  },
+  {
+    value: 'consultoria',
+    label: 'Consultoria / Gestão',
+    anexo: 'V',
+    mei_permitido: false,
+    mei_motivo: 'Consultoria empresarial geralmente não consta no rol de atividades MEI permitidas. Simples Nacional é a alternativa correta.',
+  },
+  {
+    value: 'design',
+    label: 'Design / Publicidade / Marketing',
+    anexo: 'V',
+    mei_permitido: false,
+    mei_motivo: 'Atividades de publicidade e marketing têm restrições no MEI. Verifique seu CNAE com um contador — Simples Nacional costuma ser mais adequado.',
+  },
+  {
+    value: 'saude',
+    label: 'Saúde (médico, psicólogo, dentista)',
+    anexo: 'V',
+    mei_permitido: false,
+    mei_motivo: 'Profissões de saúde regulamentadas (CRM, CRP, CRO) são vedadas ao MEI. Simples Nacional é a alternativa obrigatória.',
+  },
+  {
+    value: 'arquitetura',
+    label: 'Arquitetura / Engenharia',
+    anexo: 'V',
+    mei_permitido: false,
+    mei_motivo: 'Arquitetos e engenheiros são obrigados a manter registro no CONFEA/CREA — profissão vedada ao MEI por regulamentação federal.',
+  },
+  {
+    value: 'direito',
+    label: 'Advocacia / Direito',
+    anexo: 'V',
+    mei_permitido: false,
+    mei_motivo: 'Advogados não podem ser MEI pela regulamentação da OAB (Lei 8.906/1994). Simples Nacional Anexo V é o regime adequado.',
+  },
+  {
+    value: 'educacao',
+    label: 'Educação / Treinamento / Aulas',
+    anexo: 'III',
+    mei_permitido: true,
+  },
+  {
+    value: 'contabilidade',
+    label: 'Contabilidade / Finanças',
+    anexo: 'III',
+    mei_permitido: false,
+    mei_motivo: 'Contadores são regulamentados pelo CFC — profissão vedada ao MEI. Simples Nacional Anexo III é o regime correto.',
+  },
+  {
+    value: 'reparacao',
+    label: 'Reparação / Manutenção',
+    anexo: 'III',
+    mei_permitido: true,
+  },
+  {
+    value: 'transporte',
+    label: 'Transporte',
+    anexo: 'III',
+    mei_permitido: true,
+  },
+  {
+    value: 'outro',
+    label: 'Outro tipo de serviço',
+    anexo: 'III',
+    mei_permitido: true,
+  },
 ]
 
 // Simples Nacional – Anexo III (LC 123/2006)
@@ -65,6 +133,11 @@ function getBaseAnexo(serviceCategory: string | null): 'III' | 'V' {
 
 function round2(n: number) { return Math.round(n * 100) / 100 }
 
+// Exported for use in withdrawal-engine (Fator R advisory)
+export function calcEfetivaAnexo(rbt12: number, anexo: 'III' | 'V'): number {
+  return round2(calcEfetiva(rbt12, anexo === 'III' ? ANEXO_III : ANEXO_V))
+}
+
 export function calcTaxRecommendation(
   faturamentoMensal: number,
   numFuncionarios: number,
@@ -72,9 +145,11 @@ export function calcTaxRecommendation(
   folhaMensal: number = 0
 ): TaxRecommendation {
   const rbt12 = faturamentoMensal * 12
+  const cat = SERVICE_CATEGORIES.find((c) => c.value === serviceCategory)
+  const meiPermitido = cat ? cat.mei_permitido !== false : true
 
-  // MEI
-  if (rbt12 <= 81_000 && numFuncionarios <= 1) {
+  // MEI — only when profession allows it
+  if (rbt12 <= 81_000 && numFuncionarios <= 1 && meiPermitido) {
     const das = MEI_DAS_MENSAL
     const effectiveRate = faturamentoMensal > 0 ? round2((das / faturamentoMensal) * 100) : 5
     return {
@@ -107,8 +182,10 @@ export function calcTaxRecommendation(
     const tabela = anexoFinal === 'III' ? ANEXO_III : ANEXO_V
     const efetiva = round2(calcEfetiva(rbt12, tabela))
     const monthlyTax = faturamentoMensal * (efetiva / 100)
-
     const anecoIIIEfetiva = round2(calcEfetiva(rbt12, ANEXO_III))
+
+    // Was MEI blocked due to profession?
+    const meiBloqueadoPorProfissao = rbt12 <= 81_000 && numFuncionarios <= 1 && !meiPermitido && cat?.mei_motivo
 
     const motivo = usaFatorR
       ? `Fator R ativo: sua folha (${Math.round(fatorR * 100)}% do faturamento) é ≥ 28%, então você usa o Anexo III em vez do V — economizando impostos.`
@@ -117,6 +194,7 @@ export function calcTaxRecommendation(
       : `Seu tipo de serviço se enquadra no Anexo III, que tem as menores alíquotas do Simples Nacional para serviços.`
 
     const riscos = [
+      ...(meiBloqueadoPorProfissao ? [cat!.mei_motivo!] : []),
       `Enquadramento: Simples Nacional Anexo ${anexoFinal} — alíquota efetiva de ${efetiva}% calculada sobre o faturamento anual`,
       'A alíquota efetiva sobe conforme o faturamento dos últimos 12 meses cresce',
       'Limite de R$ 4,8 milhões por ano — acima disso vai para o Lucro Presumido',
