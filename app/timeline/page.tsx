@@ -123,7 +123,7 @@ export default function TimelinePage() {
               </p>
 
               {/* Mini-stats */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: nextEntry && nextExpense ? '1fr 1fr' : '1fr', gap: 12 }}>
                 {nextEntry && (
                   <div style={{ background: 'rgba(16,185,129,0.08)', borderRadius: 14, padding: '12px 16px', border: '1px solid rgba(16,185,129,0.15)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
@@ -137,7 +137,7 @@ export default function TimelinePage() {
                   </div>
                 )}
                 {nextExpense && (
-                  <div style={{ background: 'rgba(229,9,20,0.06)', borderRadius: 14, padding: '12px 16px', border: '1px solid rgba(229,9,20,0.12)' }}>
+                  <div style={{ background: 'rgba(229,9,20,0.10)', borderRadius: 14, padding: '12px 16px', border: '1px solid rgba(229,9,20,0.20)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                       <ArrowDownRight size={13} color="#E50914" />
                       <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)' }}>Próxima saída</span>
@@ -192,8 +192,9 @@ export default function TimelinePage() {
                         {/* Date pill */}
                         <div style={{
                           width: 48, borderRadius: 12, background: 'white',
-                          border: `1.5px solid ${dotColor}30`,
-                          boxShadow: `0 0 0 3px ${dotColor}12`,
+                          border: '1px solid #e8ecf0',
+                          borderTop: `3px solid ${dotColor}`,
+                          boxShadow: '0 1px 6px rgba(0,0,0,0.06)',
                           padding: '6px 4px', textAlign: 'center', flexShrink: 0,
                           marginTop: 0,
                         }}>
@@ -205,7 +206,7 @@ export default function TimelinePage() {
                         {!isLast && (
                           <div style={{
                             flex: 1, width: 2,
-                            background: `linear-gradient(to bottom, ${dotColor}40, ${dotColor}10)`,
+                            background: 'linear-gradient(to bottom, rgba(0,0,0,0.09), rgba(0,0,0,0.02))',
                             borderRadius: 1, marginTop: 6,
                           }} />
                         )}
@@ -216,7 +217,7 @@ export default function TimelinePage() {
 
                         {/* Header: delta + saldo */}
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, paddingTop: 4 }}>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: dayDelta >= 0 ? '#10b981' : '#E50914', background: dayDelta >= 0 ? 'rgba(16,185,129,0.08)' : 'rgba(229,9,20,0.07)', borderRadius: 100, padding: '3px 8px' }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: dayDelta >= 0 ? '#10b981' : '#E50914', background: dayDelta >= 0 ? 'rgba(16,185,129,0.10)' : 'rgba(229,9,20,0.10)', borderRadius: 100, padding: '3px 8px' }}>
                             {dayDelta >= 0 ? '+' : ''}{formatCurrency(dayDelta)}
                           </span>
                           <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: 4 }}>
