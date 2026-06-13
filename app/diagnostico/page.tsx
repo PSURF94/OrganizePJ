@@ -27,7 +27,7 @@ export default async function DiagnosticoPage() {
     Number(company.faturamento_mensal) || 0,
     Number(company.num_funcionarios) || 0,
     company.service_category ?? null,
-    Number(company.folha_mensal) || 0
+    Number(company.folha_mensal) || Number(company.prolabore_mensal) || 0
   )
 
   const semContador = company.tem_contador === false

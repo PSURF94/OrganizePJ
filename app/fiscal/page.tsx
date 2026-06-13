@@ -44,7 +44,8 @@ export default function FiscalPage() {
 
   const mensal = parseCurrencyInput(form.faturamento_mensal)
   const nFunc = Number(form.num_funcionarios) || 0
-  const folha = parseCurrencyInput(form.folha_mensal)
+  // Fator R: usa folha_mensal explícita; se não preenchida, usa prolabore_mensal como proxy
+  const folha = parseCurrencyInput(form.folha_mensal) || parseCurrencyInput(form.prolabore_mensal)
   const rec = mensal > 0
     ? calcTaxRecommendation(mensal, nFunc, form.service_category || null, folha)
     : null

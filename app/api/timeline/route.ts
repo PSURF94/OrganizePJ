@@ -21,6 +21,7 @@ export async function GET() {
   const endStr = endDate.toISOString().split('T')[0]
 
   const isMei = company.tax_regime === 'mei'
+  const isPresumido = company.tax_regime === 'presumido'
   const taxRate = isMei ? 0 : Number(company.simples_rate || 0) / 100
   const dasFixo = isMei ? Number(company.das_fixo_mensal || 86.05) : 0
 
@@ -144,12 +145,17 @@ export async function GET() {
       // Abate tributos pagos no mês de vencimento do DAS
       const alreadyPaid = paidTributosByMonth[dasMonthPrefix] ?? 0
       const remaining = Math.max(0, currentMonthTax - alreadyPaid)
+      const taxDesc = isPresumido ? 'Impostos estimados (Lucro Presumido)' : 'Pagamento DAS'
+      const taxSubtitleBase = (monthName: string, paid: number) => isPresumido
+        ? `~${company.simples_rate}% sobre receitas de ${monthName} — estimativa${paid > 0 ? ` · já pago R$ ${paid.toFixed(2).replace('.', ',')}` : ''}`
+        : `${company.simples_rate}% sobre receitas de ${monthName}${paid > 0 ? ` · já pago R$ ${paid.toFixed(2).replace('.', ',')}` : ''}`
+
       if (remaining > 0.01) {
         events.push({
           date: dasDateStr,
           type: 'imposto',
-          description: 'Pagamento DAS',
-          subtitle: `${company.simples_rate}% sobre receitas de ${today.toLocaleDateString('pt-BR', { month: 'long' })}${alreadyPaid > 0 ? ` · já pago R$ ${alreadyPaid.toFixed(2).replace('.', ',')}` : ''}`,
+          description: taxDesc,
+          subtitle: taxSubtitleBase(today.toLocaleDateString('pt-BR', { month: 'long' }), alreadyPaid),
           amount: -Math.round(remaining * 100) / 100,
         })
       }
@@ -167,8 +173,10 @@ export async function GET() {
       events.push({
         date: dasDate.toISOString().split('T')[0],
         type: 'imposto',
-        description: 'Pagamento DAS',
-        subtitle: `${company.simples_rate}% sobre receitas de ${nextMonthDate.toLocaleDateString('pt-BR', { month: 'long' })}`,
+        description: isPresumido ? 'Impostos estimados (Lucro Presumido)' : 'Pagamento DAS',
+        subtitle: isPresumido
+          ? `~${company.simples_rate}% sobre receitas de ${nextMonthDate.toLocaleDateString('pt-BR', { month: 'long' })} — estimativa`
+          : `${company.simples_rate}% sobre receitas de ${nextMonthDate.toLocaleDateString('pt-BR', { month: 'long' })}`,
         amount: -Math.round(nextMonthTax * 100) / 100,
       })
     }
@@ -185,8 +193,10 @@ export async function GET() {
       events.push({
         date: dasDate.toISOString().split('T')[0],
         type: 'imposto',
-        description: 'Pagamento DAS',
-        subtitle: `${company.simples_rate}% sobre receitas de ${secondNextMonthDate.toLocaleDateString('pt-BR', { month: 'long' })}`,
+        description: isPresumido ? 'Impostos estimados (Lucro Presumido)' : 'Pagamento DAS',
+        subtitle: isPresumido
+          ? `~${company.simples_rate}% sobre receitas de ${secondNextMonthDate.toLocaleDateString('pt-BR', { month: 'long' })} — estimativa`
+          : `${company.simples_rate}% sobre receitas de ${secondNextMonthDate.toLocaleDateString('pt-BR', { month: 'long' })}`,
         amount: -Math.round(secondNextMonthTax * 100) / 100,
       })
     }
