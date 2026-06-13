@@ -185,7 +185,7 @@ function HowItWorks() {
           <div style={{ textAlign:'center', marginBottom:56 }}>
             <p style={{ color:C.orange, fontSize:12, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:10 }}>Como funciona</p>
             <h2 style={{ fontFamily:'var(--font-poppins,sans-serif)', fontSize:'clamp(24px,3vw,38px)', fontWeight:700, color:'white', lineHeight:1.2 }}>
-              Simples por design
+              Em três passos.
             </h2>
           </div>
         </AnimateOnScroll>
