@@ -61,6 +61,7 @@ const INPUT: React.CSSProperties = {
 export default function AssinarPage() {
   const [loading, setLoading] = useState<'basic' | 'pro' | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [selectedPlan, setSelectedPlan] = useState<'basic' | 'pro'>('pro')
 
   const [cnpjNeeded, setCnpjNeeded] = useState(false)
   const [cnpjValue, setCnpjValue] = useState('')
@@ -211,7 +212,7 @@ export default function AssinarPage() {
         <div className="grid sm:grid-cols-2 gap-4">
 
           {/* Basic */}
-          <div style={{ background: '#222226', borderRadius: 20, padding: '24px 20px', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column' }}>
+          <div onClick={() => setSelectedPlan('basic')} style={{ background: '#222226', borderRadius: 20, padding: '24px 20px', border: selectedPlan === 'basic' ? '2px solid rgba(255,138,0,0.4)' : '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'border-color 0.15s' }}>
             <p style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Basic</p>
             <div style={{ marginBottom: 4 }}>
               <span style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontSize: 34, fontWeight: 800, color: 'white' }}>R$&nbsp;197</span>
@@ -235,7 +236,7 @@ export default function AssinarPage() {
           </div>
 
           {/* Pro */}
-          <div style={{ background: '#222226', borderRadius: 20, padding: '24px 20px', border: `2px solid rgba(255,138,0,0.4)`, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <div onClick={() => setSelectedPlan('pro')} style={{ background: '#222226', borderRadius: 20, padding: '24px 20px', border: selectedPlan === 'pro' ? '2px solid rgba(255,138,0,0.4)' : '1px solid rgba(255,255,255,0.07)', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'border-color 0.15s' }}>
             <div style={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, background: 'radial-gradient(circle, rgba(255,138,0,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
             <div style={{ position: 'absolute', top: 14, right: 14, background: C.orange, borderRadius: 100, padding: '3px 10px' }}>
               <span style={{ color: 'white', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Fundadores</span>
