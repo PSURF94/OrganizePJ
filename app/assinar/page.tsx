@@ -58,6 +58,38 @@ const INPUT: React.CSSProperties = {
   outline: 'none', boxSizing: 'border-box',
 }
 
+function CnpjInline({ cnpjValue, setCnpjValue, cnpjError, setCnpjError, cnpjSaving, onSave, C, INPUT }: {
+  cnpjValue: string; setCnpjValue: (v: string) => void
+  cnpjError: string | null; setCnpjError: (v: string | null) => void
+  cnpjSaving: boolean; onSave: () => void
+  C: { orange: string; red: string }
+  INPUT: React.CSSProperties
+}) {
+  return (
+    <div style={{ marginTop: 12, padding: '14px 16px', background: 'rgba(255,138,0,0.06)', border: '1px solid rgba(255,138,0,0.2)', borderRadius: 12 }}>
+      <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: 600, marginBottom: 10 }}>
+        Informe seu CNPJ para prosseguir
+      </p>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <input
+          type="text" placeholder="00.000.000/0000-00"
+          value={cnpjValue}
+          onChange={(e) => { setCnpjValue(formatCNPJ(e.target.value)); setCnpjError(null) }}
+          onKeyDown={(e) => e.key === 'Enter' && onSave()}
+          style={{ ...INPUT, flex: 1, fontSize: 13, padding: '9px 12px' }}
+        />
+        <button
+          onClick={onSave}
+          disabled={cnpjSaving || cnpjValue.replace(/\D/g, '').length < 14}
+          style={{ padding: '9px 16px', background: C.orange, color: 'white', fontWeight: 700, fontSize: 13, borderRadius: 10, border: 'none', cursor: cnpjSaving || cnpjValue.replace(/\D/g, '').length < 14 ? 'not-allowed' : 'pointer', opacity: cnpjSaving || cnpjValue.replace(/\D/g, '').length < 14 ? 0.5 : 1, whiteSpace: 'nowrap' }}>
+          {cnpjSaving ? '…' : 'Continuar'}
+        </button>
+      </div>
+      {cnpjError && <p style={{ color: C.red, fontSize: 12, marginTop: 6 }}>{cnpjError}</p>}
+    </div>
+  )
+}
+
 export default function AssinarPage() {
   const [loading, setLoading] = useState<'basic' | 'pro' | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -68,6 +100,7 @@ export default function AssinarPage() {
   const [cnpjSaving, setCnpjSaving] = useState(false)
   const [cnpjError, setCnpjError] = useState<string | null>(null)
   const [configLoading, setConfigLoading] = useState(true)
+  const [pendingPlan, setPendingPlan] = useState<'basic' | 'pro' | null>(null)
 
   useEffect(() => {
     fetch('/api/configuracoes')
@@ -116,6 +149,8 @@ export default function AssinarPage() {
         throw new Error(d.error || `Erro ${putRes.status}`)
       }
       setCnpjNeeded(false)
+      setPendingPlan(null)
+      if (pendingPlan) await handleCheckout(pendingPlan)
     } catch (e) {
       setCnpjError(e instanceof Error ? e.message : String(e))
     } finally {
@@ -130,6 +165,11 @@ export default function AssinarPage() {
   }
 
   async function handleCheckout(plan: 'basic' | 'pro') {
+    if (cnpjNeeded) {
+      setSelectedPlan(plan)
+      setPendingPlan(plan)
+      return
+    }
     setLoading(plan)
     setError(null)
     try {
@@ -175,39 +215,6 @@ export default function AssinarPage() {
           </p>
         </div>
 
-        {/* CNPJ inline block */}
-        {!configLoading && cnpjNeeded && (
-          <div style={{ background: '#222226', border: `1px solid rgba(255,138,0,0.25)`, borderRadius: 16, padding: '20px 20px', marginBottom: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 14 }}>
-              <AlertCircle size={16} color={C.orange} style={{ flexShrink: 0, marginTop: 1 }} />
-              <div>
-                <p style={{ color: 'white', fontWeight: 700, fontSize: 14, marginBottom: 2 }}>Informe seu CNPJ para continuar</p>
-                <p style={{ color: '#64748b', fontSize: 12, lineHeight: 1.5 }}>
-                  Necessário para emitir a cobrança. Será salvo nas suas Configurações.
-                </p>
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <input
-                type="text"
-                placeholder="00.000.000/0000-00"
-                value={cnpjValue}
-                onChange={(e) => { setCnpjValue(formatCNPJ(e.target.value)); setCnpjError(null) }}
-                onKeyDown={(e) => e.key === 'Enter' && handleSaveCNPJ()}
-                style={{ ...INPUT, flex: 1 }}
-              />
-              <button
-                onClick={handleSaveCNPJ}
-                disabled={cnpjSaving || cnpjValue.replace(/\D/g, '').length < 14}
-                style={{ padding: '11px 18px', background: C.orange, color: 'white', fontWeight: 700, fontSize: 13, borderRadius: 10, border: 'none', cursor: cnpjSaving || cnpjValue.replace(/\D/g, '').length < 14 ? 'not-allowed' : 'pointer', opacity: cnpjSaving || cnpjValue.replace(/\D/g, '').length < 14 ? 0.5 : 1, whiteSpace: 'nowrap' }}>
-                {cnpjSaving ? 'Salvando…' : 'Salvar'}
-              </button>
-            </div>
-            {cnpjError && (
-              <p style={{ color: C.red, fontSize: 12, marginTop: 8 }}>{cnpjError}</p>
-            )}
-          </div>
-        )}
 
         <div className="grid sm:grid-cols-2 gap-4">
 
@@ -229,10 +236,13 @@ export default function AssinarPage() {
             </div>
             <button
               onClick={() => handleCheckout('basic')}
-              disabled={loading !== null || cnpjNeeded || configLoading}
-              style={{ width: '100%', background: C.orange, color: 'white', fontWeight: 700, fontSize: 14, padding: '13px', borderRadius: 12, border: 'none', cursor: loading !== null || cnpjNeeded || configLoading ? 'not-allowed' : 'pointer', opacity: loading !== null || cnpjNeeded || configLoading ? 0.5 : 1, transition: 'opacity 0.15s' }}>
+              disabled={loading !== null || configLoading}
+              style={{ width: '100%', background: C.orange, color: 'white', fontWeight: 700, fontSize: 14, padding: '13px', borderRadius: 12, border: 'none', cursor: loading !== null || configLoading ? 'not-allowed' : 'pointer', opacity: loading !== null || configLoading ? 0.5 : 1, transition: 'opacity 0.15s' }}>
               {loading === 'basic' ? 'Aguarde...' : 'Assinar Basic — R$ 197/ano'}
             </button>
+            {pendingPlan === 'basic' && (
+              <CnpjInline cnpjValue={cnpjValue} setCnpjValue={setCnpjValue} cnpjError={cnpjError} setCnpjError={setCnpjError} cnpjSaving={cnpjSaving} onSave={handleSaveCNPJ} C={C} INPUT={INPUT} />
+            )}
           </div>
 
           {/* Pro */}
@@ -262,10 +272,13 @@ export default function AssinarPage() {
             </div>
             <button
               onClick={() => handleCheckout('pro')}
-              disabled={loading !== null || cnpjNeeded || configLoading}
-              style={{ width: '100%', background: C.orange, color: 'white', fontWeight: 700, fontSize: 14, padding: '13px', borderRadius: 12, border: 'none', cursor: loading !== null || cnpjNeeded || configLoading ? 'not-allowed' : 'pointer', opacity: loading !== null || cnpjNeeded || configLoading ? 0.5 : 1, transition: 'opacity 0.15s' }}>
+              disabled={loading !== null || configLoading}
+              style={{ width: '100%', background: C.orange, color: 'white', fontWeight: 700, fontSize: 14, padding: '13px', borderRadius: 12, border: 'none', cursor: loading !== null || configLoading ? 'not-allowed' : 'pointer', opacity: loading !== null || configLoading ? 0.5 : 1, transition: 'opacity 0.15s' }}>
               {loading === 'pro' ? 'Aguarde...' : 'Assinar Pro — R$ 497/ano'}
             </button>
+            {pendingPlan === 'pro' && (
+              <CnpjInline cnpjValue={cnpjValue} setCnpjValue={setCnpjValue} cnpjError={cnpjError} setCnpjError={setCnpjError} cnpjSaving={cnpjSaving} onSave={handleSaveCNPJ} C={C} INPUT={INPUT} />
+            )}
           </div>
         </div>
 
