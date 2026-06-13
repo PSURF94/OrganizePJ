@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import AppShell from '@/components/AppShell'
 import type { Client } from '@/lib/constants'
-import { todayISO, capFirst } from '@/lib/utils'
+import { todayISO, capFirst, formatCurrencyInput, parseCurrencyInput } from '@/lib/utils'
 import Link from 'next/link'
 
 export default function NovoServicoPage() {
@@ -34,14 +34,14 @@ export default function NovoServicoPage() {
     await fetch('/api/services', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ ...form, contracted_value: parseCurrencyInput(form.contracted_value) }),
     })
     router.push('/servicos')
   }
 
   return (
     <AppShell>
-      <div className="px-4 pt-6 max-w-lg mx-auto">
+      <div className="px-4 pt-6 max-w-2xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <Link href="/servicos" className="text-slate-400 hover:text-slate-600 text-sm">← Voltar</Link>
           <h1 className="text-xl font-bold text-slate-900">Novo Serviço</h1>
@@ -67,8 +67,8 @@ export default function NovoServicoPage() {
 
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">Valor contratado (R$) *</label>
-            <input required type="number" min="0" step="0.01" value={form.contracted_value}
-              onChange={(e) => set('contracted_value', e.target.value)}
+            <input required type="text" inputMode="numeric" value={form.contracted_value}
+              onChange={(e) => set('contracted_value', formatCurrencyInput(e.target.value))}
               placeholder="0,00"
               className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
           </div>

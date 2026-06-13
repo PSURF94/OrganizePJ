@@ -4,7 +4,7 @@ import { useRouter, useParams } from 'next/navigation'
 import AppShell from '@/components/AppShell'
 import type { Service, Client, ServiceStatus } from '@/lib/constants'
 import { SERVICE_STATUSES, SERVICE_STATUS_COLORS } from '@/lib/constants'
-import { formatCurrency, capFirst } from '@/lib/utils'
+import { formatCurrency, capFirst, formatCurrencyInput, parseCurrencyInput } from '@/lib/utils'
 import Link from 'next/link'
 
 const STATUS_ORDER: ServiceStatus[] = ['orcamento', 'aprovado', 'em_execucao', 'concluido', 'faturado', 'recebido']
@@ -30,7 +30,7 @@ export default function ServicoDetailPage() {
         title: svc.title,
         description: svc.description || '',
         client_id: svc.client_id || '',
-        contracted_value: String(svc.contracted_value),
+        contracted_value: svc.contracted_value ? formatCurrencyInput(String(Math.round(svc.contracted_value * 100))) : '',
         execution_date: svc.execution_date || '',
         expected_payment_date: svc.expected_payment_date || '',
       })
@@ -47,7 +47,7 @@ export default function ServicoDetailPage() {
     await fetch(`/api/services/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ ...form, contracted_value: parseCurrencyInput(form.contracted_value) }),
     })
     router.push('/servicos')
   }
@@ -73,7 +73,7 @@ export default function ServicoDetailPage() {
 
   return (
     <AppShell>
-      <div className="px-4 pt-6 max-w-lg mx-auto">
+      <div className="px-4 pt-6 max-w-2xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <Link href="/servicos" className="text-slate-400 hover:text-slate-600 text-sm">← Voltar</Link>
           <h1 className="text-xl font-bold text-slate-900">Serviço</h1>
@@ -116,8 +116,8 @@ export default function ServicoDetailPage() {
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">Valor (R$) *</label>
-            <input required type="number" min="0" step="0.01" value={form.contracted_value}
-              onChange={(e) => set('contracted_value', e.target.value)}
+            <input required type="text" inputMode="numeric" value={form.contracted_value}
+              onChange={(e) => set('contracted_value', formatCurrencyInput(e.target.value))}
               className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
           </div>
           <div className="grid grid-cols-2 gap-3">

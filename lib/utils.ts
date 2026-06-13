@@ -1,3 +1,16 @@
+export function formatCurrencyInput(value: string): string {
+  const digits = value.replace(/\D/g, '')
+  if (!digits) return ''
+  const num = Number(digits) / 100
+  return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+export function parseCurrencyInput(value: string): number {
+  const digits = value.replace(/\D/g, '')
+  if (!digits) return 0
+  return Number(digits) / 100
+}
+
 export function capFirst(s: string): string {
   if (!s) return s
   return s.charAt(0).toUpperCase() + s.slice(1)

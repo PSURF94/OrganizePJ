@@ -5,7 +5,7 @@ import type { Company, TaxRegime } from '@/lib/constants'
 import { TAX_REGIMES } from '@/lib/constants'
 import { SERVICE_CATEGORIES, calcTaxRecommendation } from '@/lib/tax-engine'
 import { calcWithdrawalRecommendation } from '@/lib/withdrawal-engine'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, formatCurrencyInput, parseCurrencyInput } from '@/lib/utils'
 
 export default function FiscalPage() {
   const [company, setCompany] = useState<Company | null>(null)
@@ -27,13 +27,13 @@ export default function FiscalPage() {
       .then((d: Company) => {
         setCompany(d)
         setForm({
-          faturamento_mensal: d.faturamento_mensal ? String(d.faturamento_mensal) : '',
+          faturamento_mensal: d.faturamento_mensal ? formatCurrencyInput(String(Math.round(d.faturamento_mensal * 100))) : '',
           num_funcionarios: d.num_funcionarios !== undefined ? String(d.num_funcionarios) : '',
           tax_regime: d.tax_regime,
           service_category: d.service_category || '',
-          folha_mensal: d.folha_mensal ? String(d.folha_mensal) : '',
-          retirada_desejada_mensal: d.retirada_desejada_mensal ? String(d.retirada_desejada_mensal) : '',
-          prolabore_mensal: d.prolabore_mensal ? String(d.prolabore_mensal) : '',
+          folha_mensal: d.folha_mensal ? formatCurrencyInput(String(Math.round(d.folha_mensal * 100))) : '',
+          retirada_desejada_mensal: d.retirada_desejada_mensal ? formatCurrencyInput(String(Math.round(d.retirada_desejada_mensal * 100))) : '',
+          prolabore_mensal: d.prolabore_mensal ? formatCurrencyInput(String(Math.round(d.prolabore_mensal * 100))) : '',
         })
       })
   }, [])
@@ -42,9 +42,9 @@ export default function FiscalPage() {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
-  const mensal = Number(form.faturamento_mensal) || 0
+  const mensal = parseCurrencyInput(form.faturamento_mensal)
   const nFunc = Number(form.num_funcionarios) || 0
-  const folha = Number(form.folha_mensal) || 0
+  const folha = parseCurrencyInput(form.folha_mensal)
   const rec = mensal > 0
     ? calcTaxRecommendation(mensal, nFunc, form.service_category || null, folha)
     : null
@@ -52,8 +52,8 @@ export default function FiscalPage() {
   const regimesDiffer = rec && rec.regime !== form.tax_regime
   const isMei = form.tax_regime === 'mei'
 
-  const retiradaNum = Number(form.retirada_desejada_mensal) || 0
-  const prolaboreNum = form.prolabore_mensal ? Number(form.prolabore_mensal) : null
+  const retiradaNum = parseCurrencyInput(form.retirada_desejada_mensal)
+  const prolaboreNum = form.prolabore_mensal ? parseCurrencyInput(form.prolabore_mensal) : null
   const wRec = retiradaNum > 0
     ? calcWithdrawalRecommendation(form.tax_regime, retiradaNum, prolaboreNum)
     : null
@@ -69,11 +69,15 @@ export default function FiscalPage() {
         name: company?.name ?? '',
         cnpj: company?.cnpj ?? '',
         saldo_inicial: company?.saldo_inicial ?? null,
-        ...form,
+        tax_regime: form.tax_regime,
+        service_category: form.service_category,
+        num_funcionarios: Number(form.num_funcionarios) || 0,
+        faturamento_mensal: form.faturamento_mensal ? parseCurrencyInput(form.faturamento_mensal) : null,
+        folha_mensal: form.folha_mensal ? parseCurrencyInput(form.folha_mensal) : null,
+        prolabore_mensal: form.prolabore_mensal ? parseCurrencyInput(form.prolabore_mensal) : null,
+        retirada_desejada_mensal: form.retirada_desejada_mensal ? parseCurrencyInput(form.retirada_desejada_mensal) : null,
         simples_rate: rate,
         das_fixo_mensal: rec?.das_fixo_mensal ?? null,
-        prolabore_mensal: form.prolabore_mensal ? Number(form.prolabore_mensal) : null,
-        retirada_desejada_mensal: form.retirada_desejada_mensal ? Number(form.retirada_desejada_mensal) : null,
       }),
     })
     setSaving(false)
@@ -85,7 +89,7 @@ export default function FiscalPage() {
 
   return (
     <AppShell>
-      <div className="px-4 pt-6 max-w-lg mx-auto pb-10">
+      <div className="px-4 pt-6 max-w-2xl mx-auto pb-10">
         <h1 style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontWeight: 800, fontSize: 22, color: '#1A1A1D', letterSpacing: '-0.3px', paddingLeft: 11, borderLeft: '3px solid #FF8A00', marginBottom: 4 }}>Fiscal &amp; Retiradas</h1>
         <p className="text-sm text-slate-400 mb-4">Diagnóstico tributário e estratégia de retiradas do sócio.</p>
 
@@ -109,9 +113,9 @@ export default function FiscalPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1">Faturamento mensal (R$)</label>
-                <input type="number" min="0" step="0.01" value={form.faturamento_mensal}
-                  onChange={(e) => set('faturamento_mensal', e.target.value)}
-                  placeholder="0.00"
+                <input type="text" inputMode="numeric" value={form.faturamento_mensal}
+                  onChange={(e) => set('faturamento_mensal', formatCurrencyInput(e.target.value))}
+                  placeholder="0,00"
                   className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
               </div>
               <div>
@@ -134,9 +138,9 @@ export default function FiscalPage() {
 
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">Folha de pagamento mensal (R$)</label>
-              <input type="number" min="0" step="0.01" value={form.folha_mensal}
-                onChange={(e) => set('folha_mensal', e.target.value)}
-                placeholder="0.00"
+              <input type="text" inputMode="numeric" value={form.folha_mensal}
+                onChange={(e) => set('folha_mensal', formatCurrencyInput(e.target.value))}
+                placeholder="0,00"
                 className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
               <p className="text-xs text-slate-400 mt-1">Salários pagos. Usado no Fator R (Simples Nacional).</p>
             </div>
@@ -212,9 +216,9 @@ export default function FiscalPage() {
 
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">Quanto quer retirar por mês? (R$)</label>
-              <input type="number" min="0" step="0.01" value={form.retirada_desejada_mensal}
-                onChange={(e) => set('retirada_desejada_mensal', e.target.value)}
-                placeholder="0.00"
+              <input type="text" inputMode="numeric" value={form.retirada_desejada_mensal}
+                onChange={(e) => set('retirada_desejada_mensal', formatCurrencyInput(e.target.value))}
+                placeholder="0,00"
                 className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
               <p className="text-xs text-slate-400 mt-1">Total que deseja tirar da empresa todo mês.</p>
             </div>
@@ -222,9 +226,9 @@ export default function FiscalPage() {
             {!isMei && (
               <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1">Pró-labore atual (R$/mês)</label>
-                <input type="number" min="0" step="0.01" value={form.prolabore_mensal}
-                  onChange={(e) => set('prolabore_mensal', e.target.value)}
-                  placeholder="0.00"
+                <input type="text" inputMode="numeric" value={form.prolabore_mensal}
+                  onChange={(e) => set('prolabore_mensal', formatCurrencyInput(e.target.value))}
+                  placeholder="0,00"
                   className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
                 <p className="text-xs text-slate-400 mt-1">Salário que você já registra formalmente como pró-labore.</p>
               </div>

@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import AppShell from '@/components/AppShell'
-import { capFirst } from '@/lib/utils'
+import { capFirst, formatCurrencyInput, parseCurrencyInput } from '@/lib/utils'
 
 const CATEGORIAS = ['Combustível', 'Equipamentos', 'Software', 'Marketing', 'Tributos', 'Terceiros', 'Alimentação', 'Hospedagem', 'Outras']
 
@@ -19,7 +19,7 @@ export default function EditarDespesaPage() {
       setForm({
         category: d.category || 'Outras',
         description: d.description || '',
-        amount: String(d.amount || ''),
+        amount: d.amount ? formatCurrencyInput(String(Math.round(d.amount * 100))) : '',
         date: d.date || '',
       })
       setLoading(false)
@@ -32,7 +32,7 @@ export default function EditarDespesaPage() {
     const res = await fetch(`/api/expenses/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ ...form, amount: parseCurrencyInput(form.amount) }),
     })
     if (!res.ok) {
       const d = await res.json()
@@ -47,7 +47,7 @@ export default function EditarDespesaPage() {
 
   return (
     <AppShell>
-      <div className="px-4 pt-6 max-w-lg mx-auto">
+      <div className="px-4 pt-6 max-w-2xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <button onClick={() => router.back()} className="text-xs text-slate-400 hover:text-slate-600">← Voltar</button>
           <h1 className="text-xl font-bold text-slate-900">Editar Despesa</h1>
@@ -68,8 +68,8 @@ export default function EditarDespesaPage() {
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">Valor (R$) *</label>
-            <input type="number" step="0.01" min="0" required value={form.amount}
-              onChange={(e) => setForm((p) => ({ ...p, amount: e.target.value }))}
+            <input type="text" inputMode="numeric" required value={form.amount}
+              onChange={(e) => setForm((p) => ({ ...p, amount: formatCurrencyInput(e.target.value) }))}
               className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
           </div>
           <div>

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import AppShell from '@/components/AppShell'
 import type { Client, Service } from '@/lib/constants'
-import { todayISO, formatCurrency, formatDate, capFirst } from '@/lib/utils'
+import { todayISO, formatCurrency, formatDate, capFirst, formatCurrencyInput, parseCurrencyInput } from '@/lib/utils'
 import Link from 'next/link'
 import { Plus, Trash2 } from 'lucide-react'
 
@@ -34,7 +34,6 @@ export default function NovaReceitaPage() {
   const [clients, setClients] = useState<Client[]>([])
   const [services, setServices] = useState<Service[]>([])
 
-  // Base fields
   const [form, setForm] = useState({
     description: '',
     amount: '',
@@ -43,7 +42,6 @@ export default function NovaReceitaPage() {
     service_id: '',
   })
 
-  // Installment mode
   const [payType, setPayType] = useState<'single' | 'installment'>('single')
   const [installMode, setInstallMode] = useState<'auto' | 'manual'>('auto')
   const [autoCount, setAutoCount] = useState('3')
@@ -64,16 +62,14 @@ export default function NovaReceitaPage() {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
-  // Auto mode preview
-  const autoTotal = Number(form.amount) || 0
+  const autoTotal = parseCurrencyInput(form.amount)
   const countNum = Math.max(1, Math.min(24, parseInt(autoCount) || 1))
   const amountEach = countNum > 0 ? Math.round((autoTotal / countNum) * 100) / 100 : 0
   const autoPreview = form.due_date && autoTotal > 0
     ? generateInstallDates(form.due_date, countNum, autoInterval)
     : []
 
-  // Manual mode total
-  const manualTotal = manualRows.reduce((s, r) => s + (Number(r.amount) || 0), 0)
+  const manualTotal = manualRows.reduce((s, r) => s + parseCurrencyInput(r.amount), 0)
 
   function addManualRow() {
     const lastDate = manualRows[manualRows.length - 1]?.date || todayISO()
@@ -87,7 +83,10 @@ export default function NovaReceitaPage() {
   }
 
   function updateManualRow(i: number, field: keyof ManualRow, value: string) {
-    setManualRows((prev) => prev.map((r, idx) => idx === i ? { ...r, [field]: value } : r))
+    setManualRows((prev) => prev.map((r, idx) => idx === i
+      ? { ...r, [field]: field === 'amount' ? formatCurrencyInput(value) : value }
+      : r
+    ))
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -102,7 +101,7 @@ export default function NovaReceitaPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           description: form.description,
-          amount: Number(form.amount),
+          amount: parseCurrencyInput(form.amount),
           due_date: form.due_date,
           client_id: form.client_id || null,
           service_id: form.service_id || null,
@@ -123,10 +122,9 @@ export default function NovaReceitaPage() {
         }),
       })
     } else {
-      // Manual
       const installments = manualRows
-        .filter((r) => r.date && Number(r.amount) > 0)
-        .map((r) => ({ due_date: r.date, amount: Number(r.amount) }))
+        .filter((r) => r.date && parseCurrencyInput(r.amount) > 0)
+        .map((r) => ({ due_date: r.date, amount: parseCurrencyInput(r.amount) }))
       if (installments.length === 0) { setSaving(false); return }
       await fetch('/api/receivables', {
         method: 'POST',
@@ -147,7 +145,7 @@ export default function NovaReceitaPage() {
 
   return (
     <AppShell>
-      <div className="px-4 pt-6 max-w-lg mx-auto pb-10">
+      <div className="px-4 pt-6 max-w-2xl mx-auto pb-10">
         <div className="flex items-center gap-3 mb-6">
           <Link href="/receitas" className="text-slate-400 hover:text-slate-600 text-sm">← Voltar</Link>
           <h1 className="text-xl font-bold text-slate-900">Nova Receita</h1>
@@ -205,8 +203,8 @@ export default function NovaReceitaPage() {
             <div className="bg-white rounded-2xl p-5 space-y-4">
               <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1">Valor (R$) *</label>
-                <input required type="number" min="0" step="0.01" value={form.amount}
-                  onChange={(e) => set('amount', e.target.value)} placeholder="0,00"
+                <input required type="text" inputMode="numeric" value={form.amount}
+                  onChange={(e) => set('amount', formatCurrencyInput(e.target.value))} placeholder="0,00"
                   className={inputCls} />
               </div>
               <div>
@@ -244,8 +242,8 @@ export default function NovaReceitaPage() {
                 <div className="bg-white rounded-2xl p-5 space-y-4">
                   <div>
                     <label className="block text-xs font-medium text-slate-500 mb-1">Valor total (R$) *</label>
-                    <input required type="number" min="0" step="0.01" value={form.amount}
-                      onChange={(e) => set('amount', e.target.value)} placeholder="0,00"
+                    <input required type="text" inputMode="numeric" value={form.amount}
+                      onChange={(e) => set('amount', formatCurrencyInput(e.target.value))} placeholder="0,00"
                       className={inputCls} />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -309,7 +307,7 @@ export default function NovaReceitaPage() {
                       <div className="relative flex-1">
                         <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400">R$</span>
                         <input
-                          type="number" min="0" step="0.01" value={row.amount} placeholder="0,00"
+                          type="text" inputMode="numeric" value={row.amount} placeholder="0,00"
                           onChange={(e) => updateManualRow(i, 'amount', e.target.value)}
                           className="border border-slate-200 rounded-xl pl-8 pr-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00] w-full"
                         />
@@ -344,7 +342,7 @@ export default function NovaReceitaPage() {
 
           <button type="submit" disabled={saving}
             className="w-full bg-[#FF8A00] text-white font-semibold py-3 rounded-xl text-sm disabled:opacity-50">
-            {saving ? 'Salvando...' : payType === 'single' ? 'Lançar Receita' : `Criar ${payType === 'installment' && installMode === 'auto' ? countNum : manualRows.filter(r => Number(r.amount) > 0).length} parcelas`}
+            {saving ? 'Salvando...' : payType === 'single' ? 'Lançar Receita' : `Criar ${payType === 'installment' && installMode === 'auto' ? countNum : manualRows.filter(r => parseCurrencyInput(r.amount) > 0).length} parcelas`}
           </button>
         </form>
       </div>

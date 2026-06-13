@@ -52,7 +52,7 @@ export default function ClienteDetailPage() {
 
   return (
     <AppShell>
-      <div className="px-4 pt-6 max-w-lg mx-auto">
+      <div className="px-4 pt-6 max-w-2xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <Link href="/clientes" className="text-slate-400 hover:text-slate-600 text-sm">← Voltar</Link>
           <h1 className="text-xl font-bold text-slate-900">Editar Cliente</h1>

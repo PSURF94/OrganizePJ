@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import AppShell from '@/components/AppShell'
 import type { Company } from '@/lib/constants'
-import { capFirst } from '@/lib/utils'
+import { capFirst, formatCurrencyInput, parseCurrencyInput } from '@/lib/utils'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 import Link from 'next/link'
 
@@ -26,7 +26,7 @@ export default function ConfiguracoesPage() {
         setForm({
           name: d.name,
           cnpj: d.cnpj || '',
-          saldo_inicial: d.saldo_inicial ? String(d.saldo_inicial) : '',
+          saldo_inicial: d.saldo_inicial ? formatCurrencyInput(String(Math.round(d.saldo_inicial * 100))) : '',
         })
       })
   }, [])
@@ -68,7 +68,7 @@ export default function ConfiguracoesPage() {
       body: JSON.stringify({
         name: form.name,
         cnpj: form.cnpj,
-        saldo_inicial: form.saldo_inicial ? Number(form.saldo_inicial) : null,
+        saldo_inicial: form.saldo_inicial ? parseCurrencyInput(form.saldo_inicial) : null,
         tax_regime: company?.tax_regime ?? 'simples',
         faturamento_mensal: company?.faturamento_mensal ?? null,
         num_funcionarios: company?.num_funcionarios ?? null,
@@ -88,7 +88,7 @@ export default function ConfiguracoesPage() {
 
   return (
     <AppShell>
-      <div className="px-4 pt-6 max-w-lg mx-auto pb-10">
+      <div className="px-4 pt-6 max-w-2xl mx-auto pb-10">
         <h1 style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontWeight: 800, fontSize: 22, color: '#1A1A1D', letterSpacing: '-0.3px', paddingLeft: 11, borderLeft: '3px solid #FF8A00', marginBottom: 16 }}>Configurações</h1>
 
         {/* PRO: Multi-empresa */}
@@ -123,9 +123,9 @@ export default function ConfiguracoesPage() {
               <label className="block text-xs font-medium text-slate-500 mb-1">
                 Saldo inicial em conta <span className="text-slate-400 font-normal">(opcional)</span>
               </label>
-              <input type="number" min="0" step="0.01" value={form.saldo_inicial}
-                onChange={(e) => set('saldo_inicial', e.target.value)}
-                placeholder="0.00"
+              <input type="text" inputMode="numeric" value={form.saldo_inicial}
+                onChange={(e) => set('saldo_inicial', formatCurrencyInput(e.target.value))}
+                placeholder="0,00"
                 className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
             </div>
           </div>

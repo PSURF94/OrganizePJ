@@ -40,7 +40,7 @@ export default function SaldoPage() {
 
   return (
     <AppShell>
-      <div className="px-4 pt-6 max-w-lg mx-auto">
+      <div className="px-4 pt-6 max-w-2xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <button onClick={() => router.back()} className="text-xs text-slate-400 hover:text-slate-600">← Voltar</button>
           <h1 className="text-xl font-bold text-slate-900">Como chegamos nesse saldo</h1>

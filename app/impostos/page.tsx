@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import AppShell from '@/components/AppShell'
-import { formatCurrency, formatDate, todayISO, capFirst } from '@/lib/utils'
+import { formatCurrency, formatDate, todayISO, capFirst, formatCurrencyInput, parseCurrencyInput } from '@/lib/utils'
 import { Receipt, Calendar, Plus, X, CheckCircle } from 'lucide-react'
 
 interface DasEvent {
@@ -68,7 +68,7 @@ export default function ImpostosPage() {
 
   async function handleRegisterPayment(e: React.FormEvent) {
     e.preventDefault()
-    if (!payForm.amount || Number(payForm.amount) <= 0) return
+    if (!payForm.amount || parseCurrencyInput(payForm.amount) <= 0) return
     setSavingPay(true)
     await fetch('/api/expenses', {
       method: 'POST',
@@ -76,7 +76,7 @@ export default function ImpostosPage() {
       body: JSON.stringify({
         category: 'Tributos',
         description: payForm.description || 'Pagamento DAS',
-        amount: Number(payForm.amount),
+        amount: parseCurrencyInput(payForm.amount),
         date: payForm.date,
         installment_total: 1,
       }),
@@ -126,7 +126,7 @@ export default function ImpostosPage() {
 
   return (
     <AppShell>
-      <div className="px-4 pt-6 pb-10 max-w-lg mx-auto">
+      <div className="px-4 pt-6 pb-10 max-w-2xl mx-auto">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -240,9 +240,9 @@ export default function ImpostosPage() {
               <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1">Valor (R$) *</label>
                 <input
-                  required type="number" min="0.01" step="0.01"
+                  required type="text" inputMode="numeric"
                   value={payForm.amount}
-                  onChange={(e) => setPayForm((p) => ({ ...p, amount: e.target.value }))}
+                  onChange={(e) => setPayForm((p) => ({ ...p, amount: formatCurrencyInput(e.target.value) }))}
                   placeholder="0,00"
                   className={inputCls}
                 />

@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import AppShell from '@/components/AppShell'
 import { EXPENSE_CATEGORIES } from '@/lib/constants'
-import { todayISO, formatCurrency, formatDate, capFirst } from '@/lib/utils'
+import { todayISO, formatCurrency, formatDate, capFirst, formatCurrencyInput, parseCurrencyInput } from '@/lib/utils'
 import Link from 'next/link'
 import { Plus, Trash2 } from 'lucide-react'
 
@@ -30,7 +30,8 @@ export default function NovaDespesaPage() {
   }
 
   const autoCount = Math.max(1, Math.min(60, parseInt(form.installment_total) || 1))
-  const manualTotal = manualRows.reduce((s, r) => s + (Number(r.amount) || 0), 0)
+  const parsedAmount = parseCurrencyInput(form.amount)
+  const manualTotal = manualRows.reduce((s, r) => s + parseCurrencyInput(r.amount), 0)
 
   function addManualRow() {
     const lastDate = manualRows[manualRows.length - 1]?.date || todayISO()
@@ -44,7 +45,10 @@ export default function NovaDespesaPage() {
   }
 
   function updateManualRow(i: number, field: keyof ManualRow, value: string) {
-    setManualRows((prev) => prev.map((r, idx) => idx === i ? { ...r, [field]: value } : r))
+    setManualRows((prev) => prev.map((r, idx) => idx === i
+      ? { ...r, [field]: field === 'amount' ? formatCurrencyInput(value) : value }
+      : r
+    ))
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -57,19 +61,19 @@ export default function NovaDespesaPage() {
       await fetch('/api/expenses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, installment_total: 1 }),
+        body: JSON.stringify({ ...form, amount: parseCurrencyInput(form.amount), installment_total: 1 }),
       })
     } else if (installMode === 'auto') {
       if (!form.amount || !form.date) { setSaving(false); return }
       await fetch('/api/expenses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, installment_total: autoCount }),
+        body: JSON.stringify({ ...form, amount: parseCurrencyInput(form.amount), installment_total: autoCount }),
       })
     } else {
       const installments = manualRows
-        .filter((r) => r.date && Number(r.amount) > 0)
-        .map((r) => ({ date: r.date, amount: Number(r.amount) }))
+        .filter((r) => r.date && parseCurrencyInput(r.amount) > 0)
+        .map((r) => ({ date: r.date, amount: parseCurrencyInput(r.amount) }))
       if (installments.length === 0) { setSaving(false); return }
       await fetch('/api/expenses', {
         method: 'POST',
@@ -89,7 +93,7 @@ export default function NovaDespesaPage() {
 
   return (
     <AppShell>
-      <div className="px-4 pt-6 max-w-lg mx-auto pb-10">
+      <div className="px-4 pt-6 max-w-2xl mx-auto pb-10">
         <div className="flex items-center gap-3 mb-6">
           <Link href="/despesas" className="text-slate-400 hover:text-slate-600 text-sm">← Voltar</Link>
           <h1 className="text-xl font-bold text-slate-900">Nova Despesa</h1>
@@ -138,8 +142,8 @@ export default function NovaDespesaPage() {
             <div className="bg-white rounded-2xl p-5 space-y-4">
               <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1">Valor (R$) *</label>
-                <input required type="number" min="0" step="0.01" value={form.amount}
-                  onChange={(e) => set('amount', e.target.value)} placeholder="0,00"
+                <input required type="text" inputMode="numeric" value={form.amount}
+                  onChange={(e) => set('amount', formatCurrencyInput(e.target.value))} placeholder="0,00"
                   className={inputCls} />
               </div>
               <div>
@@ -178,8 +182,8 @@ export default function NovaDespesaPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-medium text-slate-500 mb-1">Valor por parcela (R$) *</label>
-                      <input required type="number" min="0" step="0.01" value={form.amount}
-                        onChange={(e) => set('amount', e.target.value)} placeholder="0,00"
+                      <input required type="text" inputMode="numeric" value={form.amount}
+                        onChange={(e) => set('amount', formatCurrencyInput(e.target.value))} placeholder="0,00"
                         className={inputCls} />
                     </div>
                     <div>
@@ -194,11 +198,11 @@ export default function NovaDespesaPage() {
                     <input required type="date" value={form.date} onChange={(e) => set('date', e.target.value)}
                       className={inputCls} />
                   </div>
-                  {autoCount > 1 && Number(form.amount) > 0 && (
+                  {autoCount > 1 && parsedAmount > 0 && (
                     <div className="bg-slate-50 rounded-xl p-3 text-xs text-slate-500">
                       Serão criadas <strong className="text-slate-700">{autoCount} parcelas</strong> de{' '}
-                      <strong className="text-slate-700">{formatCurrency(Number(form.amount))}</strong> mensais.
-                      Total: <strong className="text-slate-700">{formatCurrency(Number(form.amount) * autoCount)}</strong>
+                      <strong className="text-slate-700">{formatCurrency(parsedAmount)}</strong> mensais.
+                      Total: <strong className="text-slate-700">{formatCurrency(parsedAmount * autoCount)}</strong>
                     </div>
                   )}
                 </div>
@@ -219,7 +223,7 @@ export default function NovaDespesaPage() {
                       <div className="relative flex-1">
                         <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400">R$</span>
                         <input
-                          type="number" min="0" step="0.01" value={row.amount} placeholder="0,00"
+                          type="text" inputMode="numeric" value={row.amount} placeholder="0,00"
                           onChange={(e) => updateManualRow(i, 'amount', e.target.value)}
                           className="border border-slate-200 rounded-xl pl-8 pr-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00] w-full"
                         />
@@ -253,7 +257,7 @@ export default function NovaDespesaPage() {
               ? 'Lançar Despesa'
               : installMode === 'auto'
                 ? `Criar ${autoCount} parcela${autoCount > 1 ? 's' : ''}`
-                : `Criar ${manualRows.filter(r => Number(r.amount) > 0).length} parcelas`}
+                : `Criar ${manualRows.filter(r => parseCurrencyInput(r.amount) > 0).length} parcelas`}
           </button>
         </form>
       </div>

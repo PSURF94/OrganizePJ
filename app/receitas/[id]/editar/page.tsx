@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import AppShell from '@/components/AppShell'
-import { capFirst } from '@/lib/utils'
+import { capFirst, formatCurrencyInput, parseCurrencyInput } from '@/lib/utils'
 
 type Client = { id: string; name: string }
 
@@ -22,7 +22,7 @@ export default function EditarReceitaPage() {
     ]).then(([rec, cls]) => {
       setForm({
         description: rec.description || '',
-        amount: String(rec.amount || ''),
+        amount: rec.amount ? formatCurrencyInput(String(Math.round(rec.amount * 100))) : '',
         due_date: rec.due_date || '',
         client_id: rec.client_id || '',
       })
@@ -39,7 +39,7 @@ export default function EditarReceitaPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         description: form.description,
-        amount: Number(form.amount),
+        amount: parseCurrencyInput(form.amount),
         due_date: form.due_date,
         client_id: form.client_id || null,
       }),
@@ -57,7 +57,7 @@ export default function EditarReceitaPage() {
 
   return (
     <AppShell>
-      <div className="px-4 pt-6 max-w-lg mx-auto">
+      <div className="px-4 pt-6 max-w-2xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <button onClick={() => router.back()} className="text-xs text-slate-400 hover:text-slate-600">← Voltar</button>
           <h1 className="text-xl font-bold text-slate-900">Editar Receita</h1>
@@ -71,8 +71,8 @@ export default function EditarReceitaPage() {
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">Valor (R$) *</label>
-            <input type="number" step="0.01" min="0" required value={form.amount}
-              onChange={(e) => setForm((p) => ({ ...p, amount: e.target.value }))}
+            <input type="text" inputMode="numeric" required value={form.amount}
+              onChange={(e) => setForm((p) => ({ ...p, amount: formatCurrencyInput(e.target.value) }))}
               className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A00]" />
           </div>
           <div>
