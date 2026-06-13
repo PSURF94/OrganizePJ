@@ -6,20 +6,20 @@ import { getBrowserSupabase } from '@/lib/supabase-browser'
 import {
   LayoutDashboard, TrendingUp, Target, Wallet,
   Users, FileText, CalendarDays, Settings, LogOut, Receipt, BarChart2,
-  MoreHorizontal, X,
+  MoreHorizontal, X, Banknote,
 } from 'lucide-react'
 import BrandIcon from './BrandIcon'
 
 const NAV = [
   { href: '/dashboard',  label: 'Dashboard',  icon: LayoutDashboard },
-  { href: '/receitas',   label: 'Receitas',   icon: TrendingUp },
+  { href: '/timeline',   label: 'Timeline',   icon: CalendarDays },
   { href: '/objetivos',  label: 'Metas',      icon: Target },
-  { href: '/despesas',   label: 'Despesas',   icon: Wallet },
   { href: '/clientes',   label: 'Clientes',   icon: Users },
   { href: '/servicos',   label: 'Serviços',   icon: FileText },
-  { href: '/timeline',   label: 'Timeline',   icon: CalendarDays },
+  { href: '/receitas',   label: 'Receitas',   icon: TrendingUp },
+  { href: '/despesas',   label: 'Despesas',   icon: Wallet },
+  { href: '/fiscal',     label: 'Retiradas',  icon: Banknote },
   { href: '/impostos',   label: 'Impostos',   icon: Receipt },
-  { href: '/fiscal',     label: 'Fiscal',     icon: Receipt },
   { href: '/relatorios', label: 'Relatórios', icon: BarChart2 },
 ]
 
