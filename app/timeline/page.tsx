@@ -200,7 +200,7 @@ export default function TimelinePage() {
                         }}>
                           <p style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: dotColor, lineHeight: 1, marginBottom: 2 }}>{weekday}</p>
                           <p style={{ fontSize: 14, fontWeight: 800, color: '#1A1A1D', lineHeight: 1 }}>{day.split('/')[0]}</p>
-                          <p style={{ fontSize: 9, color: '#94a3b8', lineHeight: 1, marginTop: 1 }}>/{day.split('/')[1]}</p>
+                          <p style={{ fontSize: 9, color: '#94a3b8', lineHeight: 1, marginTop: 1 }}>{day.split('/')[1]}</p>
                         </div>
                         {/* Trilho */}
                         {!isLast && (
@@ -215,17 +215,13 @@ export default function TimelinePage() {
                       {/* ── Coluna direita: conteúdo ── */}
                       <div style={{ flex: 1, minWidth: 0, paddingBottom: isLast ? 0 : 28 }}>
 
-                        {/* Header: delta + saldo */}
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, paddingTop: 4 }}>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: dayDelta >= 0 ? '#10b981' : '#E50914', background: dayDelta >= 0 ? 'rgba(16,185,129,0.10)' : 'rgba(229,9,20,0.10)', borderRadius: 100, padding: '3px 8px' }}>
-                            {dayDelta >= 0 ? '+' : ''}{formatCurrency(dayDelta)}
-                          </span>
+                        {/* Header: saldo do dia */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 8, paddingTop: 4 }}>
                           <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: 4 }}>
-                            <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: balColor, opacity: 0.5 }}>saldo</span>
-                            <span style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontSize: 18, fontWeight: 800, letterSpacing: '-0.5px', color: balColor, lineHeight: 1 }}>
+                            <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#94a3b8' }}>saldo</span>
+                            <span style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontSize: 16, fontWeight: 800, letterSpacing: '-0.5px', color: balColor, lineHeight: 1 }}>
                               {formatCurrency(lastEv.running_balance)}
                             </span>
-                            {lastEv.alert !== 'ok' && <AlertTriangle size={11} color={balColor} style={{ marginBottom: 1 }} />}
                           </div>
                         </div>
 
