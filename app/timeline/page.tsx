@@ -1,8 +1,8 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import AppShell from '@/components/AppShell'
 import { formatCurrency } from '@/lib/utils'
-import { AlertTriangle, TrendingUp, TrendingDown, Receipt, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { TrendingUp, TrendingDown, Receipt, AlertTriangle } from 'lucide-react'
 
 interface TimelineEvent {
   id?: string
@@ -20,6 +20,14 @@ interface TimelineEvent {
 interface DayGroup { date: string; events: TimelineEvent[] }
 interface TimelineData { current_balance: number; events: TimelineEvent[] }
 
+interface MonthBar {
+  prefix: string
+  label: string
+  received: number
+  pending: number
+  outgoing: number
+}
+
 const TYPE = {
   receita: { color: '#10b981', bg: 'rgba(16,185,129,0.10)', label: 'Entrada',  icon: TrendingUp,   sign: '+' },
   despesa: { color: '#E50914', bg: 'rgba(229,9,20,0.10)',   label: 'Despesa',  icon: TrendingDown,  sign: '−' },
@@ -28,11 +36,16 @@ const TYPE = {
 
 function fmtDate(iso: string) {
   const [y, m, d] = iso.split('-').map(Number)
-  const date    = new Date(y, m - 1, d)
-  const weekday = date.toLocaleDateString('pt-BR', { weekday: 'short' })
-  const dd      = String(d).padStart(2, '0')
-  const mm      = String(m).padStart(2, '0')
-  return { weekday: weekday.replace('.', ''), day: `${dd}/${mm}` }
+  const date = new Date(y, m - 1, d)
+  const weekday = date.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '')
+  return { weekday, day: String(d).padStart(2, '0'), month: String(m).padStart(2, '0') }
+}
+
+function monthLabel(prefix: string) {
+  const [y, m] = prefix.split('-').map(Number)
+  const date = new Date(y, m - 1, 1)
+  const name = date.toLocaleDateString('pt-BR', { month: 'long' })
+  return name.charAt(0).toUpperCase() + name.slice(1) + ' ' + y
 }
 
 function groupByDate(events: TimelineEvent[]): DayGroup[] {
@@ -42,6 +55,20 @@ function groupByDate(events: TimelineEvent[]): DayGroup[] {
     map.get(ev.date)!.push(ev)
   }
   return Array.from(map.entries()).map(([date, evs]) => ({ date, events: evs }))
+}
+
+function Bar({ value, max, color, opacity = 1 }: { value: number; max: number; color: string; opacity?: number }) {
+  const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0
+  return (
+    <div style={{ flex: 1, height: 8, background: '#f1f5f9', borderRadius: 4, overflow: 'hidden' }}>
+      <div style={{
+        width: `${pct}%`, height: '100%', borderRadius: 4,
+        background: color, opacity,
+        transition: 'width 0.4s ease',
+        minWidth: pct > 0 ? 4 : 0,
+      }} />
+    </div>
+  )
 }
 
 export default function TimelinePage() {
@@ -79,9 +106,30 @@ export default function TimelinePage() {
 
   const dayGroups = data ? groupByDate(data.events) : []
 
-  // Mini-stats para hero card
-  const nextEntry = data?.events.find(e => e.type === 'receita' && e.status !== 'recebido')
-  const nextExpense = data?.events.find(e => e.type === 'despesa' || e.type === 'imposto')
+  const monthBars = useMemo<MonthBar[]>(() => {
+    if (!data) return []
+    const map = new Map<string, MonthBar>()
+    for (const ev of data.events) {
+      const prefix = ev.date.slice(0, 7)
+      if (!map.has(prefix)) map.set(prefix, { prefix, label: monthLabel(prefix), received: 0, pending: 0, outgoing: 0 })
+      const m = map.get(prefix)!
+      if (ev.type === 'receita') {
+        if (ev.status === 'recebido') m.received += Math.abs(ev.amount)
+        else m.pending += Math.abs(ev.amount)
+      } else {
+        m.outgoing += Math.abs(ev.amount)
+      }
+    }
+    return Array.from(map.values())
+  }, [data])
+
+  const maxBar = useMemo(() => {
+    return Math.max(...monthBars.map(m => Math.max(m.received + m.pending, m.outgoing)), 1)
+  }, [monthBars])
+
+  const balColor = data
+    ? data.current_balance < 0 ? '#E50914' : '#FF8A00'
+    : '#FF8A00'
 
   return (
     <AppShell>
@@ -98,66 +146,109 @@ export default function TimelinePage() {
 
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {[1, 2, 3].map(i => <div key={i} style={{ height: 90, borderRadius: 16, background: '#f1f5f9' }} />)}
+            {[1, 2, 3].map(i => <div key={i} style={{ height: 80, borderRadius: 16, background: '#f1f5f9' }} />)}
           </div>
         ) : !data ? (
           <p style={{ textAlign: 'center', color: '#94a3b8', paddingTop: 60 }}>Erro ao carregar.</p>
         ) : (
           <>
-            {/* ── Hero card ── */}
+            {/* ── Saldo + barras mensais ── */}
             <div style={{
-              background: 'linear-gradient(135deg, #1c1917 0%, #1a1a1d 100%)',
-              borderRadius: 24, padding: '28px 32px 24px',
-              marginBottom: 32, border: '1px solid rgba(255,255,255,0.06)',
+              background: 'white', borderRadius: 20,
+              border: '1px solid #f1f5f9',
+              boxShadow: '0 1px 6px rgba(0,0,0,0.05)',
+              marginBottom: 24, overflow: 'hidden',
             }}>
-              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 10 }}>
-                Saldo disponível agora
-              </p>
-              <p style={{
-                fontFamily: 'var(--font-poppins,sans-serif)', fontSize: 48, fontWeight: 800,
-                lineHeight: 1, letterSpacing: '-2px',
-                color: data.current_balance >= 0 ? '#FF8A00' : '#E50914',
-                marginBottom: 20,
+              {/* Saldo */}
+              <div style={{
+                padding: '20px 24px 18px',
+                borderBottom: '1px solid #f8fafc',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               }}>
-                {formatCurrency(data.current_balance)}
-              </p>
-
-              {/* Mini-stats */}
-              <div style={{ display: 'grid', gridTemplateColumns: nextEntry && nextExpense ? '1fr 1fr' : '1fr', gap: 12 }}>
-                {nextEntry && (
-                  <div style={{ background: 'rgba(16,185,129,0.08)', borderRadius: 14, padding: '12px 16px', border: '1px solid rgba(16,185,129,0.15)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                      <ArrowUpRight size={13} color="#10b981" />
-                      <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)' }}>Próxima entrada</span>
-                    </div>
-                    <p style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontSize: 16, fontWeight: 800, color: '#10b981', lineHeight: 1, marginBottom: 2 }}>
-                      +{formatCurrency(nextEntry.display_amount ?? Math.abs(nextEntry.amount))}
-                    </p>
-                    <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nextEntry.description}</p>
-                  </div>
-                )}
-                {nextExpense && (
-                  <div style={{ background: 'rgba(229,9,20,0.10)', borderRadius: 14, padding: '12px 16px', border: '1px solid rgba(229,9,20,0.20)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                      <ArrowDownRight size={13} color="#E50914" />
-                      <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)' }}>Próxima saída</span>
-                    </div>
-                    <p style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontSize: 16, fontWeight: 800, color: '#E50914', lineHeight: 1, marginBottom: 2 }}>
-                      −{formatCurrency(Math.abs(nextExpense.amount))}
-                    </p>
-                    <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nextExpense.description}</p>
+                <div>
+                  <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#94a3b8', marginBottom: 4 }}>
+                    Disponível agora
+                  </p>
+                  <p style={{
+                    fontFamily: 'var(--font-poppins,sans-serif)', fontSize: 36, fontWeight: 800,
+                    lineHeight: 1, letterSpacing: '-1.5px', color: balColor,
+                  }}>
+                    {formatCurrency(data.current_balance)}
+                  </p>
+                </div>
+                {data.current_balance < 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(229,9,20,0.06)', borderRadius: 10, padding: '8px 12px' }}>
+                    <AlertTriangle size={13} color="#E50914" />
+                    <span style={{ color: '#E50914', fontSize: 12, fontWeight: 600 }}>Saldo negativo</span>
                   </div>
                 )}
               </div>
 
-              {data.current_balance < 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 14, background: 'rgba(229,9,20,0.1)', borderRadius: 10, padding: '8px 12px' }}>
-                  <AlertTriangle size={12} color="#E50914" />
-                  <p style={{ color: '#E50914', fontSize: 12, fontWeight: 600 }}>Saldo negativo — atenção ao fluxo</p>
+              {/* Barras mensais */}
+              {monthBars.length > 0 && (
+                <div style={{ padding: '16px 24px 20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#94a3b8' }}>
+                      Fluxo por mês
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      {[
+                        { color: '#10b981', label: 'Recebido', opacity: 1 },
+                        { color: '#10b981', label: 'A receber', opacity: 0.35 },
+                        { color: '#E50914', label: 'Saídas', opacity: 0.8 },
+                      ].map(({ color, label, opacity }) => (
+                        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <div style={{ width: 10, height: 6, borderRadius: 2, background: color, opacity }} />
+                          <span style={{ fontSize: 9, color: '#94a3b8', fontWeight: 600 }}>{label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    {monthBars.map((m) => (
+                      <div key={m.prefix}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: '#475569', width: 110, flexShrink: 0 }}>{m.label}</span>
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                            {/* Entradas */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              {m.received > 0 && (
+                                <div style={{ flex: m.received / maxBar, height: 8, background: '#10b981', borderRadius: '4px 0 0 4px', minWidth: 4 }} />
+                              )}
+                              {m.pending > 0 && (
+                                <div style={{ flex: m.pending / maxBar, height: 8, background: '#10b981', opacity: 0.35, borderRadius: m.received > 0 ? '0 4px 4px 0' : 4, minWidth: 4 }} />
+                              )}
+                              {(m.received + m.pending) === 0 && (
+                                <div style={{ flex: 1, height: 8, background: '#f1f5f9', borderRadius: 4 }} />
+                              )}
+                            </div>
+                            {/* Saídas */}
+                            {m.outgoing > 0 && (
+                              <Bar value={m.outgoing} max={maxBar} color="#E50914" opacity={0.8} />
+                            )}
+                          </div>
+                          <div style={{ width: 80, flexShrink: 0, textAlign: 'right' }}>
+                            {m.received + m.pending > 0 && (
+                              <p style={{ fontSize: 10, fontWeight: 700, color: '#10b981', lineHeight: 1.2 }}>
+                                +{formatCurrency(m.received + m.pending)}
+                              </p>
+                            )}
+                            {m.outgoing > 0 && (
+                              <p style={{ fontSize: 10, fontWeight: 700, color: '#E50914', lineHeight: 1.2 }}>
+                                −{formatCurrency(m.outgoing)}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
 
+            {/* ── Lista de eventos ── */}
             {data.events.length === 0 ? (
               <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: 14, paddingTop: 40 }}>
                 Nenhum evento nos próximos 90 dias.
@@ -165,44 +256,27 @@ export default function TimelinePage() {
             ) : (
               <div>
                 {dayGroups.map((group, gi) => {
-                  const lastEv   = group.events[group.events.length - 1]
-                  const prevBal  = gi === 0
-                    ? data.current_balance
-                    : dayGroups[gi - 1].events[dayGroups[gi - 1].events.length - 1].running_balance
-                  const dayDelta = lastEv.running_balance - prevBal
-                  const isLast   = gi === dayGroups.length - 1
-
-                  const dotColor =
-                    lastEv.running_balance < 0 ? '#E50914' :
-                    lastEv.alert === 'warning'  ? '#d97706' :
-                    '#10b981'
-
-                  const balColor =
-                    lastEv.running_balance < 0 ? '#E50914' :
-                    lastEv.alert === 'warning'  ? '#d97706' :
-                    '#FF8A00'
-
-                  const { weekday, day } = fmtDate(group.date)
+                  const lastEv  = group.events[group.events.length - 1]
+                  const isLast  = gi === dayGroups.length - 1
+                  const dotColor  = lastEv.running_balance < 0 ? '#E50914' : lastEv.alert === 'warning' ? '#d97706' : '#10b981'
+                  const balColor2 = lastEv.running_balance < 0 ? '#E50914' : lastEv.alert === 'warning' ? '#d97706' : '#FF8A00'
+                  const { weekday, day, month } = fmtDate(group.date)
 
                   return (
                     <div key={gi} style={{ display: 'flex', gap: 20 }}>
 
-                      {/* ── Coluna esquerda: data pill + trilho ── */}
+                      {/* Date pill */}
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, width: 52 }}>
-                        {/* Date pill */}
                         <div style={{
                           width: 48, borderRadius: 12, background: 'white',
-                          border: '1px solid #e8ecf0',
-                          borderTop: `3px solid ${dotColor}`,
+                          border: '1px solid #e8ecf0', borderTop: `3px solid ${dotColor}`,
                           boxShadow: '0 1px 6px rgba(0,0,0,0.06)',
-                          padding: '6px 4px', textAlign: 'center', flexShrink: 0,
-                          marginTop: 0,
+                          padding: '6px 4px', textAlign: 'center',
                         }}>
                           <p style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: dotColor, lineHeight: 1, marginBottom: 2 }}>{weekday}</p>
-                          <p style={{ fontSize: 14, fontWeight: 800, color: '#1A1A1D', lineHeight: 1 }}>{day.split('/')[0]}</p>
-                          <p style={{ fontSize: 9, color: '#94a3b8', lineHeight: 1, marginTop: 1 }}>{day.split('/')[1]}</p>
+                          <p style={{ fontSize: 14, fontWeight: 800, color: '#1A1A1D', lineHeight: 1 }}>{day}</p>
+                          <p style={{ fontSize: 9, color: '#94a3b8', lineHeight: 1, marginTop: 1 }}>{month}</p>
                         </div>
-                        {/* Trilho */}
                         {!isLast && (
                           <div style={{
                             flex: 1, width: 2,
@@ -212,20 +286,17 @@ export default function TimelinePage() {
                         )}
                       </div>
 
-                      {/* ── Coluna direita: conteúdo ── */}
+                      {/* Content */}
                       <div style={{ flex: 1, minWidth: 0, paddingBottom: isLast ? 0 : 28 }}>
-
-                        {/* Header: saldo do dia */}
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 8, paddingTop: 4 }}>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8, paddingTop: 4 }}>
                           <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: 4 }}>
                             <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#94a3b8' }}>saldo</span>
-                            <span style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontSize: 16, fontWeight: 800, letterSpacing: '-0.5px', color: balColor, lineHeight: 1 }}>
+                            <span style={{ fontFamily: 'var(--font-poppins,sans-serif)', fontSize: 16, fontWeight: 800, letterSpacing: '-0.5px', color: balColor2 }}>
                               {formatCurrency(lastEv.running_balance)}
                             </span>
                           </div>
                         </div>
 
-                        {/* Event cards */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                           {group.events.map((ev, ei) => {
                             const t          = TYPE[ev.type]
@@ -234,6 +305,9 @@ export default function TimelinePage() {
                             const isOpen     = expanded === key
                             const isRecebido = ev.status === 'recebido'
                             const displayAmt = ev.display_amount ?? Math.abs(ev.amount)
+                            const evColor    = isRecebido ? '#10b981' : t.color
+                            // Cushion encoding: sólido = recebido/confirmado, tracejado = pendente/estimado
+                            const bStyle     = isRecebido ? 'solid' : (ev.type === 'despesa' ? 'solid' : 'dashed')
 
                             return (
                               <div key={ei}>
@@ -244,10 +318,10 @@ export default function TimelinePage() {
                                     background: 'white',
                                     borderRadius: isOpen ? '14px 14px 0 0' : 14,
                                     border: '1px solid #f1f5f9',
-                                    borderLeft: `3px solid ${isRecebido ? '#10b981' : t.color}`,
+                                    borderLeft: `3px ${bStyle} ${evColor}`,
                                     borderBottom: isOpen ? '1px solid #f8fafc' : undefined,
                                     padding: '12px 16px',
-                                    opacity: isRecebido ? 0.68 : 1,
+                                    opacity: isRecebido ? 0.65 : 1,
                                     boxShadow: isOpen ? '0 6px 18px rgba(0,0,0,0.07)' : '0 1px 4px rgba(0,0,0,0.04)',
                                     transition: 'box-shadow 0.15s, border-radius 0.1s',
                                   }}
@@ -258,11 +332,11 @@ export default function TimelinePage() {
                                       background: isRecebido ? 'rgba(16,185,129,0.08)' : t.bg,
                                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     }}>
-                                      <Icon size={14} color={isRecebido ? '#10b981' : t.color} strokeWidth={2.2} />
+                                      <Icon size={14} color={evColor} strokeWidth={2.2} />
                                     </div>
                                     <div style={{ flex: 1, minWidth: 0 }}>
-                                      <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: isRecebido ? '#10b981' : t.color }}>
-                                        {isRecebido ? '✓ Recebido' : t.label}
+                                      <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: evColor }}>
+                                        {isRecebido ? 'Recebido' : t.label}
                                       </span>
                                       <p style={{ fontSize: 13, fontWeight: 600, color: '#1A1A1D', margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                         {ev.description}
@@ -276,7 +350,7 @@ export default function TimelinePage() {
                                     <p style={{
                                       fontFamily: 'var(--font-poppins,sans-serif)',
                                       fontSize: 15, fontWeight: 800, lineHeight: 1, flexShrink: 0,
-                                      color: isRecebido ? '#10b981' : t.color,
+                                      color: evColor,
                                     }}>
                                       {t.sign}{formatCurrency(displayAmt)}
                                     </p>
@@ -287,7 +361,7 @@ export default function TimelinePage() {
                                   <div style={{
                                     background: '#fafafa',
                                     border: '1px solid #f1f5f9', borderTop: 'none',
-                                    borderLeft: `3px solid ${isRecebido ? '#10b981' : t.color}`,
+                                    borderLeft: `3px ${bStyle} ${evColor}`,
                                     borderRadius: '0 0 14px 14px',
                                     padding: '10px 16px',
                                   }}>
@@ -302,7 +376,7 @@ export default function TimelinePage() {
                                             borderRadius: 10, padding: '8px 16px',
                                             cursor: actionLoading ? 'not-allowed' : 'pointer', opacity: actionLoading ? 0.5 : 1,
                                           }}>
-                                          {actionLoading ? 'Salvando…' : '✓ Marcar como recebido'}
+                                          {actionLoading ? 'Salvando…' : 'Marcar como recebido'}
                                         </button>
                                       ) : (
                                         <button
@@ -314,7 +388,7 @@ export default function TimelinePage() {
                                             borderRadius: 10, padding: '8px 16px',
                                             cursor: actionLoading ? 'not-allowed' : 'pointer', opacity: actionLoading ? 0.5 : 1,
                                           }}>
-                                          {actionLoading ? 'Salvando…' : '↩ Desfazer recebimento'}
+                                          {actionLoading ? 'Salvando…' : 'Desfazer recebimento'}
                                         </button>
                                       )
                                     ) : (
@@ -331,7 +405,7 @@ export default function TimelinePage() {
                   )
                 })}
 
-                {/* Marcador final */}
+                {/* Fim da projeção */}
                 {(() => {
                   const finalEv    = dayGroups[dayGroups.length - 1]?.events.slice(-1)[0]
                   const finalBal   = finalEv?.running_balance ?? 0
